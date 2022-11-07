@@ -84,3 +84,4 @@ Transaction Manager and Redis containers initialization
 - Using direct calls to SGX Wallet
 - Using explicit insecure private key
 
+
