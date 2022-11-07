@@ -97,7 +97,7 @@ echo -e "${COLOR_SUCCESS}Done, cleanup finished${COLOR_RESET}"
 ############################################################################################################################
 
 if [ $SKALED_WITH_BTRFS ]; then
-	./btrfs-clean.sh
+	./btrfs-clean.sh || true
 else
 	echo "Non-BTRFS mode, skipped BTRFS cleaunup."
 fi
