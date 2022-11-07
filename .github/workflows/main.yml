@@ -1,0 +1,451 @@
+# This is a basic workflow to help you get started with Actions
+
+name: ALL-SKALE-TEST
+
+# Controls when the action will run. Triggers the workflow on push or pull request
+# events but only for the master branch
+on:
+  push:
+    branches: [ master ]
+  pull_request:
+    branches: [ master ]
+  schedule:
+    - cron: '0 0 * * *' # At the end of every day
+
+# A workflow run is made up of one or more jobs that can run sequentially or in parallel
+jobs:
+  # This workflow contains a single job called "build"
+  build:
+    # The type of runner that the job will run on # ubuntu-latest
+    runs-on: ubuntu-latest # ubuntu-22.04 # ubuntu-20.04 # ubuntu-latest
+
+    # Steps represent a sequence of tasks that will be executed as part of the job
+    steps:
+    # Checks-out your repository under $GITHUB_WORKSPACE, so your job can access it
+    - uses: actions/checkout@v2
+
+    - name: INFO - github environment variable checks
+      run: |
+        echo ------------ GIT_CURRENT_BRANCH
+        export GIT_CURRENT_BRANCH=$(git rev-parse --abbrev-ref HEAD)
+        echo $GIT_CURRENT_BRANCH
+        echo ------------ GIT_SYMBOLIC_BRANCH
+        export GIT_SYMBOLIC_BRANCH=$(git symbolic-ref --short HEAD)
+        echo $GIT_SYMBOLIC_BRANCH
+        echo ------------ GITHUB_WORKFLOW
+        echo $GITHUB_WORKFLOW
+        echo ------------ GITHUB_RUN_ID
+        echo $GITHUB_RUN_ID
+        echo ------------ GITHUB_RUN_NUMBER
+        echo $GITHUB_RUN_NUMBER
+        echo ------------ GITHUB_ACTION
+        echo $GITHUB_ACTION
+        echo ------------ GITHUB_ACTIONS
+        echo $GITHUB_ACTIONS
+        echo ------------ GITHUB_ACTOR
+        echo $GITHUB_ACTOR
+        echo ------------ GITHUB_REPOSITORY
+        echo $GITHUB_REPOSITORY
+        echo ------------ GITHUB_EVENT_NAME
+        echo $GITHUB_EVENT_NAME
+        echo ------------ GITHUB_EVENT_PATH
+        echo $GITHUB_EVENT_PATH
+        echo ------------ GITHUB_WORKSPACE
+        echo $GITHUB_WORKSPACE
+        echo ------------ GITHUB_SHA
+        echo $GITHUB_SHA
+        echo ------------ GITHUB_REF
+        echo $GITHUB_REF
+        echo ------------ GITHUB_HEAD_REF
+        echo $GITHUB_HEAD_REF
+        echo ------------ GITHUB_BASE_REF
+        echo $GITHUB_BASE_REF
+
+    - name: INFO - user information checks
+      run: |
+        echo ------------ user
+        echo $USER
+        echo ------------ home
+        echo $HOME
+        echo ------------ path
+        echo $PATH
+
+    - name: INFO - system information checks
+      run: |
+        echo ------------ pwd
+        pwd
+        echo ------------ unix name - a
+        uname -a || true
+        echo ------------ unix name - r
+        uname -r || true
+        echo ------------ lsb_release - cat
+        cat /etc/lsb-release
+        echo ------------ lsb_release - a
+        lsb_release -a || true
+        echo ------------ hostnamectl
+        hostnamectl || true
+        echo ------------ /etc/os-release
+        cat /etc/os-release || true
+        echo ------------ /proc/version
+        cat /proc/version || true
+        echo ------------ lscpu
+        lscpu || true
+
+    - name: UPDATE - system deps and install libc6, net-tools, btrfs-progs, zip, unzip
+      run: |
+        sudo apt-get update
+        #sudo apt-get upgrade
+        sudo apt-get install libc6 net-tools btrfs-progs zip unzip
+        #
+        # - name: Init NTP
+        #   run: |
+        #     sudo apt-apt install systemd-timesyncd
+        #     sudo apt-get install ntp
+        #     # sudo systemctl unmask systemd-timesyncd.service
+        #     # sudo systemctl enable systemd-timesyncd.service
+        #     # sudo systemctl start systemd-timesyncd.service
+        #     sudo timedatectl set-ntp on
+
+    - name: INIT - install docker with compose
+      run: |
+        echo " --------------------------- remove old packages ------------------------------------------------------------------------------------------------------ "
+        sudo apt-get remove docker* containerd* || tinstall rue
+        echo " --------------------------- install containerd.io ---------------------------------------------------------------------------------------------------- "
+        sudo apt-get install containerd.io
+        echo " --------------------------- install docker.io -------------------------------------------------------------------------------------------------------- "
+        #sudo apt-get install docker.io
+        echo " --------------------------- install docker-compose --------------------------------------------------------------------------------------------------- "
+        sudo apt-get install docker-compose
+
+    - name: INIT - reconfigure docker and restart its daemon
+      run: |
+        sudo systemctl unmask docker
+        sudo groupadd docker || true
+        sudo gpasswd -a username docker || true
+        sudo service docker restart || true
+
+    - name: INIT - uninstall old Node JS if any
+      run: |
+        sudo npm cache clean -f || true &> /dev/null
+        sudo apt-get remove nodejs npm node -y || true &> /dev/null
+        sudo apt-get purge nodejs -y || true &> /dev/null
+        sudo apt-get autoremove -y || true &> /dev/null
+        sudo rm -rf /usr/bin/node || true &> /dev/null
+        sudo rm -rf /usr/include/node || true &> /dev/null
+        sudo rm -rf /usr/lib/node_modules || true &> /dev/null
+        sudo rm -rf /usr/local/bin/npm  || true &> /dev/null
+        sudo rm -rf /usr/local/share/man/man1/node* || true &> /dev/null
+        sudo rm -rf /usr/local/lib/dtrace/node.d || true &> /dev/null
+        sudo rm -rf ~/.npm || true &> /dev/null
+        sudo rm -rf ~/.node-gyp || true &> /dev/null
+        sudo rm -rf /opt/local/bin/node || true &> /dev/null
+        sudo rm -rf /opt/local/include/node || true &> /dev/null
+        sudo rm -rf /opt/local/lib/node_modules || true &> /dev/null
+        sudo rm -rf /usr/local/lib/node* || true &> /dev/null
+        sudo rm -rf /usr/local/include/node* || true &> /dev/null
+        sudo rm -rf /usr/local/bin/node* || true &> /dev/null
+
+    - name: INIT - install Node JS
+      run: |
+        curl -sL https://deb.nodesource.com/setup_16.x | sudo bash -
+        sudo apt-get install -y nodejs
+        sudo ln -s /usr/bin/node /usr/local/bin/node
+        sudo npm install --global npm
+        sudo npm install --global color-support
+        sudo npm install --global yarn
+        sudo npm install --global node-gyp
+
+    - name: INIT - version checks of Node JS and its utilities
+      run: |
+        which node
+        node --version
+        which npm
+        npm --version
+        which yarn
+        yarn --version
+        which node-gyp
+        node-gyp --version
+
+    - name: INIT - install Ethereum Main Net emulation
+      run: |
+        #
+        # # --- ganache-cli version ---
+        # sudo yarn global add ganache-cli
+        # which ganache-cli
+        # ganache-cli --version
+        #
+        # # --- hardhat version ---
+        cd cli-hh
+        ./clean.sh
+        ./init.sh
+        cd ..
+        #
+
+    - name: INIT - startup Ethereum Main Net emulation
+      run: |
+        #
+        # # --- ganache-cli version ---
+        # cd cli-ganache
+        # ./run.sh &> ../local_mainnet_output_log.txt &
+        # cd ..
+        #
+        # # --- hardhat version ---
+        cd cli-hh
+        ./run.sh &> ../local_mainnet_output_log.txt &
+        cd ..
+        #
+
+    - name: INIT - pre-install scrypt npm explicitly
+      run: |
+        ./test_tokens/scrypt/get_scrypt_npm.sh
+
+    - name: INIT - initialize S-Chain configuration creator
+      run: |
+        cd s_chain_gen
+        yarn install
+        cd ..
+
+    - name: INIT - check skaled can run
+      run: |
+        export DETECTED_UBUNTU_VERSION=$(lsb_release -r | cut -f2)
+        export TRYING_SKALED_AT_PATH=./app_cache/bin_$DETECTED_UBUNTU_VERSION/skaled
+        $TRYING_SKALED_AT_PATH --colors --version
+        $TRYING_SKALED_AT_PATH --help
+
+    - name: INIT - generate configuration files for S-Chain nodes
+      run: |
+        cd s_chain_gen
+        ./init.sh
+        cd ..
+        #
+        # - name: INIT - start S-Chain node 00
+        #   run: |
+        #     cd s_chain_gen/node_00
+        #     # ./run-skaled.sh &>/dev/null &
+        #     ./run-skaled.sh &> ./log_skaled_00.txt &
+        #     sleep 30
+        #     cat ./log_skaled_00.txt
+        #     cd ../..
+        #
+        # - name: INIT - start S-Chain node 01
+        #   run: |
+        #     cd s_chain_gen/node_01
+        #     # ./run-skaled.sh &>/dev/null &
+        #     ./run-skaled.sh &> ./log_skaled_01.txt &
+        #     sleep 30
+        #     cat ./log_skaled_01.txt
+        #     cd ../..
+
+    - name: INIT - download Skale Manager
+      run: |
+        cd functional_check
+        git clone https://github.com/skalenetwork/skale-manager.git --recursive
+        cd ..
+
+    - name: INIT - install Skale Manager dependencies
+      run: |
+        cd skale-manager
+        yarn install
+        cd ..
+
+    - name: INIT - install engine dependencies
+      run: |
+        cd engine 
+        yarn install
+        cd ..
+
+    - name: INIT - download IMA
+      run: |
+        cd functional_check
+        # git clone https://adb200b8c85f61ba1ebd393e91ab421f881186ec@github.com/skalenetwork/IMA.git --recursive
+        git clone https://github.com/skalenetwork/IMA.git --recursive
+        cd IMA
+        #
+        #
+        #
+        # git checkout ticket-1248/js-only-ima-agent
+        git checkout ticket-1312/new-PTX-out-of-skaled
+        git fetch
+        git pull
+        git branch
+        git status
+        #
+        #
+        #
+        cd ../..
+
+    - name: INIT - initialize IMA dependencies
+      run: |
+        ./IMA/npms/scrypt/get_scrypt_npm.sh
+        cd IMA
+        yarn install
+        cd ..
+
+    - name: SELF-TEST 1 A - use IMA to discover chain ID via node 00-00 and test last is alive
+      run: |
+        node IMA/agent/main.js --colors --no-gathered --discover-cid --url-main-net=http://127.0.0.1:2164 || true
+
+    - name: SELF-TEST 1 B - use IMA to discover chain ID via node 00-01 and test last is alive
+      run: |
+        node IMA/agent/main.js --colors --no-gathered --discover-cid --url-main-net=http://127.0.0.2:2264 || true
+
+    - name: SELF-TEST 1 C - use IMA to discover chain ID via node 01-00 and test last is alive
+      run: |
+        node IMA/agent/main.js --colors --no-gathered --discover-cid --url-main-net=http://127.0.0.3:2364 || true
+
+    - name: SELF-TEST 1 D - use IMA to discover chain ID via node 01-01 and test last is alive
+      run: |
+        node IMA/agent/main.js --colors --no-gathered --discover-cid --url-main-net=http://127.0.0.4:2464 || true
+
+    - name: SELF-TEST 2 A - use IMA to browse S-Chain via node 00-00 and test last is alive
+      run: |
+        node IMA/agent/main.js --colors --no-gathered --browse-s-chain --url-s-chain=http://127.0.0.1:2164 || true
+
+    - name: SELF-TEST 2 B - use IMA to browse S-Chain via node 00-01 and test last is alive
+      run: |
+        node IMA/agent/main.js --colors --no-gathered --browse-s-chain --url-s-chain=http://127.0.0.2:2264 || true
+
+    - name: SELF-TEST 2 C - use IMA to browse S-Chain via node 01-00 and test last is alive
+      run: |
+        node IMA/agent/main.js --colors --no-gathered --browse-s-chain --url-s-chain=http://127.0.0.3:2364 || true
+
+    - name: SELF-TEST 2 D - use IMA to browse S-Chain via node 01-01 and test last is alive
+      run: |
+        node IMA/agent/main.js --colors --no-gathered --browse-s-chain --url-s-chain=http://127.0.0.4:2464 || true
+        #
+        #
+        #
+        #
+        #
+        # echo " --------------------------- getting skaled and bls toolset built ----------------------------------------------------------------------------------- "
+        # git clone https://github.com/skalenetwork/skaled.git --recursive
+        # cd skaled/SkaleDeps && ./build.sh DEBUG=1 PARALLEL_COUNT=$(nproc) && cd ../..
+        # cd skaled && mkdir -p build && cd build
+        # cmake -DCMAKE_BUILD_TYPE=Debug -DSKALED_HATE_WARNINGS=ON .. && make -j $(nproc)
+        # cd ..
+        #
+        #
+        #
+
+    - name: INIT - download SGX Wallet
+      run: |
+        cd functional_check
+        git clone https://github.com/skalenetwork/sgxwallet.git --recursive
+        cd sgxwallet
+        git checkout develop
+        git fetch
+        git pull
+        git branch
+        git status
+        cd ../..
+
+    - name: INIT - update docker image SGX Wallet in the emulation mode
+      run: |
+        cd sgxwallet/run_sgx_sim
+        rm -rf ../../local_sgxwallet_output_log.txt &> /dev/null
+        echo " --------------------------- stopping sgx wallet ------------------------------------------------------------------------------------------------------ "
+        docker-compose down
+        echo " --------------------------- fixing sgx wallets docker config ----------------------------------------------------------------------------------------- "
+        mv docker-compose.yml docker-compose.yml.old-previous || true
+        echo "version: '3'"                                 > docker-compose.yml
+        echo 'services:'                                   >> docker-compose.yml
+        echo '  sgxwallet:'                                >> docker-compose.yml
+        # echo '    image: skalenetwork/sgxwallet_sim:develop-latest'                           >> docker-compose.yml
+        # echo '    image: skalenetwork/sgxwallet_sim:119170448fe6ebece3782ed7e17bdd563ce9b6a5' >> docker-compose.yml
+        # echo '    image: skalenetwork/sgxwallet_sim:6fef3a1dcea6921dfa0682961dc884e814f10251' >> docker-compose.yml
+        echo '    image: skalenetwork/sgxwallet_sim:1.83.0-develop.19'                          >> docker-compose.yml
+        echo '    restart: unless-stopped'                 >> docker-compose.yml
+        echo '    ports:'                                  >> docker-compose.yml
+        echo '      - "1026:1026"'                         >> docker-compose.yml
+        echo '      - "1027:1027"'                         >> docker-compose.yml
+        echo '      - "1028:1028"'                         >> docker-compose.yml
+        echo '      - "1029:1029"'                         >> docker-compose.yml
+        echo '      - "1030:1030"'                         >> docker-compose.yml
+        echo '      - "1031:1031"'                         >> docker-compose.yml
+        echo '    volumes:'                                >> docker-compose.yml
+        echo '      - ./sgx_data:/usr/src/sdk/sgx_data'    >> docker-compose.yml
+        echo '      -  /dev/urandom:/dev/random'           >> docker-compose.yml
+        echo '    logging:'                                >> docker-compose.yml
+        echo '      driver: json-file'                     >> docker-compose.yml
+        echo '      options:'                              >> docker-compose.yml
+        echo '        max-size: "10m"'                     >> docker-compose.yml
+        echo '        max-file: "4"'                       >> docker-compose.yml
+        echo '    command: -s -y -V -d'                    >> docker-compose.yml
+        echo " --------------------------- pulling sgx wallet ------------------------------------------------------------------------------------------------------- "
+        docker-compose pull
+        cd ../..
+
+    - name: INIT - start SGX Wallet
+      run: |
+        cd sgxwallet/run_sgx_sim
+        docker-compose up &> ../../local_sgxwallet_output_log.txt &
+        sleep 90
+        cd ../..
+
+    - name: INIT - check SGX Wallet has listening ports
+      run: |
+        echo "sleeping 45 seconds..."
+        sleep 45
+        echo "checking port 1026 commonly used by SGX Wallet for HTTPS..."
+        sudo netstat -tulpn | grep 1026
+        echo "...Done"
+        echo "checking port 1027 commonly used by SGX Wallet for HTTP..."
+        sudo netstat -tulpn | grep 1027
+        echo "...Done"
+
+    - name: INIT - download transaction manager
+      run: |
+        rm -rf transaction-manager || true
+        git clone https://github.com/skalenetwork/transaction-manager
+
+    - name: INIT - start transaction manager and redis
+      run: |
+        cd transaction-manager
+        export SGX_SERVER_URL=http://127.0.0.1:1027
+        export ENDPOINT=http://127.0.0.1:8545
+        export ETH_PRIVATE_KEY=23ABDBD3C61B5330AF61EBE8BEF582F4E5CC08E554053A718BDCE7813B9DC1FC
+        ./scripts/run-test-containers.sh
+        cd ..
+        echo "------------------------------------------------------------------------------------"
+        docker ps
+        echo "------------------------------------------------------------------------------------"
+        export TM_CONTAINER_ID=$(docker ps | grep transaction-manager | awk '{print $1;}')
+        echo "Transaction mananager docker container ID:" $TM_CONTAINER_ID
+        docker logs $TM_CONTAINER_ID -f &> engine/tm.log &
+        echo "------------------------------------------------------------------------------------"
+        export REDIS_CONTAINER_ID=$(docker ps | grep redis | awk '{print $1;}')
+        echo "Redis container ID:" $REDIS_CONTAINER_ID
+        docker logs $REDIS_CONTAINER_ID -f &> engine/redis.log &
+
+    - name: INIT - prepare ulimit
+      run: |
+        ulimit -n 65535 > /dev/null
+        echo "ulimit is now set to" $(ulimit -n)
+
+    - name: RUN - create certificates
+      run: |
+        cd engine/create_pems
+        ./create_pems.sh
+        cd ../..
+
+    - name: RUN - main engine steps
+      run: |
+        cd engine
+        export ALL_SKALE_TEST_CLOUD_RUN=1
+        node ./index.js
+        cd ..
+
+    - name: SHUTDOWN - stop SGX Wallet
+      run: |
+        cd sgxwallet/run_sgx_sim
+        docker-compose down
+        cd ../..
+
+    - name: SHUTDOWN - stop transaction manager and redis
+      run: |
+        docker stop $TM_CONTAINER_ID $REDIS_CONTAINER_ID || true
+        docker rm $TM_CONTAINER_ID $REDIS_CONTAINER_ID || true
+
+    - name: SHUTDOWN - zombie cleanup, if any
+      run: |
+        killall -9 skaled node npx python python3 || true
