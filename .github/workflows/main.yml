@@ -238,9 +238,7 @@ jobs:
 
     - name: INIT - download Skale Manager
       run: |
-        cd functional_check
         git clone https://github.com/skalenetwork/skale-manager.git --recursive
-        cd ..
 
     - name: INIT - install Skale Manager dependencies
       run: |
@@ -256,7 +254,6 @@ jobs:
 
     - name: INIT - download IMA
       run: |
-        cd functional_check
         # git clone https://adb200b8c85f61ba1ebd393e91ab421f881186ec@github.com/skalenetwork/IMA.git --recursive
         git clone https://github.com/skalenetwork/IMA.git --recursive
         cd IMA
@@ -272,7 +269,7 @@ jobs:
         #
         #
         #
-        cd ../..
+        cd ..
 
     - name: INIT - initialize IMA dependencies
       run: |
@@ -329,7 +326,6 @@ jobs:
 
     - name: INIT - download SGX Wallet
       run: |
-        cd functional_check
         git clone https://github.com/skalenetwork/sgxwallet.git --recursive
         cd sgxwallet
         git checkout develop
@@ -337,7 +333,7 @@ jobs:
         git pull
         git branch
         git status
-        cd ../..
+        cd ..
 
     - name: INIT - update docker image SGX Wallet in the emulation mode
       run: |
