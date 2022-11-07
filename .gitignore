@@ -165,3 +165,8 @@ cli-hh/artifacts
 
 # app_cache/bin is dynamically updated from dirs like "app_cache/bin_20.04" and "app_cache/bin_22.04"
 app_cache/bin
+
+s_chain_gen/btrfs-clean.sh
+s_chain_gen/clean.sh
+s_chain_gen/run.sh
+s_chain_gen/shutdown.sh
