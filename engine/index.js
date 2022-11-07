@@ -130,7 +130,7 @@ const g_joSgxRpcOptions = { // in IMA SGX_SSL_KEY_FILE_ETHEREUM/SGX_SSL_CERT_FIL
 };
 const g_strSgxKeyNameMN = process.env.SGX_KEY_ETHEREUM || "NEK:002";
 const g_strSgxKeyNameSC = process.env.SGX_KEY_S_CHAIN || "NEK:003";
-const g_bUseTransactionManagerInImaMN = true; // false; // use g_strUrlTransactionManager
+const g_bUseTransactionManagerInImaMN = false; // use g_strUrlTransactionManager
 const g_bUseSgxInImaMN = true; // g_isCloudMode ? false : true; // ignored if g_bUseTransactionManagerInImaMN = true
 const g_bUseSgxInImaSC = false;
 const g_bIsGenerateNodeEcdsaKeys = false; // true - use generateECDSAKey, false - use importECDSAKey
