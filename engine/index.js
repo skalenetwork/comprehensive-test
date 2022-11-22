@@ -624,19 +624,26 @@ if( strUbuntuVersion ) {
 //     public_key: "1ba2bfbd7f4c9251c4cd88ce31fbef66f0d6855a98fafff8fbfe3b6bcb37d26bdbf31adba8030b56264e4336824023badb4861cd15293b7d124168ddd15763aa"
 // },
 
-const g_base_chain_name_prefix = "Bob";
-const g_base_schain_id = process.env.CID_SCHAIN ? parseInt( process.env.CID_SCHAIN ) : ( 1000 );
-const arr_cids = [
-    g_base_schain_id + 0,
-    g_base_schain_id + 1
-];
+// function compute_chain_id_from_schain_name( strName ) {
+//     let h = g_w3mod.utils.soliditySha3( strName );
+//     h = remove_starting_0x( h ).toLowerCase();
+//     while( h.length < 64 )
+//         h = "0" + h;
+//     h = h.substr( 0, 14 );
+//     return "0x" + h;
+// }
 
-function chain_name_from_cid( cid ) {
-    const strChainName = g_base_chain_name_prefix + cid;
-    // if( strChainName == ( g_base_chain_name_prefix + g_base_schain_id ) )
-    //     strChainName = "elated-tan-skat"; // use this instead of "Bob1000"
-    return strChainName;
-}
+const g_arrChainNaming = [
+    { name: "Bob1000", cid: 1000 },
+    { name: "Bob1001", cid: 1001 }
+];
+// for( let idxChain = 0; idxChain < g_arrChainNaming.length; ++ idxChain ) {
+//     g_arrChainNaming[idxChain].cid = compute_chain_id_from_schain_name( g_arrChainNaming[idxChain].name );
+//     log.write(
+//         cc.debug( "Have prepared test chain name " ) + cc.info( g_arrChainNaming[idxChain].name ) +
+//         cc.debug( " with chain ID " ) + cc.attention( g_arrChainNaming[idxChain].cid ) +
+//         "\n" );
+// }
 
 // IMPORTANT:
 // We assume all S-Chains have same number for skaled nodes for now.
@@ -645,42 +652,50 @@ function chain_name_from_cid( cid ) {
 const g_arrChains = [
     {
         idxChain: 0,
-        cid: arr_cids[0], // chainId
-        name: chain_name_from_cid( arr_cids[0] ), // chainName
+        cid: g_arrChainNaming[0].cid,
+        name: g_arrChainNaming[0].name,
         joImaAbiSC: null,
         arrNodeDescriptions: [
-            initNodeDescription( 0, process.env.URL_W3_NODE_00 || "http://127.0.0.1:2164", 0, 0, arr_cids[0], 1112, "Aldo", 2161 ), // "http://127.0.0.1:15000" / / "ws://127.0.0.1:15020"
-            initNodeDescription( 1, process.env.URL_W3_NODE_01 || "http://127.0.0.2:2264", 0, 1, arr_cids[0], 1113, "Bear", 2261 ) // "http://127.0.0.2:15100"  // "ws://127.0.0.2:15120"
-            // initNodeDescription(  2, process.env.URL_W3_NODE_02 || "http://127.0.0.3:2364",  0,  2, arr_cids[0], 1114, "John", 2361 ), // "http://127.0.0.3:15200"  // "ws://127.0.0.3:15220"
-            // initNodeDescription(  3, process.env.URL_W3_NODE_03 || "http://127.0.0.4:2464",  0,  3, arr_cids[0], 1115, "Seed", 2461 ), // "http://127.0.0.4:15300"  // "ws://127.0.0.4:15320"
-            // initNodeDescription(  4, process.env.URL_W3_NODE_04 || "http://127.0.0.5:2564",  0,  4, arr_cids[0], 1116, "Tron", 2561 ), // "http://127.0.0.5:15400"  // "ws://127.0.0.5:15420"
-            // initNodeDescription(  5, process.env.URL_W3_NODE_05 || "http://127.0.0.6:2664",  0,  5, arr_cids[0], 1117, "Neon", 2661 ), // "http://127.0.0.6:15500"  // "ws://127.0.0.6:15520"
-            // initNodeDescription(  6, process.env.URL_W3_NODE_06 || "http://127.0.0.7:2764",  0,  6, arr_cids[0], 1118, "Lion", 2761 ), // "http://127.0.0.7:15600"  // "ws://127.0.0.7:15620"
-            // initNodeDescription(  7, process.env.URL_W3_NODE_07 || "http://127.0.0.8:2864",  0,  7, arr_cids[0], 1119, "Bonk", 2861 ), // "http://127.0.0.8:15700"  // "ws://127.0.0.8:15720"
-            // initNodeDescription(  8, process.env.URL_W3_NODE_08 || "http://127.0.0.9:2964",  0,  8, arr_cids[0], 1120, "Gold", 2961 ), // "http://127.0.0.9:15800"  // "ws://127.0.0.9:15820"
-            // initNodeDescription(  9, process.env.URL_W3_NODE_09 || "http://127.0.0.10:3064", 0,  9, arr_cids[0], 1121, "Iron", 3061 ), // "http://127.0.0.10:15900" // "ws://127.0.0.10:15920"
-            // initNodeDescription( 10, process.env.URL_W3_NODE_10 || "http://127.0.0.11:3164", 0, 10, arr_cids[0], 1122, "Sims", 3161 ), // "http://127.0.0.11:16000" // "ws://127.0.0.11:16020"
-            // initNodeDescription( 11, process.env.URL_W3_NODE_11 || "http://127.0.0.12:3264", 0, 11, arr_cids[0], 1123, "Zeon", 3261 ), // "http://127.0.0.12:16100" // "ws://127.0.0.12:16120"
-            // initNodeDescription( 12, process.env.URL_W3_NODE_12 || "http://127.0.0.13:3364", 0, 12, arr_cids[0], 1124, "Daft", 3361 ), // "http://127.0.0.13:16200" // "ws://127.0.0.13:16220"
-            // initNodeDescription( 13, process.env.URL_W3_NODE_13 || "http://127.0.0.14:3464", 0, 13, arr_cids[0], 1125, "Punk", 3461 ), // "http://127.0.0.14:16300" // "ws://127.0.0.14:16320"
-            // initNodeDescription( 14, process.env.URL_W3_NODE_14 || "http://127.0.0.15:3564", 0, 14, arr_cids[0], 1126, "Ally", 3561 ), // "http://127.0.0.15:16400" // "ws://127.0.0.15:16420"
-            // initNodeDescription( 15, process.env.URL_W3_NODE_15 || "http://127.0.0.16:3664", 0, 15, arr_cids[0], 1127, "Trez", 3661 )  // "http://127.0.0.16:16500" // "ws://127.0.0.16:16520"
+            initNodeDescription( 0, process.env.URL_W3_NODE_00 || "http://127.0.0.1:2164", 0, 0, g_arrChainNaming[0].cid, 1112, "Aldo", 2161 ), // "http://127.0.0.1:15000" / / "ws://127.0.0.1:15020"
+            initNodeDescription( 1, process.env.URL_W3_NODE_01 || "http://127.0.0.2:2264", 0, 1, g_arrChainNaming[0].cid, 1113, "Bear", 2261 ) // "http://127.0.0.2:15100"  // "ws://127.0.0.2:15120"
+            // initNodeDescription(  2, process.env.URL_W3_NODE_02 || "http://127.0.0.3:2364",  0,  2, g_arrChainNaming[0].cid, 1114, "John", 2361 ), // "http://127.0.0.3:15200"  // "ws://127.0.0.3:15220"
+            // initNodeDescription(  3, process.env.URL_W3_NODE_03 || "http://127.0.0.4:2464",  0,  3, g_arrChainNaming[0].cid, 1115, "Seed", 2461 ), // "http://127.0.0.4:15300"  // "ws://127.0.0.4:15320"
+            // initNodeDescription(  4, process.env.URL_W3_NODE_04 || "http://127.0.0.5:2564",  0,  4, g_arrChainNaming[0].cid, 1116, "Tron", 2561 ), // "http://127.0.0.5:15400"  // "ws://127.0.0.5:15420"
+            // initNodeDescription(  5, process.env.URL_W3_NODE_05 || "http://127.0.0.6:2664",  0,  5, g_arrChainNaming[0].cid, 1117, "Neon", 2661 ), // "http://127.0.0.6:15500"  // "ws://127.0.0.6:15520"
+            // initNodeDescription(  6, process.env.URL_W3_NODE_06 || "http://127.0.0.7:2764",  0,  6, g_arrChainNaming[0].cid, 1118, "Lion", 2761 ), // "http://127.0.0.7:15600"  // "ws://127.0.0.7:15620"
+            // initNodeDescription(  7, process.env.URL_W3_NODE_07 || "http://127.0.0.8:2864",  0,  7, g_arrChainNaming[0].cid, 1119, "Bonk", 2861 ), // "http://127.0.0.8:15700"  // "ws://127.0.0.8:15720"
+            // initNodeDescription(  8, process.env.URL_W3_NODE_08 || "http://127.0.0.9:2964",  0,  8, g_arrChainNaming[0].cid, 1120, "Gold", 2961 ), // "http://127.0.0.9:15800"  // "ws://127.0.0.9:15820"
+            // initNodeDescription(  9, process.env.URL_W3_NODE_09 || "http://127.0.0.10:3064", 0,  9, g_arrChainNaming[0].cid, 1121, "Iron", 3061 ), // "http://127.0.0.10:15900" // "ws://127.0.0.10:15920"
+            // initNodeDescription( 10, process.env.URL_W3_NODE_10 || "http://127.0.0.11:3164", 0, 10, g_arrChainNaming[0].cid, 1122, "Sims", 3161 ), // "http://127.0.0.11:16000" // "ws://127.0.0.11:16020"
+            // initNodeDescription( 11, process.env.URL_W3_NODE_11 || "http://127.0.0.12:3264", 0, 11, g_arrChainNaming[0].cid, 1123, "Zeon", 3261 ), // "http://127.0.0.12:16100" // "ws://127.0.0.12:16120"
+            // initNodeDescription( 12, process.env.URL_W3_NODE_12 || "http://127.0.0.13:3364", 0, 12, g_arrChainNaming[0].cid, 1124, "Daft", 3361 ), // "http://127.0.0.13:16200" // "ws://127.0.0.13:16220"
+            // initNodeDescription( 13, process.env.URL_W3_NODE_13 || "http://127.0.0.14:3464", 0, 13, g_arrChainNaming[0].cid, 1125, "Punk", 3461 ), // "http://127.0.0.14:16300" // "ws://127.0.0.14:16320"
+            // initNodeDescription( 14, process.env.URL_W3_NODE_14 || "http://127.0.0.15:3564", 0, 14, g_arrChainNaming[0].cid, 1126, "Ally", 3561 ), // "http://127.0.0.15:16400" // "ws://127.0.0.15:16420"
+            // initNodeDescription( 15, process.env.URL_W3_NODE_15 || "http://127.0.0.16:3664", 0, 15, g_arrChainNaming[0].cid, 1127, "Trez", 3661 )  // "http://127.0.0.16:16500" // "ws://127.0.0.16:16520"
         ],
         arrAssignedNodeIndices: []
     },
     {
         idxChain: 1,
-        cid: arr_cids[1], // chainId
-        name: chain_name_from_cid( arr_cids[1] ), // chainName
+        cid: g_arrChainNaming[1].cid,
+        name: g_arrChainNaming[1].name,
         joImaAbiSC: null,
         arrNodeDescriptions: [
-            initNodeDescription( 2, process.env.URL_W3_NODE_02 || "http://127.0.0.3:2364", 1, 0, arr_cids[1], 1114, "John", 2361 ), // "http://127.0.0.3:15200"  // "ws://127.0.0.3:15220"
-            initNodeDescription( 3, process.env.URL_W3_NODE_03 || "http://127.0.0.4:2464", 1, 1, arr_cids[1], 1115, "Seed", 2461 ) // "http://127.0.0.4:15300"  // "ws://127.0.0.4:15320"
+            initNodeDescription( 2, process.env.URL_W3_NODE_02 || "http://127.0.0.3:2364", 1, 0, g_arrChainNaming[1].cid, 1114, "John", 2361 ), // "http://127.0.0.3:15200"  // "ws://127.0.0.3:15220"
+            initNodeDescription( 3, process.env.URL_W3_NODE_03 || "http://127.0.0.4:2464", 1, 1, g_arrChainNaming[1].cid, 1115, "Seed", 2461 ) // "http://127.0.0.4:15300"  // "ws://127.0.0.4:15320"
         ],
         arrAssignedNodeIndices: []
     }
 ];
 const g_idxMostOftenUsedSChain = 0; // S-Chain which is tested most for purposes line Main Net to one S-Chain IMA transfers
+
+for( let idxChain = 0; idxChain < g_arrChains.length; ++ idxChain ) {
+    log.write(
+        cc.debug( "Did initialized test chain name " ) + cc.info( g_arrChains[idxChain].name ) +
+        cc.debug( " with chain ID " ) + cc.attention( g_arrChains[idxChain].cid ) +
+        cc.debug( " and " ) + cc.info( g_arrChains[idxChain].arrNodeDescriptions.length ) + cc.debug( " node(s)" ) +
+        "\n" );
+}
 
 let g_joChainEventInfoSM = null;
 const g_mapEvBroadcastAndKeyShare = {}; // assigned node index (BroadcastAndKeyShare.fromNode) -> data of BroadcastAndKeyShare event
