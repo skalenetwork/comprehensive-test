@@ -144,6 +144,7 @@ const joConfigurationTemplate = {
         // "skaleDisableChainIdCheck": true
     },
     "unddos": {
+        "enabled": false,
         "origins": [
             {
                 "origin": [ "*" ],
@@ -153,7 +154,14 @@ const joConfigurationTemplate = {
                 "max_calls_per_second": 1500000,
                 "max_ws_conn": 20000
             }
-        ]
+        ],
+        "global": {
+            "ban_lengthy": 120,
+            "ban_peak": 15,
+            "max_calls_per_minute": 5000000,
+            "max_calls_per_second": 1500000,
+            "max_ws_conn": 20000
+        }
     },
     "genesis": {
         "nonce": "0x0",

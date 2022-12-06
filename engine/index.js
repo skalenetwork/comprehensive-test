@@ -1158,7 +1158,7 @@ function get_ima_abi_schain_path_saved_copy( idxChain ) {
 
 function compose_ima_cli_account_options_mn_tm( idxChain, nNodeIndex ) {
     return " --tm-url-main-net=\"" + g_strUrlTransactionManager + "\"" +
-        " --address-main-net=" + private_key_2_account_address( g_w3mod, g_strPrivateKeyImaMN ) + // address instead of key here
+        " --address-main-net=\"" + private_key_2_account_address( g_w3mod, g_strPrivateKeyImaMN ) + "\"" + // address instead of key here
         " --tm-priority-main-net=" + g_nTransactionManagerPriority +
         // URL of SGX is also needed to BLS-sign IMA messages in skale_imaVerifyAndSign handler
         " --sgx-url-main-net=\"" + g_strUrlSgxWalletHTTPS + "\"" +
@@ -1176,8 +1176,8 @@ function compose_ima_cli_account_options_mn_sgx( idxChain, nNodeIndex ) {
         " --sgx-ecdsa-key-main-net=\"" + joNodeDesc.nameEcdsaPubKey + "\"" +
         " --sgx-ssl-key-main-net=\"" + g_joSgxRpcOptions.key_path + "\"" +
         " --sgx-ssl-cert-main-net=\"" + g_joSgxRpcOptions.cert_path + "\"" +
-        // " --address-main-net=" + private_key_2_account_address( g_w3mod, g_strPrivateKeyImaMN ) // address instead of key here
-        // " --address-main-net=" + public_key_2_account_address( g_w3mod, joNodeDesc.publicKey ) // address instead of key here
+        // " --address-main-net=\"" + private_key_2_account_address( g_w3mod, g_strPrivateKeyImaMN ) + "\"" // address instead of key here
+        // " --address-main-net=\"" + public_key_2_account_address( g_w3mod, joNodeDesc.publicKey ) + "\"" // address instead of key here
         " --address-main-net=" + joNodeDesc.checkedNodeAddress
     ;
 }
@@ -1188,8 +1188,8 @@ function compose_ima_cli_account_options_sc_sgx( idxChain, nNodeIndex ) {
         " --sgx-ecdsa-key-s-chain=\"" + joNodeDesc.nameEcdsaPubKey + "\"" +
         " --sgx-ssl-key-s-chain=\"" + g_joSgxRpcOptions.key_path + "\"" +
         " --sgx-ssl-cert-s-chain=\"" + g_joSgxRpcOptions.cert_path + "\"" +
-        // " --address-s-chain=" + private_key_2_account_address( g_w3mod, g_strPrivateKeyImaSC ) // address instead of key here
-        // " --address-s-chain=" + public_key_2_account_address( g_w3mod, joNodeDesc.publicKey ) // address instead of key here
+        // " --address-s-chain=\"" + private_key_2_account_address( g_w3mod, g_strPrivateKeyImaSC ) + "\"" // address instead of key here
+        // " --address-s-chain=\"" + public_key_2_account_address( g_w3mod, joNodeDesc.publicKey ) + "\"" // address instead of key here
         " --address-s-chain=" + joNodeDesc.checkedNodeAddress
     ;
 }
