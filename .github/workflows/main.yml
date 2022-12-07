@@ -261,7 +261,7 @@ jobs:
         #
         #
         # git checkout ticket-1248/js-only-ima-agent
-        git checkout ticket-1312/new-PTX-out-of-skaled
+        git checkout ticket-1094/improve-queue-processing-in-IMA-agent
         git fetch
         git pull
         git branch
