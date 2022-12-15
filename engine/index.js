@@ -1274,9 +1274,12 @@ function compose_node_runCmd4imaAgent( joNodeDesc ) {
         " --hash-g1=" + g_strFolderAppCacheBin + "/hash_g1" +
         " --bls-verify=" + g_strFolderAppCacheBin + "/verify_bls" +
         // transfer loop parameters
-        " --m2s-transfer-block-size=" + 4 + // .......Number of transactions in one block to use in money transfer loop from Main-net to S-chain
-        " --s2m-transfer-block-size=" + 4 + // .......Number of transactions in one block to use in money transfer loop from S-chain to Main-net
-        " --s2s-transfer-block-size=" + 4 + // .......Number of transactions in one block to use in money transfer loop from S-chain to S-chain
+        " --m2s-transfer-block-size=" + 4 + // ........Number of transactions in one block to use in money transfer loop from Main-net to S-chain
+        " --s2m-transfer-block-size=" + 4 + // ........Number of transactions in one block to use in money transfer loop from S-chain to Main-net
+        " --s2s-transfer-block-size=" + 4 + // ........Number of transactions in one block to use in money transfer loop from S-chain to S-chain
+        " --m2s-transfer-steps=" + 8 + // .............Maximal number of blocks to transfer at a job run from Main-net to S-chain
+        " --s2m-transfer-steps=" + 8 + // .............Maximal number of blocks to transfer at a job run from S-chain to Main-net
+        " --s2s-transfer-steps=" + 8 + // .............Maximal number of blocks to transfer at a job run from S-chain to S-chain
         " --m2s-max-transactions=" + 0 + // ...........Maximal number of transactions to do in money transfer loop from Main-net to S-chain (0 is unlimited)
         " --s2m-max-transactions=" + 0 + // ...........Maximal number of transactions to do in money transfer loop from S-chain to Main-net (0 is unlimited)
         " --s2s-max-transactions=" + 0 + // ...........Maximal number of transactions to do in money transfer loop from S-chain to S-Chain (0 is unlimited)
