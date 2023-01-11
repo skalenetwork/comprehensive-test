@@ -106,7 +106,7 @@ const g_strPrivateKeySkaleManagerMN = process.env.PRIVATE_KEY_FOR_ETHEREUM || "2
 
 // chain names, IDs, etc
 const g_strMainnetName = process.env.CHAIN_NAME_ETHEREUM || "Mainnet";
-const cid_main_net = process.env.CID_ETHEREUM ? parseInt( process.env.CID_ETHEREUM ) : ( 456 ); // -4; //
+const cid_main_net = process.env.CID_ETHEREUM ? parseInt( process.env.CID_ETHEREUM ) : ( 456 );
 const g_strMainNetURL = process.env.URL_W3_ETHEREUM || "http://127.0.0.1:8545";
 
 const g_strPrivateKeyImaMN = process.env.PRIVATE_KEY_FOR_ETHEREUM || "23ABDBD3C61B5330AF61EBE8BEF582F4E5CC08E554053A718BDCE7813B9DC1FC"; // address 0x7aa5E36AA15E93D10F4F26357C30F052DacDde5F
@@ -1245,8 +1245,8 @@ function compose_node_runCmd4imaAgent( joNodeDesc ) {
     joNodeDesc.runCmd4imaAgent =
         "node " +
         g_strFolderImaAgent + "/main.js" + g_strImaOutputOpts + g_strImaRuntimeOpts +
-        // " --loop" +
-        " --simple-loop" +
+        " --loop" +
+        // " --simple-loop" +
         //
         ( g_bDisableNewCrossImaRPC
             ? " --json-rpc-port=0 --no-cross-ima"
@@ -3342,6 +3342,27 @@ async function schain_skaled_nodes_stop( idxChain ) {
                 env: joEnv
             } );
     } catch ( err ) { }
+    try {
+        const strCommand = "pkill -9 -f skaled";
+        const strWorkingDirectory = __dirname;
+        const joEnv = {
+            "PATH": g_strRecommendedShellPATH
+        };
+        if( g_bVerbose ) {
+            log.write(
+                cc.debug( "will run " ) + cc.notice( "\"" ) + cc.info( strCommand ) + cc.notice( "\"" ) +
+                cc.debug( " in folder " ) + cc.notice( "\"" ) + cc.info( strWorkingDirectory ) + cc.notice( "\"" ) +
+                cc.debug( " with environment: " ) + cc.j( joEnv ) + cc.debug( " ..." ) +
+                "\n" );
+        }
+        child_process.execSync(
+            strCommand,
+            {
+                cwd: "" + strWorkingDirectory,
+                stdio: "inherit",
+                env: joEnv
+            } );
+    } catch ( err ) { }
 }
 
 async function all_ima_agents_start() {
@@ -3571,7 +3592,12 @@ async function ima_connect_two_schains( idxChainA, idxChainB, cntAttempts ) {
             const joImaAbiSC = g_arrChains[idxChainB].joImaAbiSC;
             init_account_from_private_key( w3schain, g_strPrivateKeyImaSC );
             const jo_message_proxy_s_chain = new w3schain.eth.Contract( joImaAbiSC.message_proxy_chain_abi, joImaAbiSC.message_proxy_chain_address );
-            // await role_check_and_grant( schain_id, jo_message_proxy_s_chain, "CHAIN_CONNECTOR_ROLE", private_key_2_account_address( w3schain, g_strPrivateKeyImaSC ) );
+            // await role_check_and_grant( // CHAIN_CONNECTOR_ROLE
+            //     schain_id,
+            //     jo_message_proxy_s_chain,
+            //     "CHAIN_CONNECTOR_ROLE",
+            //     private_key_2_account_address( w3schain, g_strPrivateKeyImaSC )
+            //     );
             // const res = await jo_message_proxy_s_chain.methods.addConnectedChain(
             //     schain_name_A
             // ).send( {
@@ -3580,8 +3606,19 @@ async function ima_connect_two_schains( idxChainA, idxChainB, cntAttempts ) {
             //     gas: 8000000
             // } );
             const jo_token_manager_linker = new w3schain.eth.Contract( joImaAbiSC.token_manager_linker_abi, joImaAbiSC.token_manager_linker_address );
-            await role_check_and_grant( schain_id, jo_message_proxy_s_chain, "CHAIN_CONNECTOR_ROLE", jo_token_manager_linker.options.address, private_key_2_account_address( w3schain, g_strPrivateKeyImaSC ) );
-            await role_check_and_grant( schain_id, jo_token_manager_linker, "REGISTRAR_ROLE", private_key_2_account_address( w3schain, g_strPrivateKeyImaSC ) );
+            await role_check_and_grant( // CHAIN_CONNECTOR_ROLE
+                schain_id,
+                jo_message_proxy_s_chain,
+                "CHAIN_CONNECTOR_ROLE",
+                jo_token_manager_linker.options.address,
+                private_key_2_account_address( w3schain, g_strPrivateKeyImaSC )
+            );
+            await role_check_and_grant( // REGISTRAR_ROLE
+                schain_id,
+                jo_token_manager_linker,
+                "REGISTRAR_ROLE",
+                private_key_2_account_address( w3schain, g_strPrivateKeyImaSC )
+            );
             const res = await jo_token_manager_linker.methods.connectSchain(
                 schain_name_A
             ).send( {
@@ -3646,7 +3683,12 @@ async function schain_ima_gas_reimbursement_configure_zero_timeout( idxChain, fn
     const jo_community_locker = new w3schain.eth.Contract( joImaAbiSC.community_locker_abi, joImaAbiSC.community_locker_address );
     const schain_id = g_arrChains[idxChain].cid;
     const schain_name = g_arrChains[idxChain].name;
-    await role_check_and_grant( schain_id, jo_community_locker, "CONSTANT_SETTER_ROLE", private_key_2_account_address( w3schain, g_strPrivateKeyImaSC ) );
+    await role_check_and_grant( // CONSTANT_SETTER_ROLE
+        schain_id,
+        jo_community_locker,
+        "CONSTANT_SETTER_ROLE",
+        private_key_2_account_address( w3schain, g_strPrivateKeyImaSC )
+    );
     const nNodeIndex = 0;
     const strCommand =
         "node " +
@@ -3806,6 +3848,37 @@ async function schain_ima_gas_reimbursement_recharge( idxChain, fnContinue ) {
 //////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 //////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 
+async function ima_enable_pausable_role() {
+    // try {
+    //     if( g_bVerbose )
+    //         log.write( cc.debug( "Adjusting " ) + cc.sunny( "PAUSABLE_ROLE" ) + cc.debug( " role..." ) + "\n" );
+    //     const strPrivateKey = g_strPrivateKeyImaMN;
+    //     const addressFrom = private_key_2_account_address( g_w3_main_net, strPrivateKey );
+    //     const addressOwner = private_key_2_account_address( g_w3_main_net, strPrivateKey );
+    //     const jo_message_proxy_MN = new g_w3_main_net.eth.Contract(
+    //         g_joImaAbiMN.message_proxy_mainnet_abi,
+    //         g_joImaAbiMN.message_proxy_mainnet_address
+    //     );
+    //     await role_check_and_grant( // PAUSABLE_ROLE
+    //         cid_main_net,
+    //         jo_message_proxy_MN,
+    //         "PAUSABLE_ROLE",
+    //         addressFrom,
+    //         addressOwner
+    //     );
+    //     if( g_bVerbose )
+    //         log.write( cc.success( "Done." ) + "\n" );
+    // } catch ( err ) {
+    //     log.write( cc.fatal( "Error:" ) +
+    //         cc.error( " Failed to adjust " ) + cc.sunny( "PAUSABLE_ROLE" ) + cc.error( " role, error description: " ) +
+    //         cc.warning( err.toString() ) + "\n" );
+    //     await end_of_test( 47 );
+    // }
+}
+
+//////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
+//////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
+
 function walkDirSync( dir, file_list, isRecursive, isFullPathResult ) {
     file_list = file_list || [];
     const files = fs.readdirSync( dir );
@@ -3945,7 +4018,7 @@ async function reload_deployed_skale_manager( w3, fnContinue ) {
     }
     if( ! fileExists( g_strSkaleManagerAbiJsonPath ) ) {
         log.write( cc.error( "Skale Manager ABI JSON file " ) + cc.attention( g_strSkaleManagerAbiJsonPath ) + cc.error( " does not exist." ) + "\n" );
-        await end_of_test( 47 );
+        await end_of_test( 48 );
     }
     // g_joSkaleManagerABI = jsonFileLoad( g_strSkaleManagerAbiJsonPath, null, g_bVerbose );
     // traverse_json( g_joSkaleManagerABI, fix_ethers_js_abi_errors );
@@ -3999,7 +4072,7 @@ async function sm_pre_configure( w3, fnContinue ) {
         // const publicKey = private_key_2_public_key( w3, privateKey );
         if( g_bVerbose )
             log.write( cc.debug( "Adjusting " ) + cc.sunny( "CONSTANTS_HOLDER_MANAGER_ROLE" ) + cc.debug( " role..." ) + "\n" );
-        await role_check_and_grant(
+        await role_check_and_grant( // CONSTANTS_HOLDER_MANAGER_ROLE
             cid_main_net,
             jo_constants_holder,
             "CONSTANTS_HOLDER_MANAGER_ROLE",
@@ -4033,7 +4106,7 @@ async function sm_pre_configure( w3, fnContinue ) {
         fnContinue();
     } catch ( err ) {
         log.write( cc.fatal( "Error:" ) + cc.error( " Skale Manager pre-configuring problem, error description: " ) + cc.warning( err.toString() ) + "\n" );
-        await end_of_test( 48 );
+        await end_of_test( 49 );
     }
 }
 
@@ -4142,7 +4215,7 @@ async function sm_init_validator( w3, fnContinue ) {
             } );
         if( g_bVerbose )
             log.write( cc.success( "Success, " ) + cc.info( "Skale Token" ) + cc.success( "s transferred with result: " ) + cc.j( result_of_transfer ) + "\n" );
-        await role_check_and_grant(
+        await role_check_and_grant( // VALIDATOR_MANAGER_ROLE
             cid_main_net,
             jo_validator_service,
             "VALIDATOR_MANAGER_ROLE",
@@ -4165,7 +4238,7 @@ async function sm_init_validator( w3, fnContinue ) {
         fnContinue();
     } catch ( err ) {
         log.write( cc.fatal( "Error:" ) + cc.error( " validator initialization problem, error description: " ) + cc.warning( err.toString() ) + "\n" );
-        await end_of_test( 49 );
+        await end_of_test( 50 );
     }
 }
 
@@ -4212,6 +4285,11 @@ async function role_check_and_grant( cid, jo_contract, strRoleName, addressTo, a
         from: addressOwner,
         gas: 8000000
     } );
+    if( g_bVerbose ) {
+        log.write(
+            cc.debug( "Role " ) + cc.info( strRoleName ) + cc.debug( " as object is " ) + cc.j( role ) +
+            cc.debug( "..." ) + "\n" );
+    }
     let has_role = await jo_contract.methods.hasRole( role, addressTo ).call( {
         chainId: cid,
         from: addressOwner,
@@ -4335,7 +4413,7 @@ async function sm_init_node_address( idxChain, w3, idxNode ) {
         }
     } catch ( err ) {
         log.write( cc.fatal( "Error:" ) + cc.error( " sm_init_node_address() problem, error description: " ) + cc.warning( err.toString() ) + "\n" );
-        await end_of_test( 50 );
+        await end_of_test( 51 );
     }
 }
 
@@ -4347,7 +4425,7 @@ async function sm_init_node_addresses_schain( idxChain, w3 ) {
             await sm_init_node_address( idxChain, w3, i );
     } catch ( err ) {
         log.write( cc.fatal( "Error:" ) + cc.error( " sm_init_node_addresses_schain() problem, error description: " ) + cc.warning( err.toString() ) + "\n" );
-        await end_of_test( 51 );
+        await end_of_test( 52 );
     }
 }
 
@@ -4413,7 +4491,7 @@ async function sendMoneyFromTo( w3, privateKey, addressFrom, addressTo, valueToS
             cc.error( " from " ) + cc.info( addressFrom ) +
             cc.error( " to " ) + cc.info( addressTo ) +
             cc.error( ", error description is: " ) + cc.warning( err.toString() ) + "\n" );
-        await end_of_test( 52 );
+        await end_of_test( 53 );
     }
 }
 
@@ -4544,7 +4622,7 @@ async function sm_createNode( w3, joNodeDesc ) {
         return joNodeEventInfoSM;
     } catch ( err ) {
         log.write( cc.fatal( "Error:" ) + cc.error( " sm_createNode() problem, error description: " ) + cc.warning( err.toString() ) + "\n" );
-        await end_of_test( 53 );
+        await end_of_test( 54 );
     }
 
 }
@@ -4762,7 +4840,7 @@ async function init_sgx_sm_dkg_schain( idxChain, fnContinue ) {
             log.write( cc.fatal( "Error:" ) + cc.error( " SGX RPC connection problem for url " ) + cc.warning( g_strUrlSgxWalletHTTPS ) + cc.error( ", error description: " ) + cc.warning( err.toString() ) + "\n" );
             if( joCall )
                 await joCall.disconnect();
-            await end_of_test( 54 );
+            await end_of_test( 55 );
         }
         await sgx_dkg_process_pre( idxChain, g_w3_main_net, joCall );
         waitAsyncUntil( function() {
@@ -4865,7 +4943,7 @@ async function exec_array_of_commands_safe( arrCommands, strWorkingDirectory, jo
                 cc.error( ", error description is: " ) + cc.warning( err.toString() ) + "\n" );
         }
     } // for( let idxAttempt = 0; idxAttempt < countOfAttempts; ++ idxAttempt )
-    await end_of_test( 55 );
+    await end_of_test( 56 );
 }
 
 // { shell: true, stdio: [ 0, 1, 2 ] }
@@ -4905,7 +4983,7 @@ async function ima_register_sgx_keys() {
     await rpcCall.create( g_strUrlSgxWalletHTTPS, g_joSgxRpcOptions, async function( joCall, err ) {
         if( err ) {
             log.write( cc.fatal( "Error:" ) + cc.error( " SGX RPC connection problem for url " ) + cc.warning( g_strUrlSgxWalletHTTPS ) + cc.error( ", error description: " ) + cc.warning( err.toString() ) + "\n" );
-            await end_of_test( 56 );
+            await end_of_test( 57 );
         }
         if( g_bUseSgxInImaMN )
             await ima_import_key( joCall, g_strSgxKeyNameMN, g_strPrivateKeyImaMN );
@@ -5047,7 +5125,7 @@ async function reload_ima_abi_for_main_net( fnContinue ) {
     fnContinue = fnContinue || function() { };
     if( ! fileExists( g_strPathImaAbiMN ) ) {
         log.write( cc.error( "IMA Main Net ABI JSON file " ) + cc.attention( g_strPathImaAbiMN ) + cc.error( " does not exist." ) + "\n" );
-        await end_of_test( 57 );
+        await end_of_test( 58 );
     }
     g_joImaAbiMN = jsonFileLoad( g_strPathImaAbiMN, null, g_bVerbose );
     traverse_json( g_joImaAbiMN, fix_ethers_js_abi_errors );
@@ -5067,12 +5145,12 @@ async function reload_ima_abi_for_schain_one( idxChain, fnContinue ) {
             quick_spawn( "cp \"" + strPathImaAbiSC_saved_copy + "\" \"" + strPathImaAbiSC + "\"" );
             if( ! fileExists( strPathImaAbiSC ) ) {
                 log.write( cc.error( "IMA S-Chain ABI JSON file " ) + cc.attention( strPathImaAbiSC ) + cc.error( " does not exist(and failed to use saved copy)." ) + "\n" );
-                await end_of_test( 58 );
+                await end_of_test( 59 );
             }
             log.write( cc.success( "Done." ) + "\n" );
         } else {
             log.write( cc.error( "IMA S-Chain ABI JSON file " ) + cc.attention( strPathImaAbiSC ) + cc.error( " does not exist." ) + "\n" );
-            await end_of_test( 59 );
+            await end_of_test( 60 );
         }
     }
     const joImaAbiSC = jsonFileLoad( strPathImaAbiSC, null, g_bVerbose );
@@ -5374,7 +5452,7 @@ async function impl_get_ballance_eth( w3, strAddress, strNetworkName ) {
         }
         await sleep( 1000 );
     }
-    await end_of_test( 60 );
+    await end_of_test( 61 );
 }
 async function impl_get_ballance_erc20_from_instance_of_contract( w3, strAddress, strNetworkName, contract ) {
     const cntAttempts = 0 + g_nCntAttempts;
@@ -5387,7 +5465,7 @@ async function impl_get_ballance_erc20_from_instance_of_contract( w3, strAddress
         }
         await sleep( 1000 );
     }
-    await end_of_test( 61 );
+    await end_of_test( 62 );
 }
 async function impl_get_ballance_erc20( w3, strAddress, strNetworkName, joABI, strContractAddress ) {
     let contract = null;
@@ -5403,7 +5481,7 @@ async function impl_get_ballance_erc20( w3, strAddress, strNetworkName, joABI, s
         await sleep( 1000 );
     }
     if( ! contract )
-        await end_of_test( 62 );
+        await end_of_test( 63 );
     return await impl_get_ballance_erc20_from_instance_of_contract( w3, strAddress, strNetworkName, contract );
 }
 
@@ -5590,7 +5668,7 @@ async function ima_send_eth( idxChain, strPrivateKeyFrom, strPrivateKeyTo, strDi
             cc.fatal( "FAILED:" ) + cc.info( strDirection ) + cc.error( " cross-chain money sending using source private key " ) +
             cc.info( strPrivateKeyFrom ) + cc.error( " and destination private key " ) + cc.info( strPrivateKeyTo ) + " " +
             cc.warning( err.toString() ) + "\n" );
-        await end_of_test( 63 );
+        await end_of_test( 64 );
     }
 }
 
@@ -5843,7 +5921,7 @@ async function deploy_test_tokens_to( idxChain, strDeploymentNetworkName, strMin
         log.write(
             cc.fatal( "FAILED:" ) + cc.error( " deploying " ) + cc.info( "Test Tokens" ) + cc.error( " to " ) + cc.sunny( strDeploymentNetworkName ) +
             cc.error( ", error is: " ) + cc.warning( err.toString() ) + "\n" );
-        await end_of_test( 64 );
+        await end_of_test( 65 );
     }
 }
 
@@ -6657,7 +6735,7 @@ async function ima_send_erc20_mn2sc( idxChain, strPrivateKeyFrom, strPrivateKeyT
             cc.error( " to " ) + cc.sunny( "S-Chain" ) + cc.error( " account " ) + cc.info( strAddressTo ) +
             cc.error( ", error is: " ) + cc.warning( err.toString() ) +
             "\n" );
-        await end_of_test( 65 );
+        await end_of_test( 66 );
     }
 }
 
@@ -6812,7 +6890,7 @@ async function ima_send_erc20_sc2mn( idxChain, strPrivateKeyFrom, strPrivateKeyT
             cc.error( " to " ) + cc.sunny( "Main Net" ) + cc.error( " account " ) + cc.info( strAddressTo ) +
             cc.error( ", error is: " ) + cc.warning( err.toString() ) +
             "\n" );
-        await end_of_test( 66 );
+        await end_of_test( 67 );
     }
 }
 
@@ -7056,7 +7134,7 @@ async function ima_send_erc721_mn2sc( idxChain, strPrivateKeyFrom, strPrivateKey
             cc.error( " to " ) + cc.sunny( "S-Chain" ) + cc.error( " account " ) + cc.info( strAddressTo ) +
             cc.error( ", error is: " ) + cc.warning( err.toString() ) +
             "\n" );
-        await end_of_test( 67 );
+        await end_of_test( 68 );
     }
 }
 
@@ -7281,7 +7359,7 @@ async function ima_send_erc721_sc2mn( idxChain, strPrivateKeyFrom, strPrivateKey
             cc.error( " to " ) + cc.sunny( "Main Net" ) + cc.error( " account " ) + cc.info( strAddressTo ) +
             cc.error( ", error is: " ) + cc.warning( err.toString() ) +
             "\n" );
-        await end_of_test( 68 );
+        await end_of_test( 69 );
     }
 }
 
@@ -7446,7 +7524,7 @@ async function ima_send_erc1155_mn2sc( idxChain, strPrivateKeyFrom, strPrivateKe
             cc.error( " to " ) + cc.sunny( "S-Chain" ) + cc.error( " account " ) + cc.info( strAddressTo ) +
             cc.error( ", error is: " ) + cc.warning( err.toString() ) +
             "\n" );
-        await end_of_test( 69 );
+        await end_of_test( 70 );
     }
 }
 
@@ -7612,7 +7690,7 @@ async function ima_send_erc1155_sc2mn( idxChain, strPrivateKeyFrom, strPrivateKe
             cc.error( " to " ) + cc.sunny( "Main Net" ) + cc.error( " account " ) + cc.info( strAddressTo ) +
             cc.error( ", error is: " ) + cc.warning( err.toString() ) +
             "\n" );
-        await end_of_test( 70 );
+        await end_of_test( 71 );
     }
 }
 
@@ -7788,7 +7866,7 @@ async function ima_batch_send_erc1155_mn2sc( idxChain, strPrivateKeyFrom, strPri
             cc.error( " to " ) + cc.sunny( "S-Chain" ) + cc.error( " account " ) + cc.info( strAddressTo ) +
             cc.error( ", error is: " ) + cc.warning( err.toString() ) +
             "\n" );
-        await end_of_test( 71 );
+        await end_of_test( 72 );
     }
 }
 
@@ -7963,7 +8041,7 @@ async function ima_batch_send_erc1155_sc2mn( idxChain, strPrivateKeyFrom, strPri
             cc.error( " to " ) + cc.sunny( "Main Net" ) + cc.error( " account " ) + cc.info( strAddressTo ) +
             cc.error( ", error is: " ) + cc.warning( err.toString() ) +
             "\n" );
-        await end_of_test( 72 );
+        await end_of_test( 73 );
     }
 }
 
@@ -8011,14 +8089,14 @@ async function s2s_prepare_chains_for_token_transfers( idxChainSrc, idxChainDst,
     const address_src = private_key_2_account_address( w3schain_src, joAccount_src.privateKey );
     const address_dst = private_key_2_account_address( w3schain_dst, joAccount_dst.privateKey );
 
-    await role_check_and_grant(
+    await role_check_and_grant( // CHAIN_CONNECTOR_ROLE
         cid_src,
         jo_message_proxy_s_chain_src,
         "CHAIN_CONNECTOR_ROLE",
         jo_token_manager_linker_src.options.address, // addressTo, who gains role
         address_src // addressOwner, call contract from
     );
-    await role_check_and_grant(
+    await role_check_and_grant( // CHAIN_CONNECTOR_ROLE
         cid_dst,
         jo_message_proxy_s_chain_dst,
         "CHAIN_CONNECTOR_ROLE",
@@ -8026,14 +8104,14 @@ async function s2s_prepare_chains_for_token_transfers( idxChainSrc, idxChainDst,
         address_dst // addressOwner, call contract from
     );
 
-    await role_check_and_grant(
+    await role_check_and_grant( // REGISTRAR_ROLE
         cid_src,
         jo_token_manager_linker_src,
         "REGISTRAR_ROLE",
         address_src, // addressTo, who gains role
         address_src // addressOwner, call contract from
     );
-    await role_check_and_grant(
+    await role_check_and_grant( // REGISTRAR_ROLE
         cid_dst,
         jo_token_manager_linker_dst,
         "REGISTRAR_ROLE",
@@ -8539,7 +8617,7 @@ async function s2s_transfer(
             cc.error( " and target S-Chain " ) + cc.attention( joChainDst.name ) +
             ( isAutoInstantiationMode ? cc.debug( "(auto-deploy mode)" ) : "(statically linked mode)" ) +
             cc.error( ", error is: " ) + cc.warning( err.toString() ) + "\n" );
-        await end_of_test( 100 );
+        await end_of_test( 74 );
     }
 }
 
@@ -8824,10 +8902,20 @@ async function run_cross_chain_chat_test_impl( strChatType, src, dst, isSkipThis
         //
         if( g_bVerbose )
             log.write( cc.debug( "Granting the " ) + cc.notice( "EXTRA_CONTRACT_REGISTRAR_ROLE" ) + cc.debug( " role on " ) + cc.attention( src.name ) + cc.debug( "..." ) + "\n" );
-        await role_check_and_grant( src.chainId, src.jo_message_proxy, "EXTRA_CONTRACT_REGISTRAR_ROLE", private_key_2_account_address( src.w3, src.strPrivateKey ) );
+        await role_check_and_grant( // EXTRA_CONTRACT_REGISTRAR_ROLE
+            src.chainId,
+            src.jo_message_proxy,
+            "EXTRA_CONTRACT_REGISTRAR_ROLE",
+            private_key_2_account_address( src.w3, src.strPrivateKey )
+        );
         if( g_bVerbose )
             log.write( cc.debug( "Granting the " ) + cc.notice( "EXTRA_CONTRACT_REGISTRAR_ROLE" ) + cc.debug( " role on " ) + cc.attention( dst.name ) + cc.debug( "..." ) + "\n" );
-        await role_check_and_grant( dst.chainId, dst.jo_message_proxy, "EXTRA_CONTRACT_REGISTRAR_ROLE", private_key_2_account_address( dst.w3, dst.strPrivateKey ) );
+        await role_check_and_grant( // EXTRA_CONTRACT_REGISTRAR_ROLE
+            dst.chainId,
+            dst.jo_message_proxy,
+            "EXTRA_CONTRACT_REGISTRAR_ROLE",
+            private_key_2_account_address( dst.w3, dst.strPrivateKey )
+        );
         if( g_bVerbose )
             log.write( cc.debug( "Registering " ) + cc.attention( src.name ) + cc.debug( " chat participant..." ) + "\n" );
         const methodWithArguments_registerExtraContract_src = src.jo_message_proxy.methods.registerExtraContract( dst.name, src.joChatParticipant.options.address );
@@ -8891,7 +8979,7 @@ async function run_cross_chain_chat_test_impl( strChatType, src, dst, isSkipThis
                 if( g_bVerbose )
                     log.write( cc.debug( "<<< lastReceivedMessage:" ) + cc.j( msg ) + "\n" );
                 log.write( cc.fatal( " !!! " ) + cc.error( "INTERCHAIN CHAT ERROR: Last delivered message is different then last sent one" ) + "\n" );
-                await end_of_test( 73 );
+                await end_of_test( 75 );
             }
         } // for( let idxChatMessage = 0; idxChatMessage < arrChatPlan.length; ++ idxChatMessage )
         if( g_bVerbose ) {
@@ -8902,7 +8990,7 @@ async function run_cross_chain_chat_test_impl( strChatType, src, dst, isSkipThis
     } catch ( err ) {
         log.write( cc.fatal( "CRITICAL ERROR:" ) + cc.error( " The " ) + cc.attention( strChatType ) + " " +
             cc.sunny( "Cross Chain Chat" ) + cc.error( " test exception: " ) + cc.warning( err.toString() ) + "\n" );
-        await end_of_test( 74 );
+        await end_of_test( 76 );
     }
 }
 
@@ -8943,8 +9031,6 @@ async function run() {
     if( g_bVerbose )
         log.write( cc.normal( "Connecting to " ) + cc.success( "MAIN NET" ) + cc.normal( " via " ) + cc.u( g_strMainNetURL ) + "\n" );
     g_w3_main_net = getWeb3FromURL( g_strMainNetURL );
-    //
-    // await ima_register_sgx_keys(); await end_of_test( 0 ); // early call to init Transaction Manager
     //
     init_account_from_private_key( g_w3_main_net, g_strPrivateKeySkaleManagerMN );
     init_account_from_private_key( g_w3_main_net, g_strPrivateKeyImaMN );
@@ -9035,6 +9121,8 @@ async function run() {
         wait_ENTER_key_press_on_console();
         log.write( cc.normal( "Resuming test..." ) + "\n" );
     }
+    //
+    await ima_enable_pausable_role();
     //
     const nPreferredNodeIndex = 0;
     //
