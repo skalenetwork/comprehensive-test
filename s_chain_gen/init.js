@@ -585,7 +585,12 @@ const joConfigurationTemplate = {
             "multiTransactionMode": true,
             "nodes": [
                 // 				{ "nodeID": 1112, "ip": "127.0.0.1", "basePort": 1231, ......... "schainIndex": 1 } // schainIndex is 1-based
-            ]
+            ] //,
+            //
+            // "revertableFSPatchTimestamp": 1000000,
+            // "contractStoragePatchTimestamp": 1000000,
+            // "contractStorageZeroValuePatchTimestamp": 1000000,
+            // "verifyDaSigsPatchTimestamp": 1000000
         }
     }
 };
