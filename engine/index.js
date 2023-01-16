@@ -1871,11 +1871,12 @@ async function init_schain_types( w3, privateKey ) {
     ];
     const addressFrom = private_key_2_account_address( w3, privateKey );
     await role_check_and_grant(
+        g_w3_main_net,
         cid_main_net,
+        privateKey, // private_key_2_account_address( w3, g_strPrivateKeySkaleManagerMN )
         jo_schains_internal,
         "SCHAIN_TYPE_MANAGER_ROLE",
-        addressFrom,
-        private_key_2_account_address( w3, g_strPrivateKeySkaleManagerMN )
+        addressFrom
     );
     for( const typeOfSChain of arr_schain_types ) {
         if( g_bVerbose ) {
@@ -3593,7 +3594,9 @@ async function ima_connect_two_schains( idxChainA, idxChainB, cntAttempts ) {
             init_account_from_private_key( w3schain, g_strPrivateKeyImaSC );
             const jo_message_proxy_s_chain = new w3schain.eth.Contract( joImaAbiSC.message_proxy_chain_abi, joImaAbiSC.message_proxy_chain_address );
             // await role_check_and_grant( // CHAIN_CONNECTOR_ROLE
+            //     w3schain,
             //     schain_id,
+            //     g_strPrivateKeyImaSC,
             //     jo_message_proxy_s_chain,
             //     "CHAIN_CONNECTOR_ROLE",
             //     private_key_2_account_address( w3schain, g_strPrivateKeyImaSC )
@@ -3607,14 +3610,17 @@ async function ima_connect_two_schains( idxChainA, idxChainB, cntAttempts ) {
             // } );
             const jo_token_manager_linker = new w3schain.eth.Contract( joImaAbiSC.token_manager_linker_abi, joImaAbiSC.token_manager_linker_address );
             await role_check_and_grant( // CHAIN_CONNECTOR_ROLE
+                w3schain,
                 schain_id,
+                g_strPrivateKeyImaSC,
                 jo_message_proxy_s_chain,
                 "CHAIN_CONNECTOR_ROLE",
-                jo_token_manager_linker.options.address,
-                private_key_2_account_address( w3schain, g_strPrivateKeyImaSC )
+                jo_token_manager_linker.options.address
             );
             await role_check_and_grant( // REGISTRAR_ROLE
+                w3schain,
                 schain_id,
+                g_strPrivateKeyImaSC,
                 jo_token_manager_linker,
                 "REGISTRAR_ROLE",
                 private_key_2_account_address( w3schain, g_strPrivateKeyImaSC )
@@ -3684,7 +3690,9 @@ async function schain_ima_gas_reimbursement_configure_zero_timeout( idxChain, fn
     const schain_id = g_arrChains[idxChain].cid;
     const schain_name = g_arrChains[idxChain].name;
     await role_check_and_grant( // CONSTANT_SETTER_ROLE
+        w3schain,
         schain_id,
+        g_strPrivateKeyImaSC,
         jo_community_locker,
         "CONSTANT_SETTER_ROLE",
         private_key_2_account_address( w3schain, g_strPrivateKeyImaSC )
@@ -3849,31 +3857,31 @@ async function schain_ima_gas_reimbursement_recharge( idxChain, fnContinue ) {
 //////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 
 async function ima_enable_pausable_role() {
-    // try {
-    //     if( g_bVerbose )
-    //         log.write( cc.debug( "Adjusting " ) + cc.sunny( "PAUSABLE_ROLE" ) + cc.debug( " role..." ) + "\n" );
-    //     const strPrivateKey = g_strPrivateKeyImaMN;
-    //     const addressFrom = private_key_2_account_address( g_w3_main_net, strPrivateKey );
-    //     const addressOwner = private_key_2_account_address( g_w3_main_net, strPrivateKey );
-    //     const jo_message_proxy_MN = new g_w3_main_net.eth.Contract(
-    //         g_joImaAbiMN.message_proxy_mainnet_abi,
-    //         g_joImaAbiMN.message_proxy_mainnet_address
-    //     );
-    //     await role_check_and_grant( // PAUSABLE_ROLE
-    //         cid_main_net,
-    //         jo_message_proxy_MN,
-    //         "PAUSABLE_ROLE",
-    //         addressFrom,
-    //         addressOwner
-    //     );
-    //     if( g_bVerbose )
-    //         log.write( cc.success( "Done." ) + "\n" );
-    // } catch ( err ) {
-    //     log.write( cc.fatal( "Error:" ) +
-    //         cc.error( " Failed to adjust " ) + cc.sunny( "PAUSABLE_ROLE" ) + cc.error( " role, error description: " ) +
-    //         cc.warning( err.toString() ) + "\n" );
-    //     await end_of_test( 47 );
-    // }
+    try {
+        if( g_bVerbose )
+            log.write( cc.debug( "Adjusting " ) + cc.sunny( "PAUSABLE_ROLE" ) + cc.debug( " role..." ) + "\n" );
+        const strPrivateKey = g_strPrivateKeyImaMN;
+        const addressFrom = private_key_2_account_address( g_w3_main_net, strPrivateKey );
+        const jo_message_proxy_MN = new g_w3_main_net.eth.Contract(
+            g_joImaAbiMN.message_proxy_mainnet_abi,
+            g_joImaAbiMN.message_proxy_mainnet_address
+        );
+        await role_check_and_grant( // PAUSABLE_ROLE
+            g_w3_main_net,
+            cid_main_net,
+            strPrivateKey,
+            jo_message_proxy_MN,
+            "PAUSABLE_ROLE",
+            addressFrom
+        );
+        if( g_bVerbose )
+            log.write( cc.success( "Done." ) + "\n" );
+    } catch ( err ) {
+        log.write( cc.fatal( "Error:" ) +
+            cc.error( " Failed to adjust " ) + cc.sunny( "PAUSABLE_ROLE" ) + cc.error( " role, error description: " ) +
+            cc.warning( err.toString() ) + "\n" );
+        await end_of_test( 47 );
+    }
 }
 
 //////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
@@ -4073,11 +4081,12 @@ async function sm_pre_configure( w3, fnContinue ) {
         if( g_bVerbose )
             log.write( cc.debug( "Adjusting " ) + cc.sunny( "CONSTANTS_HOLDER_MANAGER_ROLE" ) + cc.debug( " role..." ) + "\n" );
         await role_check_and_grant( // CONSTANTS_HOLDER_MANAGER_ROLE
+            g_w3_main_net,
             cid_main_net,
+            privateKey,
             jo_constants_holder,
             "CONSTANTS_HOLDER_MANAGER_ROLE",
-            addressFrom,
-            private_key_2_account_address( w3, g_strPrivateKeySkaleManagerMN )
+            addressFrom
         );
         if( g_bVerbose )
             log.write( cc.success( "Done." ) + "\n" );
@@ -4216,11 +4225,12 @@ async function sm_init_validator( w3, fnContinue ) {
         if( g_bVerbose )
             log.write( cc.success( "Success, " ) + cc.info( "Skale Token" ) + cc.success( "s transferred with result: " ) + cc.j( result_of_transfer ) + "\n" );
         await role_check_and_grant( // VALIDATOR_MANAGER_ROLE
+            g_w3_main_net,
             cid_main_net,
+            privateKey,
             jo_validator_service,
             "VALIDATOR_MANAGER_ROLE",
-            owner,
-            owner // private_key_2_account_address( w3, g_strPrivateKeySkaleManagerMN )
+            owner
         );
         if( g_bVerbose )
             log.write( cc.debug( "Enabling validator " ) + cc.sunny( g_validatorID ) + cc.debug( "..." ) + "\n" );
@@ -4272,9 +4282,49 @@ async function sm_init_validator( w3, fnContinue ) {
 //     return has_role;
 // }
 
-async function role_check_and_grant( cid, jo_contract, strRoleName, addressTo, addressOwner ) { // for example "VALIDATOR_MANAGER_ROLE"
+async function payed_invoke_method(
+    w3,
+    cid,
+    contract,
+    methodWithArguments,
+    strPrivateKeyFrom,
+    gas,
+    gasPrice
+) {
+    gas = gas || 8000000;
+    gasPrice = gasPrice || 10000000000;
+    const dataTx = methodWithArguments.encodeABI(); // the encoded ABI of the method
+    log.write( cc.debug( "Using " ) + cc.info( "gasPrice" ) + cc.debug( "=" ) + cc.notice( gasPrice ) + "\n" );
+    log.write( cc.debug( "Using " ) + cc.info( "private key" ) + " " + cc.warn( strPrivateKeyFrom ) + "\n" );
+    const strAddressFrom = ensure_starts_with_0x( private_key_2_account_address( w3, strPrivateKeyFrom ) );
+    log.write( cc.debug( "Using " ) + cc.info( "address" ) + " " + cc.warn( strAddressFrom ) + "\n" );
+    const tcnt = await w3.eth.getTransactionCount( strAddressFrom, null );
+    log.write( cc.debug( "Got " ) + cc.info( tcnt ) + cc.debug( " as current transaction count" ) + "\n" );
+    const rawTx = {
+        chainId: cid,
+        nonce: tcnt,
+        gasPrice: gasPrice,
+        gasLimit: gas,
+        to: contract.options.address,
+        data: dataTx
+    };
+    log.write( cc.debug( "....composed " ) + cc.j( rawTx ) + "\n" );
+    const tx = new ethereumjs_tx( rawTx );
+    const key = Buffer.from( strPrivateKeyFrom, "hex" );
+    tx.sign( key );
+    const serializedTx = tx.serialize();
+    const strTX = "0x" + serializedTx.toString( "hex" ); // strTX is string starting from "0x"
+    log.write( cc.debug( "....signed raw TX is " ) + cc.attention( strTX ) + "\n" );
+    const joReceipt = await w3.eth.sendSignedTransaction( "0x" + serializedTx.toString( "hex" ) );
+    log.write( cc.success( "Result receipt: " ) + cc.j( joReceipt ) + "\n" );
+    log.write(
+        cc.success( "DONE, transaction receipt is " ) + cc.j( joReceipt ) + "\n" );
+}
+
+async function role_check_and_grant( w3, cid, strPrivateKeyFrom, jo_contract, strRoleName, addressTo ) { // for example "VALIDATOR_MANAGER_ROLE"
+    w3 = w3 || g_w3_main_net;
     cid = cid || cid_main_net;
-    addressOwner = addressOwner || addressTo;
+    const addressSendTxFrom = private_key_2_account_address( w3, strPrivateKeyFrom );
     if( g_bVerbose ) {
         log.write(
             cc.debug( "Checking the " ) + cc.info( strRoleName ) + cc.debug( " role of address " ) + cc.info( addressTo ) +
@@ -4282,7 +4332,7 @@ async function role_check_and_grant( cid, jo_contract, strRoleName, addressTo, a
     }
     const role = await jo_contract.methods[strRoleName]().call( {
         chainId: cid,
-        from: addressOwner,
+        from: addressSendTxFrom,
         gas: 8000000
     } );
     if( g_bVerbose ) {
@@ -4292,7 +4342,7 @@ async function role_check_and_grant( cid, jo_contract, strRoleName, addressTo, a
     }
     let has_role = await jo_contract.methods.hasRole( role, addressTo ).call( {
         chainId: cid,
-        from: addressOwner,
+        from: addressSendTxFrom,
         gas: 8000000
     } );
     if( g_bVerbose ) {
@@ -4305,14 +4355,34 @@ async function role_check_and_grant( cid, jo_contract, strRoleName, addressTo, a
         log.write(
             cc.debug( "Granting the " ) + cc.info( strRoleName ) + cc.debug( " role of address " ) + cc.info( addressTo ) +
             cc.debug( "..." ) + "\n" );
-        await jo_contract.methods.grantRole( role, addressTo ).send( {
-            chainId: cid,
-            from: addressOwner,
-            gas: 8000000
-        } );
+
+        if( g_bVerbose ) {
+            log.write( "    " + cc.debug( "contract is........" ) + cc.j( jo_contract.options.address ) + "\n" );
+            log.write( "    " + cc.debug( "role is............" ) + cc.j( role ) + "\n" );
+            log.write( "    " + cc.debug( "addressTo is......." ) + cc.info( addressTo ) + "\n" );
+            log.write( "    " + cc.debug( "TX sending from...." ) + cc.info( addressSendTxFrom ) + "\n" );
+            log.write( "    " + cc.debug( "chain ID is........" ) + cc.info( cid ) + "\n" );
+        }
+
+        // await jo_contract.methods.grantRole( role, addressTo ).send( {
+        //     chainId: cid,
+        //     from: addressSendTxFrom,
+        //     gas: 8000000
+        // } );
+        const methodWithArguments = jo_contract.methods.grantRole( role, addressTo );
+        await payed_invoke_method(
+            w3,
+            cid,
+            jo_contract,
+            methodWithArguments,
+            strPrivateKeyFrom,
+            8000000, // gas
+            10000000000 // gasPrice
+        );
+
         has_role = await jo_contract.methods.hasRole( role, addressTo ).call( {
             chainId: cid,
-            from: addressOwner,
+            from: addressSendTxFrom,
             gas: 8000000
         } );
         if( g_bVerbose ) {
@@ -8090,33 +8160,37 @@ async function s2s_prepare_chains_for_token_transfers( idxChainSrc, idxChainDst,
     const address_dst = private_key_2_account_address( w3schain_dst, joAccount_dst.privateKey );
 
     await role_check_and_grant( // CHAIN_CONNECTOR_ROLE
+        w3schain_src,
         cid_src,
+        joAccount_src.privateKey,
         jo_message_proxy_s_chain_src,
         "CHAIN_CONNECTOR_ROLE",
-        jo_token_manager_linker_src.options.address, // addressTo, who gains role
-        address_src // addressOwner, call contract from
+        jo_token_manager_linker_src.options.address // addressTo, who gains role
     );
     await role_check_and_grant( // CHAIN_CONNECTOR_ROLE
+        w3schain_dst,
         cid_dst,
+        joAccount_dst.privateKey,
         jo_message_proxy_s_chain_dst,
         "CHAIN_CONNECTOR_ROLE",
-        jo_token_manager_linker_dst.options.address, // addressTo, who gains role
-        address_dst // addressOwner, call contract from
+        jo_token_manager_linker_dst.options.address // addressTo, who gains role
     );
 
     await role_check_and_grant( // REGISTRAR_ROLE
+        w3schain_src,
         cid_src,
+        joAccount_src.privateKey,
         jo_token_manager_linker_src,
         "REGISTRAR_ROLE",
-        address_src, // addressTo, who gains role
-        address_src // addressOwner, call contract from
+        address_src // addressTo, who gains role
     );
     await role_check_and_grant( // REGISTRAR_ROLE
+        w3schain_dst,
         cid_dst,
+        joAccount_dst.privateKey,
         jo_token_manager_linker_dst,
         "REGISTRAR_ROLE",
-        address_dst, // addressTo, who gains role
-        address_dst // addressOwner, call contract from
+        address_dst // addressTo, who gains role
     );
 
     if( ! isAutomaticDeploy ) {
@@ -8903,7 +8977,9 @@ async function run_cross_chain_chat_test_impl( strChatType, src, dst, isSkipThis
         if( g_bVerbose )
             log.write( cc.debug( "Granting the " ) + cc.notice( "EXTRA_CONTRACT_REGISTRAR_ROLE" ) + cc.debug( " role on " ) + cc.attention( src.name ) + cc.debug( "..." ) + "\n" );
         await role_check_and_grant( // EXTRA_CONTRACT_REGISTRAR_ROLE
+            src.w3,
             src.chainId,
+            src.strPrivateKey,
             src.jo_message_proxy,
             "EXTRA_CONTRACT_REGISTRAR_ROLE",
             private_key_2_account_address( src.w3, src.strPrivateKey )
@@ -8911,7 +8987,9 @@ async function run_cross_chain_chat_test_impl( strChatType, src, dst, isSkipThis
         if( g_bVerbose )
             log.write( cc.debug( "Granting the " ) + cc.notice( "EXTRA_CONTRACT_REGISTRAR_ROLE" ) + cc.debug( " role on " ) + cc.attention( dst.name ) + cc.debug( "..." ) + "\n" );
         await role_check_and_grant( // EXTRA_CONTRACT_REGISTRAR_ROLE
+            dst.w3,
             dst.chainId,
+            dst.strPrivateKey,
             dst.jo_message_proxy,
             "EXTRA_CONTRACT_REGISTRAR_ROLE",
             private_key_2_account_address( dst.w3, dst.strPrivateKey )
