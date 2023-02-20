@@ -75,7 +75,7 @@ const g_bAskExternalStartStopIMA = true;
 const g_bAtExitStopMN = g_bExternalMN ? false : true;
 const g_bAtExitStopSC = g_bExternalSC ? false : true;
 const g_bAtExitStopIMA = true; // for debugging purposes, let's us stay running after all tests passed OK
-const g_bAskToFinishTest = true; // false;
+const g_bAskToFinishTest = false;
 const g_bDisableNewCrossImaRPC = false;
 const g_bAskToContinueAfterSkaledStarted = false;
 const g_bAskToContinueBeforeImaInit = false;
@@ -9089,7 +9089,7 @@ async function run() {
     if( g_bVerbose )
         log.write( "\n\n" + cc.sunny( "Basic " ) + cc.attention( "M<->S" ) + " " + cc.sunny( "ETH transfer tests start here" ) + "\n\n" );
 
-    /***
+    /***/
     await ima_send_eth( g_idxMostOftenUsedSChain, g_strPrivateKeyImaMN, g_strPrivateKeyImaSC, "m2s", "2kether", nPreferredNodeIndex );
     await ima_send_eth( g_idxMostOftenUsedSChain, g_strPrivateKeyImaSC, g_strPrivateKeyImaMN, "s2m", "1ether", nPreferredNodeIndex );
 
