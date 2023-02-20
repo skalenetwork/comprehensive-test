@@ -74,8 +74,8 @@ const g_bAskExternalStartStopSC = true;
 const g_bAskExternalStartStopIMA = true;
 const g_bAtExitStopMN = g_bExternalMN ? false : true;
 const g_bAtExitStopSC = g_bExternalSC ? false : true;
-const g_bAtExitStopIMA = true; // for debugging purposes, let's us stay running after all tasts passed OK
-const g_bAskToFinishTest = false;
+const g_bAtExitStopIMA = true; // for debugging purposes, let's us stay running after all tests passed OK
+const g_bAskToFinishTest = true; // false;
 const g_bDisableNewCrossImaRPC = false;
 const g_bAskToContinueAfterSkaledStarted = false;
 const g_bAskToContinueBeforeImaInit = false;
@@ -146,7 +146,7 @@ const g_nTimeToSleepBeforeNextDkgBroadcastMilliseconds = 0; // delay to invoke n
 const g_nTimeToSleepAfterImportEcdsaKeyMilliseconds = 1000;
 const g_nTimeToSleepAfterRegisterSgxKeysMilliseconds = 2000;
 const g_nTimeToSleepBeforeAddTokensByOwnerOnSChainMilliseconds = 5000;
-const g_nTimeToSleepStopWaitForClonetTokenToAppearMilliseconds = 3000;
+const g_nTimeToSleepStopWaitForClonedTokenToAppearMilliseconds = 3000;
 const g_nTimeToSleepBeforeConnectTwoChains = 3000;
 
 const g_nTimeToSleepBeforeS2mReceiveMilliseconds = 60000;
@@ -315,138 +315,6 @@ function traverse_json( o, func ) {
     }
 }
 
-// usage example: traverse_json( g_joSkaleManagerABI, fix_ethers_js_abi_errors );
-
-//////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
-//////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
-
-// example: "1ether" -> "1000000000000000000"
-// supported suffixes, lowercase
-// const g_arrMoneyNameSuffixes = [ "ether", "finney", "szabo", "shannon", "lovelace", "babbage", "wei" ];
-
-// // supported suffix aliases, lowercase
-// const g_mapMoneyNameSuffixAliases = {
-//     "ethe": "ether",
-//     "ethr": "ether",
-//     "eth": "ether",
-//     "eter": "ether",
-//     "ete": "ether",
-//     "et": "ether",
-//     "eh": "ether",
-//     "er": "ether",
-//     // "e": "ether",
-//     "finne": "finney",
-//     "finn": "finney",
-//     "fin": "finney",
-//     "fn": "finney",
-//     "fi": "finney",
-//     // "f": "finney",
-//     "szab": "szabo",
-//     "szb": "szabo",
-//     "sza": "szabo",
-//     "sz": "szabo",
-//     "shanno": "shannon",
-//     "shannn": "shannon",
-//     "shann": "shannon",
-//     "shan": "shannon",
-//     "sha": "shannon",
-//     "shn": "shannon",
-//     "sh": "shannon",
-//     "lovelac": "lovelace",
-//     "lovela": "lovelace",
-//     "lovel": "lovelace",
-//     "love": "lovelace",
-//     "lovl": "lovelace",
-//     "lvl": "lovelace",
-//     "lvla": "lovelace",
-//     "lvlc": "lovelace",
-//     "lvc": "lovelace",
-//     "lv": "lovelace",
-//     "lo": "lovelace",
-//     "lc": "lovelace",
-//     "ll": "lovelace",
-//     // "l": "lovelace",
-//     "babbag": "babbage",
-//     "babba": "babbage",
-//     "babbg": "babbage",
-//     "babb": "babbage",
-//     "bab": "babbage",
-//     "bag": "babbage",
-//     "bbb": "babbage",
-//     "bb": "babbage",
-//     "bg": "babbage",
-//     "ba": "babbage",
-//     "be": "babbage",
-//     // "b": "babbage",
-//     "we": "wei",
-//     "wi": "wei"
-//     // "w": "wei"
-// };
-
-// function parseMoneyUnitName( s ) {
-//     s = s.trim().toLowerCase();
-//     if( s == "" )
-//         return "wei";
-//     if( s in g_mapMoneyNameSuffixAliases ) {
-//         s = g_mapMoneyNameSuffixAliases[s];
-//         return s;
-//     }
-//     // if( g_arrMoneyNameSuffixes.indexOf( s ) >= 0 )
-//     //     return s;
-//     // throw new Error( "\"" + s + "\" is unknown money unit name" );
-//     return s;
-// }
-
-// function is_numeric( s ) {
-//     return /^\d+$/.test( s );
-// }
-
-// function parseMoneySpecToWei( w3, s, isThrowException ) {
-//     try {
-//         w3 = w3 || g_w3mod;
-//         isThrowException = isThrowException ? true : false;
-//         if( s == null || s == undefined ) {
-//             if( isThrowException )
-//                 throw new Error( "no parse-able value provided" );
-//             return "0";
-//         }
-//         s = s.toString().trim();
-//         let strNumber = "";
-//         while( s.length > 0 ) {
-//             const chr = s[0];
-//             if( is_numeric( chr ) || chr == "." ) {
-//                 strNumber += chr;
-//                 s = s.substr( 1 ); // remove first character
-//                 continue;
-//             }
-//             if( chr == " " || chr == "\t" || chr == "\r" || chr == "\n" )
-//                 s = s.substr( 1 ); // remove first character
-//             s = s.trim().toLowerCase();
-//             break;
-//         }
-//         // here s is rest suffix string, number is number as string or empty string
-//         if( strNumber == "" )
-//             throw new Error( "no number or float value found" );
-//         s = parseMoneyUnitName( s );
-//         s = w3.utils.toWei( strNumber, s );
-//         s = s.toString( 10 );
-//         return s;
-//     } catch ( err ) {
-//         if( isThrowException )
-//             throw new Error( "Parse error in parseMoneySpecToWei(\"" + s + "\"), error is: " + err.toString() );
-//     }
-//     return "0";
-// }
-
-//////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
-//////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
-//
-// sleep( milliseconds ) implementation, see more details here: https://flaviocopes.com/javascript-sleep/
-//
-// usage example 1:   async function f() { await sleep( 300 ); do_the_work_you_need_here(); }
-// usage example 2:   sleep( 500 ).then( () => { do_the_work_you_need_here(); } );
-// usage example 3:   const f = async () => { await sleep( 2000 ); do_the_work_you_need_here(); }; f();
-//
 const sleep = ( milliseconds ) => { return new Promise( resolve => setTimeout( resolve, milliseconds ) ); };
 
 //////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
@@ -606,7 +474,7 @@ if( strUbuntuVersion ) {
     }
     if( g_bVerbose ) {
         log.write(
-            cc.success( "Done, chached binaries copied to " ) + cc.attention( g_strFolderAppCacheBin ) +
+            cc.success( "Done, cached binaries copied to " ) + cc.attention( g_strFolderAppCacheBin ) +
             cc.success( ", got: " ) + cc.j( arrCachedBinaries ) + "\n" );
     }
 }
@@ -973,11 +841,11 @@ class ProcessController {
         if( self.nListeningPort != null ) {
             self.strColorizedProcessDescription =
                 cc.sunny( self.pidCached ) +
-                cc.debug( "(listining on port " ) + cc.info( self.nListeningPort ) + cc.debug( ")" ) +
+                cc.debug( "(listening on port " ) + cc.info( self.nListeningPort ) + cc.debug( ")" ) +
                 cc.bright( "/" ) + self.strColorizedProcessDescription;
             self.strShortProcessDescription =
                 cc.sunny( self.pidCached ) +
-                cc.debug( "(listining on port " ) + cc.info( self.nListeningPort ) + cc.debug( ")" );
+                cc.debug( "(listening on port " ) + cc.info( self.nListeningPort ) + cc.debug( ")" );
         } else {
             self.strColorizedProcessDescription =
                 cc.sunny( self.pidCached ) +
@@ -1178,7 +1046,10 @@ function compose_ima_cli_account_options_mn_sgx( idxChain, nNodeIndex ) {
         " --sgx-ssl-cert-main-net=\"" + g_joSgxRpcOptions.cert_path + "\"" +
         // " --address-main-net=\"" + private_key_2_account_address( g_w3mod, g_strPrivateKeyImaMN ) + "\"" // address instead of key here
         // " --address-main-net=\"" + public_key_2_account_address( g_w3mod, joNodeDesc.publicKey ) + "\"" // address instead of key here
+
+        // TO-FIX: restore --address-main-net usage (only), remove --key-main-net
         " --address-main-net=" + joNodeDesc.checkedNodeAddress
+        + " --key-main-net=" + joNodeDesc.nodePrivateKey // g_strPrivateKeyImaMN; // explicit private key
     ;
 }
 
@@ -1244,7 +1115,7 @@ function compose_node_runCmd4imaAgent( joNodeDesc ) {
     }
     joNodeDesc.runCmd4imaAgent =
         "node " +
-        g_strFolderImaAgent + "/main.js" + g_strImaOutputOpts + g_strImaRuntimeOpts +
+        g_strFolderImaAgent + "/main.mjs" + g_strImaOutputOpts + g_strImaRuntimeOpts +
         // " --loop" +
         " --simple-loop" +
         //
@@ -1295,8 +1166,8 @@ function compose_node_runCmd4imaAgent( joNodeDesc ) {
         " --nodes-count=" + g_arrChains[joNodeDesc.idxChain].arrNodeDescriptions.length + // ....................S-Chain nodes count
         " --time-framing=" + 120 + // ..................Specifies period(in seconds) for time framing. Zero means disable time framing
         " --time-gap=" + 10 + // ......................Specifies gap(in seconds) before next time frame
-        " --pwa --expose-pwa --pwa-timeout=" + 90 +
-        // " --no-pwa --no-expose-pwa" +
+        // " --pwa --expose-pwa --pwa-timeout=" + 90 +
+        " --no-pwa --no-expose-pwa" +
         // " --enable-oracle" +
         " --disable-oracle" +
         ""
@@ -1489,41 +1360,41 @@ function randomFixedInteger( length ) {
     return Math.floor( Math.pow( 10, length - 1 ) + Math.random() * ( Math.pow( 10, length ) - Math.pow( 10, length - 1 ) - 1 ) );
 }
 
-function randomStringABC( length, arrChrs ) {
+function randomStringABC( length, arrCharacters ) {
     length = parseInt( length );
-    if( length <= 0 || arrChrs.length == 0 )
+    if( length <= 0 || arrCharacters.length == 0 )
         return "";
     let s = "";
     for( let i = 0; i < length; ++i )
-        s += arrChrs.charAt( Math.floor( Math.random() * arrChrs.length ) );
+        s += arrCharacters.charAt( Math.floor( Math.random() * arrCharacters.length ) );
     return s;
 }
 
-function randomString( length, isABC, isDigits, isSpecChr, isPunct ) { // by default only isABC=true
+function randomString( length, isABC, isDigits, isSpecChr, isPunctuation ) { // by default only isABC=true
     length = parseInt( length );
     if( length <= 0 )
         return "";
     isABC = ( isABC == null || isABC == undefined ) ? true : ( isABC ? true : false );
     isDigits = ( isDigits == null || isDigits == undefined ) ? false : ( isDigits ? true : false );
     isSpecChr = ( isSpecChr == null || isSpecChr == undefined ) ? false : ( isSpecChr ? true : false );
-    isPunct = ( isPunct == null || isPunct == undefined ) ? false : ( isPunct ? true : false );
-    let arrChrs = "";
+    isPunctuation = ( isPunctuation == null || isPunctuation == undefined ) ? false : ( isPunctuation ? true : false );
+    let arrCharacters = "";
     if( isABC )
-        arrChrs += "ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz";
+        arrCharacters += "ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz";
     if( isDigits )
-        arrChrs += "0123456789";
+        arrCharacters += "0123456789";
     if( isSpecChr )
-        arrChrs += "(){}[]~!?@#$%^&*_+-='\"/\\";
-    if( isPunct )
-        arrChrs += ",.:;";
-    if( arrChrs.length == 0 )
+        arrCharacters += "(){}[]~!?@#$%^&*_+-='\"/\\";
+    if( isPunctuation )
+        arrCharacters += ",.:;";
+    if( arrCharacters.length == 0 )
         return "";
-    return randomStringABC( length, arrChrs );
+    return randomStringABC( length, arrCharacters );
 }
 
 // function randomHexString( length ) { // length in characters, not bytes, each byte is 2 characters
-//     const arrChrs = "0123456789abcdef";
-//     return randomStringABC( length, arrChrs );
+//     const arrCharacters = "0123456789abcdef";
+//     return randomStringABC( length, arrCharacters );
 // }
 
 function replaceAll( str, find, replace ) {
@@ -1717,7 +1588,7 @@ function generateBytesForSchain( w3, lifetime, typeOfSchain, name, nonce ) {
     // const addrOriginator = "0x0000000000000000000000000000000000000000";
     // const arrEmpty = [];
     // const data = w3.eth.abi.encodeParameters(
-    //     [ "uint",   "uint8",      "uint16", "string", "address",       "tuple(string,bytes)[]" ], // lifetime, type of schain, nonce, name, originator, array of sturctures/tuples
+    //     [ "uint",   "uint8",      "uint16", "string", "address",       "tuple(string,bytes)[]" ], // lifetime, type of schain, nonce, name, originator, array of structures/tuples
     //     [ lifetime, typeOfSchain, nonce,    name,      addrOriginator, arrEmpty           ]
     // ); // see https://ethereum.stackexchange.com/questions/97402/web3-eth-abi-encodeparameter-for-array-of-structs
     // return data;
@@ -3500,22 +3371,22 @@ async function skaled_find_latest_releases() {
 
 async function skaled_find_latest_release( strTagPart ) {
     const joReleases = await skaled_find_latest_releases();
-    let joReleaseCanditate = null;
+    let joReleaseCandidate = null;
     for( let i = 0; i < joReleases.length; ++ i ) {
         const joRelease = joReleases[i];
         if( typeof strTagPart == "string" && strTagPart.length > 0 ) {
             if( joRelease.tag_name.indexOf( strTagPart ) < 0 )
                 continue;
         }
-        if( joReleaseCanditate != null ) {
-            if( joRelease.published_at > joReleaseCanditate.published_at )
-                joReleaseCanditate = joRelease;
+        if( joReleaseCandidate != null ) {
+            if( joRelease.published_at > joReleaseCandidate.published_at )
+                joReleaseCandidate = joRelease;
 
             continue;
         }
-        joReleaseCanditate = joRelease;
+        joReleaseCandidate = joRelease;
     }
-    return joReleaseCanditate;
+    return joReleaseCandidate;
 }
 
 async function skaled_download_release( joRelease, isShowVersion ) {
@@ -3700,7 +3571,7 @@ async function schain_ima_gas_reimbursement_configure_zero_timeout( idxChain, fn
     const nNodeIndex = 0;
     const strCommand =
         "node " +
-        g_strFolderImaAgent + "/main.js" + g_strImaOutputOpts + g_strImaRuntimeOpts +
+        g_strFolderImaAgent + "/main.mjs" + g_strImaOutputOpts + g_strImaRuntimeOpts +
         " --reimbursement-range=0" +
         " --url-main-net=" + g_strMainNetURL + // URLs
         " --url-s-chain=" + arrNodeDescriptions[0].url + // first skaled node URL
@@ -3758,7 +3629,7 @@ async function schain_ima_gas_reimbursement_show( idxChain, fnContinue ) {
     const nNodeIndex = 0;
     const strCommand =
         "node " +
-        g_strFolderImaAgent + "/main.js" + g_strImaOutputOpts + g_strImaRuntimeOpts +
+        g_strFolderImaAgent + "/main.mjs" + g_strImaOutputOpts + g_strImaRuntimeOpts +
         " --reimbursement-chain=" + schain_name + " --reimbursement-balance" +
         " --url-main-net=" + g_strMainNetURL + // URLs
         " --url-s-chain=" + arrNodeDescriptions[0].url + // first skaled node URL
@@ -3816,7 +3687,7 @@ async function schain_ima_gas_reimbursement_recharge( idxChain, fnContinue ) {
     const nNodeIndex = 0;
     const strCommand =
         "node " +
-        g_strFolderImaAgent + "/main.js" + g_strImaOutputOpts + g_strImaRuntimeOpts +
+        g_strFolderImaAgent + "/main.mjs" + g_strImaOutputOpts + g_strImaRuntimeOpts +
         " --reimbursement-chain=" + schain_name + " --reimbursement-recharge=1eth" +
         " --url-main-net=" + g_strMainNetURL + // URLs
         " --url-s-chain=" + arrNodeDescriptions[0].url + // first skaled node URL
@@ -5149,12 +5020,12 @@ async function redeploy_ima_to_schain_one( idxChain, fnContinue ) {
     //
     // const arrCommands_check_IMA_alive = [
     //     "node " +
-    //     g_strFolderImaAgent + "/main.js" + g_strImaOutputOpts + g_strImaRuntimeOpts +
+    //     g_strFolderImaAgent + "/main.mjs" + g_strImaOutputOpts + g_strImaRuntimeOpts +
     //     " --browse-s-chain" +
     //     " --url-s-chain=" + arrNodeDescriptions[0].url // skaled node URL for node 00
     //     ,
     //     "node " +
-    //     g_strFolderImaAgent + "/main.js" + g_strImaOutputOpts + g_strImaRuntimeOpts +
+    //     g_strFolderImaAgent + "/main.mjs" + g_strImaOutputOpts + g_strImaRuntimeOpts +
     //     " --browse-s-chain" +
     //     " --url-s-chain=" + arrNodeDescriptions[1].url // skaled node URL for node 01
     // ];
@@ -5364,7 +5235,7 @@ function ima_register_schain( idxChain, fnContinue ) {
     const nNodeIndex = 0;
     const strCommand =
         "node " +
-        g_strFolderImaAgent + "/main.js" + g_strImaOutputOpts + g_strImaRuntimeOpts +
+        g_strFolderImaAgent + "/main.mjs" + g_strImaOutputOpts + g_strImaRuntimeOpts +
         " --register" +
         // " --ignore-dry-run" +
         " --url-main-net=" + g_strMainNetURL + // URLs
@@ -5421,7 +5292,7 @@ function ima_check_registration_schain( idxChain, fnContinue ) {
     const nNodeIndex = 0;
     const strCommand =
         "node " +
-        g_strFolderImaAgent + "/main.js" + g_strImaOutputOpts + g_strImaRuntimeOpts +
+        g_strFolderImaAgent + "/main.mjs" + g_strImaOutputOpts + g_strImaRuntimeOpts +
         " --check-registration" +
         " --url-main-net=" + g_strMainNetURL + // URLs
         " --url-s-chain=" + arrNodeDescriptions[0].url + // first skaled node URL
@@ -5623,7 +5494,7 @@ async function ima_send_eth( idxChain, strPrivateKeyFrom, strPrivateKeyTo, strDi
         const nNodeIndex = 0;
         const strCommandPayment =
             "node " +
-            g_strFolderImaAgent + "/main.js" + g_strImaOutputOpts + g_strImaRuntimeOpts +
+            g_strFolderImaAgent + "/main.mjs" + g_strImaOutputOpts + g_strImaRuntimeOpts +
             " --" + strDirection + "-payment" +
             " --value=" + moneySpec +
             // " --wei=" + parseMoneySpecToWei( g_w3_main_net, moneySpec, true )
@@ -5656,7 +5527,7 @@ async function ima_send_eth( idxChain, strPrivateKeyFrom, strPrivateKeyTo, strDi
                 const nNodeIndex = 0;
                 const strCommandReceive =
                     "node " +
-                    g_strFolderImaAgent + "/main.js" + g_strImaOutputOpts + g_strImaRuntimeOpts +
+                    g_strFolderImaAgent + "/main.mjs" + g_strImaOutputOpts + g_strImaRuntimeOpts +
                     " --s2m-receive" +
                     " --url-main-net=" + joTransferOptions.urlMainNet + // URLs
                     " --url-s-chain=" + joTransferOptions.urlSChain +
@@ -5841,25 +5712,25 @@ async function deploy_test_tokens_to( idxChain, strDeploymentNetworkName, strMin
                     g_joAbiTestTokensMN = joABI;
                     //
                     if( g_bVerbose )
-                        log.write( cc.debug( "Instantiating " ) + cc.info( "ERC20" ) + cc.debug( " smart cntract..." ) + "\n" );
+                        log.write( cc.debug( "Instantiating " ) + cc.info( "ERC20" ) + cc.debug( " smart contract..." ) + "\n" );
                     g_contractERC20MN = new g_w3_main_net.eth.Contract( g_joAbiTestTokensMN.ERC20_abi, g_joAbiTestTokensMN.ERC20_address );
                     if( g_bVerbose )
                         log.write( cc.success( "Done." ) + "\n" );
                     //
                     if( g_bVerbose )
-                        log.write( cc.debug( "Instantiating " ) + cc.info( "ERC721" ) + cc.debug( " smart cntract..." ) + "\n" );
+                        log.write( cc.debug( "Instantiating " ) + cc.info( "ERC721" ) + cc.debug( " smart contract..." ) + "\n" );
                     g_contractERC721MN = new g_w3_main_net.eth.Contract( g_joAbiTestTokensMN.ERC721_abi, g_joAbiTestTokensMN.ERC721_address );
                     if( g_bVerbose )
                         log.write( cc.success( "Done." ) + "\n" );
                     //
                     if( g_bVerbose )
-                        log.write( cc.debug( "Instantiating " ) + cc.info( "ERC721_with_metadata" ) + cc.debug( " smart cntract..." ) + "\n" );
+                        log.write( cc.debug( "Instantiating " ) + cc.info( "ERC721_with_metadata" ) + cc.debug( " smart contract..." ) + "\n" );
                     g_contractERC721_with_metadata_MN = new g_w3_main_net.eth.Contract( g_joAbiTestTokensMN.ERC721_with_metadata_abi, g_joAbiTestTokensMN.ERC721_with_metadata_address );
                     if( g_bVerbose )
                         log.write( cc.success( "Done." ) + "\n" );
                     //
                     if( g_bVerbose )
-                        log.write( cc.debug( "Instantiating " ) + cc.info( "ERC1155" ) + cc.debug( " smart cntract..." ) + "\n" );
+                        log.write( cc.debug( "Instantiating " ) + cc.info( "ERC1155" ) + cc.debug( " smart contract..." ) + "\n" );
                     g_contractERC1155MN = new g_w3_main_net.eth.Contract( g_joAbiTestTokensMN.ERC1155_abi, g_joAbiTestTokensMN.ERC1155_address );
                     if( g_bVerbose )
                         log.write( cc.success( "Done." ) + "\n" );
@@ -5890,25 +5761,25 @@ async function deploy_test_tokens_to( idxChain, strDeploymentNetworkName, strMin
                     g_joAbiTestTokensSC = joABI;
                     //
                     if( g_bVerbose )
-                        log.write( cc.debug( "Instantiating " ) + cc.info( "ERC20" ) + cc.debug( " smart cntract..." ) + "\n" );
+                        log.write( cc.debug( "Instantiating " ) + cc.info( "ERC20" ) + cc.debug( " smart contract..." ) + "\n" );
                     g_contractERC20SC = new w3schain.eth.Contract( g_joAbiTestTokensSC.ERC20_abi, g_joAbiTestTokensSC.ERC20_address );
                     if( g_bVerbose )
                         log.write( cc.success( "Done." ) + "\n" );
                     //
                     if( g_bVerbose )
-                        log.write( cc.debug( "Instantiating " ) + cc.info( "ERC721" ) + cc.debug( " smart cntract..." ) + "\n" );
+                        log.write( cc.debug( "Instantiating " ) + cc.info( "ERC721" ) + cc.debug( " smart contract..." ) + "\n" );
                     g_contractERC721SC = new w3schain.eth.Contract( g_joAbiTestTokensSC.ERC721_abi, g_joAbiTestTokensSC.ERC721_address );
                     if( g_bVerbose )
                         log.write( cc.success( "Done." ) + "\n" );
                     //
                     if( g_bVerbose )
-                        log.write( cc.debug( "Instantiating " ) + cc.info( "ERC721_with_metadata" ) + cc.debug( " smart cntract..." ) + "\n" );
+                        log.write( cc.debug( "Instantiating " ) + cc.info( "ERC721_with_metadata" ) + cc.debug( " smart contract..." ) + "\n" );
                     g_contractERC721_with_metadata_SC = new w3schain.eth.Contract( g_joAbiTestTokensSC.ERC721_with_metadata_abi, g_joAbiTestTokensSC.ERC721_with_metadata_address );
                     if( g_bVerbose )
                         log.write( cc.success( "Done." ) + "\n" );
                     //
                     if( g_bVerbose )
-                        log.write( cc.debug( "Instantiating " ) + cc.info( "ERC1155" ) + cc.debug( " smart cntract..." ) + "\n" );
+                        log.write( cc.debug( "Instantiating " ) + cc.info( "ERC1155" ) + cc.debug( " smart contract..." ) + "\n" );
                     g_contractERC1155SC = new w3schain.eth.Contract( g_joAbiTestTokensSC.ERC1155_abi, g_joAbiTestTokensSC.ERC1155_address );
                     if( g_bVerbose )
                         log.write( cc.success( "Done." ) + "\n" );
@@ -6610,10 +6481,10 @@ async function wait_for_cloned_token_to_appear(
                 cc.debug( " contract address is " ) + cc.attention( contractTokenManager.options.address ) +
                 cc.debug( ", step " ) + cc.info( idxAttempt ) + cc.debug( " of " ) + cc.info( cntAttempts ) +
                 cc.debug( "..." ) + "\n" );
-            if( g_nTimeToSleepStopWaitForClonetTokenToAppearMilliseconds > 0 ) {
-                log.write( cc.debug( ".......Sleeping " ) + cc.info( g_nTimeToSleepStopWaitForClonetTokenToAppearMilliseconds ) + cc.debug( " milliseconds..." ) + "\n" );
-                await sleep( g_nTimeToSleepStopWaitForClonetTokenToAppearMilliseconds );
-                log.write( cc.debug( ".......Done, was slept " ) + cc.info( g_nTimeToSleepStopWaitForClonetTokenToAppearMilliseconds ) + cc.debug( " milliseconds." ) + "\n" );
+            if( g_nTimeToSleepStopWaitForClonedTokenToAppearMilliseconds > 0 ) {
+                log.write( cc.debug( ".......Sleeping " ) + cc.info( g_nTimeToSleepStopWaitForClonedTokenToAppearMilliseconds ) + cc.debug( " milliseconds..." ) + "\n" );
+                await sleep( g_nTimeToSleepStopWaitForClonedTokenToAppearMilliseconds );
+                log.write( cc.debug( ".......Done, was slept " ) + cc.info( g_nTimeToSleepStopWaitForClonedTokenToAppearMilliseconds ) + cc.debug( " milliseconds." ) + "\n" );
             }
             const address_on_s_chain = await contractTokenManager.methods["clones" + capitalizeFirstLetter( strTokenSuffixCap )](
                 g_w3mod.utils.soliditySha3( strOppositeChainName ), // g_strMainnetName in case of M->S, source S-Chain name in case of S->S
@@ -6698,7 +6569,7 @@ async function ima_send_erc20_mn2sc( idxChain, strPrivateKeyFrom, strPrivateKeyT
         const nNodeIndex = 0;
         await exec_array_of_commands_safe( [
             "node " +
-            g_strFolderImaAgent + "/main.js" + g_strImaOutputOpts + g_strImaRuntimeOpts +
+            g_strFolderImaAgent + "/main.mjs" + g_strImaOutputOpts + g_strImaRuntimeOpts +
             " --m2s-payment" +
             " --amount=" + amountToSend +
             " --value=60finney" + // additional cost
@@ -6865,7 +6736,7 @@ async function ima_send_erc20_sc2mn( idxChain, strPrivateKeyFrom, strPrivateKeyT
         const nNodeIndex = 0;
         await exec_array_of_commands_safe( [
             "node " +
-            g_strFolderImaAgent + "/main.js" + g_strImaOutputOpts + g_strImaRuntimeOpts +
+            g_strFolderImaAgent + "/main.mjs" + g_strImaOutputOpts + g_strImaRuntimeOpts +
             " --s2m-payment" +
             " --amount=" + amountToSend +
             " --value=60finney" + // additional cost
@@ -7030,7 +6901,7 @@ async function ima_send_erc721_mn2sc( idxChain, strPrivateKeyFrom, strPrivateKey
         const nNodeIndex = 0;
         await exec_array_of_commands_safe( [
             "node " +
-            g_strFolderImaAgent + "/main.js" + g_strImaOutputOpts + g_strImaRuntimeOpts +
+            g_strFolderImaAgent + "/main.mjs" + g_strImaOutputOpts + g_strImaRuntimeOpts +
             " --m2s-payment" +
             " --tid=" + tokenIdToSend +
             ( isWithMetadata721 ? " --with-metadata" : "" ) +
@@ -7128,7 +6999,7 @@ async function ima_send_erc721_mn2sc( idxChain, strPrivateKeyFrom, strPrivateKey
                 await sleep( 1000 );
             }
             // throw new Error( "Failed to fetch Main Net " + strERC721 + " owner of \"" + strAddressTo + "\"" );
-            return "<NULL or uknknown yet owner>";
+            return "<NULL or unknown yet owner>";
         };
         const fnAsyncGetTokenMetadataTo = async function() {
             for( let idxAttempt = 0; idxAttempt < cntAttempts; ++ idxAttempt ) {
@@ -7146,7 +7017,7 @@ async function ima_send_erc721_mn2sc( idxChain, strPrivateKeyFrom, strPrivateKey
                 await sleep( 1000 );
             }
             // throw new Error( "Failed to fetch S-Chain " + strERC721 + " metadata of \"" + strAddressTo + "\"" );
-            return "<NULL or uknknown yet metadata>";
+            return "<NULL or unknown yet metadata>";
         };
         //
         const ownerOfTokenMN_after = await fnAsyncGetTokenOwnerFrom();
@@ -7297,7 +7168,7 @@ async function ima_send_erc721_sc2mn( idxChain, strPrivateKeyFrom, strPrivateKey
         const nNodeIndex = 0;
         await exec_array_of_commands_safe( [
             "node " +
-            g_strFolderImaAgent + "/main.js" + g_strImaOutputOpts + g_strImaRuntimeOpts +
+            g_strFolderImaAgent + "/main.mjs" + g_strImaOutputOpts + g_strImaRuntimeOpts +
             " --s2m-payment" +
             " --tid=" + tokenIdToSend +
             ( isWithMetadata721 ? " --with-metadata" : "" ) +
@@ -7356,7 +7227,7 @@ async function ima_send_erc721_sc2mn( idxChain, strPrivateKeyFrom, strPrivateKey
                 await sleep( 1000 );
             }
             // throw new Error( "Failed to fetch Main Net " + strERC721 + " owner of \"" + strAddressTo + "\"" );
-            return "<NULL or uknknown yet owner>";
+            return "<NULL or unknown yet owner>";
         };
         const fnAsyncGetTokenMetadataTo = async function() {
             for( let idxAttempt = 0; idxAttempt < cntAttempts; ++ idxAttempt ) {
@@ -7374,7 +7245,7 @@ async function ima_send_erc721_sc2mn( idxChain, strPrivateKeyFrom, strPrivateKey
                 await sleep( 1000 );
             }
             // throw new Error( "Failed to fetch Main Net " + strERC721 + " metadata of \"" + strAddressTo + "\"" );
-            return "<NULL or uknknown yet metadata>";
+            return "<NULL or unknown yet metadata>";
         };
         //
         const ownerOfTokenSC_after = await fnAsyncGetTokenOwnerFrom();
@@ -7485,7 +7356,7 @@ async function ima_send_erc1155_mn2sc( idxChain, strPrivateKeyFrom, strPrivateKe
         const nNodeIndex = 0;
         await exec_array_of_commands_safe( [
             "node " +
-            g_strFolderImaAgent + "/main.js" + g_strImaOutputOpts + g_strImaRuntimeOpts +
+            g_strFolderImaAgent + "/main.mjs" + g_strImaOutputOpts + g_strImaRuntimeOpts +
             " --m2s-payment" +
             " --tid=" + tokenIdToSend +
             " --amount=" + nAmount +
@@ -7666,7 +7537,7 @@ async function ima_send_erc1155_sc2mn( idxChain, strPrivateKeyFrom, strPrivateKe
         const nNodeIndex = 0;
         await exec_array_of_commands_safe( [
             "node " +
-            g_strFolderImaAgent + "/main.js" + g_strImaOutputOpts + g_strImaRuntimeOpts +
+            g_strFolderImaAgent + "/main.mjs" + g_strImaOutputOpts + g_strImaRuntimeOpts +
             " --s2m-payment" +
             " --tid=" + tokenIdToSend +
             " --amount=" + nAmount +
@@ -7828,7 +7699,7 @@ async function ima_batch_send_erc1155_mn2sc( idxChain, strPrivateKeyFrom, strPri
         const nNodeIndex = 0;
         await exec_array_of_commands_safe( [
             "node " +
-            g_strFolderImaAgent + "/main.js" + g_strImaOutputOpts + g_strImaRuntimeOpts +
+            g_strFolderImaAgent + "/main.mjs" + g_strImaOutputOpts + g_strImaRuntimeOpts +
             " --m2s-payment" +
             " --tids=\"" + replaceAll( JSON.stringify( arrTokenIDsToSend ), " ", "" ) + "\"" +
             " --amounts=\"" + replaceAll( JSON.stringify( arrAmounts ), " ", "" ) + "\"" +
@@ -8015,7 +7886,7 @@ async function ima_batch_send_erc1155_sc2mn( idxChain, strPrivateKeyFrom, strPri
         const nNodeIndex = 0;
         await exec_array_of_commands_safe( [
             "node " +
-            g_strFolderImaAgent + "/main.js" + g_strImaOutputOpts + g_strImaRuntimeOpts +
+            g_strFolderImaAgent + "/main.mjs" + g_strImaOutputOpts + g_strImaRuntimeOpts +
             " --s2m-payment" +
             " --tids=\"" + replaceAll( JSON.stringify( arrTokenIDsToSend ), " ", "" ) + "\"" +
             " --amounts=\"" + replaceAll( JSON.stringify( arrAmounts ), " ", "" ) + "\"" +
@@ -8261,7 +8132,7 @@ async function s2s_link_test_tokens_ex(
     joTokensAbiSC_A, joTokensAbiSC_B
 ) {
     //
-    // notice: chains are already connected to each other earier
+    // notice: chains are already connected to each other earlier
     //
     // const jo_token_manager_linker_A = new w3A.eth.Contract( joImaAbiSC_A.token_manager_linker_abi, joImaAbiSC_A.token_manager_linker_address );
     // const jo_token_manager_linker_B = new w3B.eth.Contract( joImaAbiSC_B.token_manager_linker_abi, joImaAbiSC_B.token_manager_linker_address );
@@ -8437,7 +8308,7 @@ async function s2s_transfer(
     }
     try {
         if( ! ( strCoinName === "ERC20" || strCoinName === "ERC721" || strCoinName === "ERC721_with_metadata" || strCoinName === "ERC1155" ) )
-            throw new Error( "Unknown coin name \"" + strCoinName + "\" provieded in s2s_transfer() parameters" );
+            throw new Error( "Unknown coin name \"" + strCoinName + "\" provided in s2s_transfer() parameters" );
         const fn_check_s2s_tokens = async function(
             contractERC20_check,
             contractERC721_check,
@@ -8522,7 +8393,7 @@ async function s2s_transfer(
             contractERC20_dst, contractERC721_dst, contractERC721_with_metadata_dst, contractERC1155_dst, addressDst );
         let strTransferCommand =
             "node " +
-            g_strFolderImaAgent + "/main.js" + g_strImaOutputOpts + g_strImaRuntimeOpts +
+            g_strFolderImaAgent + "/main.mjs" + g_strImaOutputOpts + g_strImaRuntimeOpts +
             " --s2s-payment " + ( isForward ? "--s2s-forward" : "--s2s-reverse" ) +
             " --value=60finney" +
             " --url-s-chain=" + joNodeDescSrc.url +
@@ -8586,7 +8457,7 @@ async function s2s_transfer(
             if( ! instantiated_address_of_ercXXX ) {
                 throw new Error(
                     "Failed to find \"" + strCoinName +
-                    "\" address intstantiated on S-Chain \"" + joChainDst.name + "\""
+                    "\" address instantiated on S-Chain \"" + joChainDst.name + "\""
                 );
             }
             if( g_bVerbose ) {
@@ -8628,9 +8499,9 @@ async function s2s_transfer(
             const bChangedDst = ( JSON.stringify( spec_after_dst ) !== JSON.stringify( spec_before_dst ) ) ? true : false;
             if( g_bVerbose ) {
                 log.write( cc.debug( ".........source state before is...." ) + cc.j( spec_before_src ) + "\n" );
-                log.write( cc.debug( ".........source state afer is......" ) + cc.j( spec_after_src ) + "\n" );
+                log.write( cc.debug( ".........source state after is....." ) + cc.j( spec_after_src ) + "\n" );
                 log.write( cc.debug( "....destination state before is...." ) + cc.j( spec_before_dst ) + "\n" );
-                log.write( cc.debug( "....destination state afer is......" ) + cc.j( spec_after_dst ) + "\n" );
+                log.write( cc.debug( "....destination state after is....." ) + cc.j( spec_after_dst ) + "\n" );
             }
             if( bChangedSrc ) {
                 if( bChangedDst ) {
@@ -8680,9 +8551,9 @@ async function s2s_transfer(
         }
     } catch ( err ) {
         log.write( cc.debug( ".........latest known source state before is...." ) + cc.j( spec_before_src ) + "\n" );
-        log.write( cc.debug( ".........latest known source state afer is......" ) + cc.j( spec_after_src ) + "\n" );
+        log.write( cc.debug( ".........latest known source state after is....." ) + cc.j( spec_after_src ) + "\n" );
         log.write( cc.debug( "....latest known destination state before is...." ) + cc.j( spec_before_dst ) + "\n" );
-        log.write( cc.debug( "....latest known destination state afer is......" ) + cc.j( spec_after_dst ) + "\n" );
+        log.write( cc.debug( "....latest known destination state after is....." ) + cc.j( spec_after_dst ) + "\n" );
         log.write(
             cc.fatal( "ERROR:" ) + cc.error( " Failed " ) +
             cc.sunny( strCoinName ) + ( isBatch ? ( cc.error( "/" ) + cc.info( "batch" ) ) : "" ) +
@@ -9217,8 +9088,10 @@ async function run() {
     //
     if( g_bVerbose )
         log.write( "\n\n" + cc.sunny( "Basic " ) + cc.attention( "M<->S" ) + " " + cc.sunny( "ETH transfer tests start here" ) + "\n\n" );
+
     await ima_send_eth( g_idxMostOftenUsedSChain, g_strPrivateKeyImaMN, g_strPrivateKeyImaSC, "m2s", "2kether", nPreferredNodeIndex );
     await ima_send_eth( g_idxMostOftenUsedSChain, g_strPrivateKeyImaSC, g_strPrivateKeyImaMN, "s2m", "1ether", nPreferredNodeIndex );
+
     /***/
     // // // // await ima_send_eth( g_idxMostOftenUsedSChain, g_strPrivateKeyImaMN, g_strPrivateKeyImaSC, "m2s", "1ether" );
     // // // // await ima_send_eth( g_idxMostOftenUsedSChain, g_strPrivateKeyImaSC, g_strPrivateKeyImaMN, "s2m", "1ether" );
@@ -9801,16 +9674,16 @@ run();
 
 /*
 
-node ~/Work/comprehensive-test/IMA/agent/main.js --colors --verbose=9 --expose --expose-security-info  --gas-price-multiplier=2 --auto-exit=0 \
+node ~/Work/comprehensive-test/IMA/agent/main.mjs --colors --verbose=9 --expose --expose-security-info  --gas-price-multiplier=2 --auto-exit=0 \
 --m2s-payment --value=1ether --url-main-net=http://127.0.0.1:8545 --url-s-chain=http://127.0.0.1:2164 --id-main-net=Mainnet --id-s-chain=Bob1000 --cid-main-net=456 --cid-s-chain=1000 --abi-skale-manager=~/Work/comprehensive-test/skale-manager/data/skale-manager-1.9.2-develop.10-custom-abi.json --abi-main-net=~/Work/comprehensive-test/IMA/proxy/data/proxyMainnet.json --abi-s-chain=~/Work/comprehensive-test/s_chain_gen/chain_00/ima_abi/abi.json  --key-main-net=23ABDBD3C61B5330AF61EBE8BEF582F4E5CC08E554053A718BDCE7813B9DC1FC --key-s-chain=23ABDBD3C61B5330AF61EBE8BEF582F4E5CC08E554053A718BDCE7813B9DC1FC
 
-node ~/Work/comprehensive-test/IMA/agent/main.js --colors --verbose=9 --expose --expose-security-info  --gas-price-multiplier=2 --auto-exit=0 \
+node ~/Work/comprehensive-test/IMA/agent/main.mjs --colors --verbose=9 --expose --expose-security-info  --gas-price-multiplier=2 --auto-exit=0 \
 --s2m-payment --value=1ether --url-main-net=http://127.0.0.1:8545 --url-s-chain=http://127.0.0.1:2164 --id-main-net=Mainnet --id-s-chain=Bob1000 --cid-main-net=456 --cid-s-chain=1000 --abi-skale-manager=~/Work/comprehensive-test/skale-manager/data/skale-manager-1.9.2-develop.10-custom-abi.json --abi-main-net=~/Work/comprehensive-test/IMA/proxy/data/proxyMainnet.json --abi-s-chain=~/Work/comprehensive-test/s_chain_gen/chain_00/ima_abi/abi.json  --key-main-net=23ABDBD3C61B5330AF61EBE8BEF582F4E5CC08E554053A718BDCE7813B9DC1FC --key-s-chain=23ABDBD3C61B5330AF61EBE8BEF582F4E5CC08E554053A718BDCE7813B9DC1FC
 
-node ~/Work/comprehensive-test/IMA/agent/main.js --colors --verbose=9 --expose --expose-security-info  --gas-price-multiplier=2 --auto-exit=0 \
+node ~/Work/comprehensive-test/IMA/agent/main.mjs --colors --verbose=9 --expose --expose-security-info  --gas-price-multiplier=2 --auto-exit=0 \
 --s2m-receive --url-main-net=http://127.0.0.1:8545 --url-s-chain=http://127.0.0.1:2164 --id-main-net=Mainnet --id-s-chain=Bob1000 --cid-main-net=456 --cid-s-chain=1000 --abi-skale-manager=~/Work/comprehensive-test/skale-manager/data/skale-manager-1.9.2-develop.10-custom-abi.json --abi-main-net=~/Work/comprehensive-test/IMA/proxy/data/proxyMainnet.json --abi-s-chain=~/Work/comprehensive-test/s_chain_gen/chain_00/ima_abi/abi.json  --key-main-net=23ABDBD3C61B5330AF61EBE8BEF582F4E5CC08E554053A718BDCE7813B9DC1FC --key-s-chain=23ABDBD3C61B5330AF61EBE8BEF582F4E5CC08E554053A718BDCE7813B9DC1FC
 
-node ~/Work/comprehensive-test/IMA/agent/main.js --colors --verbose=9 --expose --expose-security-info \
+node ~/Work/comprehensive-test/IMA/agent/main.mjs --colors --verbose=9 --expose --expose-security-info \
 --gas-price-multiplier=2 --auto-exit=0 --loop \
 --monitoring-port=29400 --url-main-net=http://127.0.0.1:8545 --url-s-chain=http://127.0.0.1:2164 \
 --id-main-net=Mainnet --id-s-chain=Bob1000 --cid-main-net=456 --cid-s-chain=1000 \

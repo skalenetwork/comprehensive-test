@@ -291,7 +291,6 @@ async function do_call( joCall, joIn, fn ) {
             return;
         }
         const strBody = JSON.stringify( joIn );
-        // console.log( "--- --- --- agentOptions is", agentOptions );
         // console.log( "--- --- --- joIn is", strBody );
         let bCompleteFlag = false;
         let errCall = null, joOut = null;
@@ -304,6 +303,7 @@ async function do_call( joCall, joIn, fn ) {
                 // "Content-Length": strBody.length,
             },
             "content": strBody,
+            // "rejectUnauthorized": false,
             "ca": ( joCall.joRpcOptions && joCall.joRpcOptions.ca && typeof joCall.joRpcOptions.ca == "string" ) ? joCall.joRpcOptions.ca : null,
             "cert": ( joCall.joRpcOptions && joCall.joRpcOptions.cert && typeof joCall.joRpcOptions.cert == "string" ) ? joCall.joRpcOptions.cert : null,
             "key": ( joCall.joRpcOptions && joCall.joRpcOptions.key && typeof joCall.joRpcOptions.key == "string" ) ? joCall.joRpcOptions.key : null
@@ -326,7 +326,7 @@ async function do_call( joCall, joIn, fn ) {
             } catch ( err ) {
                 bCompleteFlag = true;
                 joOut = null;
-                errCall = "Responce body parse error: " + err.toString();
+                errCall = "Response body parse error: " + err.toString();
                 return;
             }
             bCompleteFlag = true;
