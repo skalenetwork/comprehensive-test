@@ -75,7 +75,7 @@ const g_bAskExternalStartStopIMA = true;
 const g_bAtExitStopMN = g_bExternalMN ? false : true;
 const g_bAtExitStopSC = g_bExternalSC ? false : true;
 const g_bAtExitStopIMA = true; // for debugging purposes, let's us stay running after all tests passed OK
-const g_bAskToFinishTest = false;
+const g_bAskToFinishTest = g_isCloudMode ? false : true;
 const g_bDisableNewCrossImaRPC = false;
 const g_bAskToContinueAfterSkaledStarted = false;
 const g_bAskToContinueBeforeImaInit = false;
@@ -1046,10 +1046,7 @@ function compose_ima_cli_account_options_mn_sgx( idxChain, nNodeIndex ) {
         " --sgx-ssl-cert-main-net=\"" + g_joSgxRpcOptions.cert_path + "\"" +
         // " --address-main-net=\"" + private_key_2_account_address( g_w3mod, g_strPrivateKeyImaMN ) + "\"" // address instead of key here
         // " --address-main-net=\"" + public_key_2_account_address( g_w3mod, joNodeDesc.publicKey ) + "\"" // address instead of key here
-
-        // TO-FIX: restore --address-main-net usage (only), remove --key-main-net
         " --address-main-net=" + joNodeDesc.checkedNodeAddress
-        + " --key-main-net=" + joNodeDesc.nodePrivateKey // g_strPrivateKeyImaMN; // explicit private key
     ;
 }
 
@@ -1116,8 +1113,7 @@ function compose_node_runCmd4imaAgent( joNodeDesc ) {
     joNodeDesc.runCmd4imaAgent =
         "node " +
         g_strFolderImaAgent + "/main.mjs" + g_strImaOutputOpts + g_strImaRuntimeOpts +
-        // " --loop" +
-        " --simple-loop" +
+        " --simple-loop" + // " " + ( g_isCloudMode ? "--simple-loop" : "--loop" ) +
         //
         ( g_bDisableNewCrossImaRPC
             ? " --json-rpc-port=0 --no-cross-ima"
@@ -9089,10 +9085,10 @@ async function run() {
     if( g_bVerbose )
         log.write( "\n\n" + cc.sunny( "Basic " ) + cc.attention( "M<->S" ) + " " + cc.sunny( "ETH transfer tests start here" ) + "\n\n" );
 
-    /***/
     await ima_send_eth( g_idxMostOftenUsedSChain, g_strPrivateKeyImaMN, g_strPrivateKeyImaSC, "m2s", "2kether", nPreferredNodeIndex );
     await ima_send_eth( g_idxMostOftenUsedSChain, g_strPrivateKeyImaSC, g_strPrivateKeyImaMN, "s2m", "1ether", nPreferredNodeIndex );
 
+    /***/
     // // // // await ima_send_eth( g_idxMostOftenUsedSChain, g_strPrivateKeyImaMN, g_strPrivateKeyImaSC, "m2s", "1ether" );
     // // // // await ima_send_eth( g_idxMostOftenUsedSChain, g_strPrivateKeyImaSC, g_strPrivateKeyImaMN, "s2m", "1ether" );
     //
