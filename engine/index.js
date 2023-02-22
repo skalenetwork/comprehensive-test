@@ -75,7 +75,7 @@ const g_bAskExternalStartStopIMA = true;
 const g_bAtExitStopMN = g_bExternalMN ? false : true;
 const g_bAtExitStopSC = g_bExternalSC ? false : true;
 const g_bAtExitStopIMA = true; // for debugging purposes, let's us stay running after all tests passed OK
-const g_bAskToFinishTest = g_isCloudMode ? false : true;
+const g_bAskToFinishTest = true; // g_isCloudMode ? false : true;
 const g_bDisableNewCrossImaRPC = false;
 const g_bAskToContinueAfterSkaledStarted = false;
 const g_bAskToContinueBeforeImaInit = false;
@@ -9143,7 +9143,7 @@ async function run() {
     await ima_batch_send_erc1155_sc2mn( g_idxMostOftenUsedSChain, g_strPrivateKeyImaSC, g_strPrivateKeyImaMN, arrTokenIDs1155, arrAmounts1155, nPreferredNodeIndex );
     /***/
     if( g_arrChains.length >= 2 && g_bIsTestS2S ) {
-        /***/
+        /*** /
         if( g_bVerbose )
             log.write( "\n\n" + cc.sunny( "Basic " ) + cc.attention( "S<->S" ) + " " + cc.sunny( " chat start here" ) + "\n\n" );
         // S2S chat
@@ -9655,7 +9655,7 @@ async function run() {
             g_strPrivateKeyImaSC,
             g_strPrivateKeyImaSC
         );
-        /***/
+        / ***/
     } else { // if( g_arrChains.length >= 2 && g_bIsTestS2S )
         if( g_bVerbose )
             log.write( "\n\n" + cc.warning( "Skipped all " ) + cc.attention( "S<->S" ) + " " + cc.sunny( " transfer" ) + "\n\n" );
