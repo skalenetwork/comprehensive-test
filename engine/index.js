@@ -131,7 +131,7 @@ const g_joSgxRpcOptions = { // in IMA SGX_SSL_KEY_FILE_ETHEREUM/SGX_SSL_CERT_FIL
 const g_strSgxKeyNameMN = process.env.SGX_KEY_ETHEREUM || "NEK:002";
 const g_strSgxKeyNameSC = process.env.SGX_KEY_S_CHAIN || "NEK:003";
 const g_bUseTransactionManagerInImaMN = false; // use g_strUrlTransactionManager
-const g_bUseSgxInImaMN = true; // g_isCloudMode ? false : true; // ignored if g_bUseTransactionManagerInImaMN = true
+const g_bUseSgxInImaMN = true; // ignored if g_bUseTransactionManagerInImaMN = true
 const g_bUseSgxInImaSC = false;
 const g_bIsGenerateNodeEcdsaKeys = false; // true - use generateECDSAKey, false - use importECDSAKey
 // IMPORTANT NOTICE: g_bIsGenerateNodeEcdsaKeys should be false because dynamically generated ECDSA key addresses are not inserted into "mapAuthorizedCallers" in config.json files for skaled
@@ -9143,7 +9143,7 @@ async function run() {
     await ima_batch_send_erc1155_sc2mn( g_idxMostOftenUsedSChain, g_strPrivateKeyImaSC, g_strPrivateKeyImaMN, arrTokenIDs1155, arrAmounts1155, nPreferredNodeIndex );
     /***/
     if( g_arrChains.length >= 2 && g_bIsTestS2S ) {
-        /*** /
+        /***/
         if( g_bVerbose )
             log.write( "\n\n" + cc.sunny( "Basic " ) + cc.attention( "S<->S" ) + " " + cc.sunny( " chat start here" ) + "\n\n" );
         // S2S chat
@@ -9655,7 +9655,7 @@ async function run() {
             g_strPrivateKeyImaSC,
             g_strPrivateKeyImaSC
         );
-        / ***/
+        /***/
     } else { // if( g_arrChains.length >= 2 && g_bIsTestS2S )
         if( g_bVerbose )
             log.write( "\n\n" + cc.warning( "Skipped all " ) + cc.attention( "S<->S" ) + " " + cc.sunny( " transfer" ) + "\n\n" );
