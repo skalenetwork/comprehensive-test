@@ -89,6 +89,10 @@ const g_strImaOutputOpts = "" +
     " --verbose=9" +
     " --expose" +
     " --expose-security-info" +
+    // " --accumulated-log-in-transfer" +
+    // " --accumulated-log-in-bls-signer" +
+    " --dynamic-log-in-transfer" +
+    " --dynamic-log-in-bls-signer" +
     " "
     ;
 const g_strImaRuntimeOpts = "" +
@@ -1162,8 +1166,8 @@ function compose_node_runCmd4imaAgent( joNodeDesc ) {
         " --nodes-count=" + g_arrChains[joNodeDesc.idxChain].arrNodeDescriptions.length + // ....................S-Chain nodes count
         " --time-framing=" + 120 + // ..................Specifies period(in seconds) for time framing. Zero means disable time framing
         " --time-gap=" + 10 + // ......................Specifies gap(in seconds) before next time frame
-        // " --pwa --expose-pwa --pwa-timeout=" + 90 +
-        " --no-pwa --no-expose-pwa" +
+        " --pwa --expose-pwa --pwa-timeout=" + 90 +
+        // " --no-pwa --no-expose-pwa" +
         // " --enable-oracle" +
         " --disable-oracle" +
         ""
