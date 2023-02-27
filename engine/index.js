@@ -97,7 +97,12 @@ const g_strImaOutputOpts = "" +
     ;
 const g_strImaRuntimeOpts = "" +
     " --gas-price-multiplier=2" +
+    " --gas-multiplier=2" +
     " --auto-exit=0" +
+    // " --skip-dry-run" +
+    " --no-skip-dry-run" +
+    " --ignore-dry-run" +
+    // " --no-ignore-dry-run" +
     " "
 ;
 
@@ -1126,7 +1131,6 @@ function compose_node_runCmd4imaAgent( joNodeDesc ) {
         //
         " --monitoring-port=" + nMonitoringPort4ImaAgent +
         " --s2s-enable" +
-        // " --ignore-dry-run" +
         " --url-main-net=" + g_strMainNetURL + // URLs
         " --url-s-chain=" + joNodeDesc.url +
         " --id-main-net=" + g_strMainnetName + // chain names
@@ -3688,7 +3692,7 @@ async function schain_ima_gas_reimbursement_recharge( idxChain, fnContinue ) {
     const strCommand =
         "node " +
         g_strFolderImaAgent + "/main.mjs" + g_strImaOutputOpts + g_strImaRuntimeOpts +
-        " --reimbursement-chain=" + schain_name + " --reimbursement-recharge=1eth" +
+        " --reimbursement-chain=" + schain_name + " --reimbursement-recharge=1000eth" +
         " --url-main-net=" + g_strMainNetURL + // URLs
         " --url-s-chain=" + arrNodeDescriptions[0].url + // first skaled node URL
         " --id-main-net=" + g_strMainnetName + // chain names
@@ -5237,7 +5241,6 @@ function ima_register_schain( idxChain, fnContinue ) {
         "node " +
         g_strFolderImaAgent + "/main.mjs" + g_strImaOutputOpts + g_strImaRuntimeOpts +
         " --register" +
-        // " --ignore-dry-run" +
         " --url-main-net=" + g_strMainNetURL + // URLs
         " --url-s-chain=" + arrNodeDescriptions[0].url + // first skaled node URL
         " --id-main-net=" + g_strMainnetName + // chain names
@@ -9671,37 +9674,3 @@ run();
 
 //////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 //////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
-
-/*
-
-node ~/Work/comprehensive-test/IMA/agent/main.mjs --colors --verbose=9 --expose --expose-security-info  --gas-price-multiplier=2 --auto-exit=0 \
---m2s-payment --value=1ether --url-main-net=http://127.0.0.1:8545 --url-s-chain=http://127.0.0.1:2164 --id-main-net=Mainnet --id-s-chain=Bob1000 --cid-main-net=456 --cid-s-chain=1000 --abi-skale-manager=~/Work/comprehensive-test/skale-manager/data/skale-manager-1.9.2-develop.10-custom-abi.json --abi-main-net=~/Work/comprehensive-test/IMA/proxy/data/proxyMainnet.json --abi-s-chain=~/Work/comprehensive-test/s_chain_gen/chain_00/ima_abi/abi.json  --key-main-net=23ABDBD3C61B5330AF61EBE8BEF582F4E5CC08E554053A718BDCE7813B9DC1FC --key-s-chain=23ABDBD3C61B5330AF61EBE8BEF582F4E5CC08E554053A718BDCE7813B9DC1FC
-
-node ~/Work/comprehensive-test/IMA/agent/main.mjs --colors --verbose=9 --expose --expose-security-info  --gas-price-multiplier=2 --auto-exit=0 \
---s2m-payment --value=1ether --url-main-net=http://127.0.0.1:8545 --url-s-chain=http://127.0.0.1:2164 --id-main-net=Mainnet --id-s-chain=Bob1000 --cid-main-net=456 --cid-s-chain=1000 --abi-skale-manager=~/Work/comprehensive-test/skale-manager/data/skale-manager-1.9.2-develop.10-custom-abi.json --abi-main-net=~/Work/comprehensive-test/IMA/proxy/data/proxyMainnet.json --abi-s-chain=~/Work/comprehensive-test/s_chain_gen/chain_00/ima_abi/abi.json  --key-main-net=23ABDBD3C61B5330AF61EBE8BEF582F4E5CC08E554053A718BDCE7813B9DC1FC --key-s-chain=23ABDBD3C61B5330AF61EBE8BEF582F4E5CC08E554053A718BDCE7813B9DC1FC
-
-node ~/Work/comprehensive-test/IMA/agent/main.mjs --colors --verbose=9 --expose --expose-security-info  --gas-price-multiplier=2 --auto-exit=0 \
---s2m-receive --url-main-net=http://127.0.0.1:8545 --url-s-chain=http://127.0.0.1:2164 --id-main-net=Mainnet --id-s-chain=Bob1000 --cid-main-net=456 --cid-s-chain=1000 --abi-skale-manager=~/Work/comprehensive-test/skale-manager/data/skale-manager-1.9.2-develop.10-custom-abi.json --abi-main-net=~/Work/comprehensive-test/IMA/proxy/data/proxyMainnet.json --abi-s-chain=~/Work/comprehensive-test/s_chain_gen/chain_00/ima_abi/abi.json  --key-main-net=23ABDBD3C61B5330AF61EBE8BEF582F4E5CC08E554053A718BDCE7813B9DC1FC --key-s-chain=23ABDBD3C61B5330AF61EBE8BEF582F4E5CC08E554053A718BDCE7813B9DC1FC
-
-node ~/Work/comprehensive-test/IMA/agent/main.mjs --colors --verbose=9 --expose --expose-security-info \
---gas-price-multiplier=2 --auto-exit=0 --loop \
---monitoring-port=29400 --url-main-net=http://127.0.0.1:8545 --url-s-chain=http://127.0.0.1:2164 \
---id-main-net=Mainnet --id-s-chain=Bob1000 --cid-main-net=456 --cid-s-chain=1000 \
---abi-skale-manager=~/Work/comprehensive-test/skale-manager/data/skale-manager-1.9.2-develop.10-custom-abi.json \
---abi-main-net=~/Work/comprehensive-test/IMA/proxy/data/proxyMainnet.json \
---abi-s-chain=~/Work/comprehensive-test/s_chain_gen/chain_00/ima_abi/abi.json \
---sgx-url-main-net="https://127.0.0.1:1026" --sgx-ecdsa-key-main-net="NEK:1000" --sgx-ssl-key-main-net="~/Work/comprehensive-test/engine/create_pems/k.key" --sgx-ssl-cert-main-net="~/Work/comprehensive-test/engine/create_pems/client.crt" \
---address-main-net=0x57DFd5291a0d7475Eaa1D1b8A7f03248Fa26a194 --key-s-chain=23ABDBD3C61B5330AF61EBE8BEF582F4E5CC08E554053A718BDCE7813B9DC1FC \
---sign-messages --bls-glue=~/Work/comprehensive-test/app_cache/bin/bls_glue \
---hash-g1=~/Work/comprehensive-test/app_cache/bin/hash_g1 --bls-verify=~/Work/comprehensive-test/app_cache/bin/verify_bls \
---m2s-transfer-block-size=4 --s2m-transfer-block-size=4 --m2s-max-transactions=0 --s2m-max-transactions=0 --m2s-await-blocks=0 --s2m-await-blocks=0 --m2s-await-time=0 --s2m-await-time=0 \
---period=10 --time-framing=120 --time-gap=10 --pwa --disable-oracle
-
-# --node-number=0 --nodes-count=2
-# --s2s-enable --s2s-transfer-block-size=4 --s2s-max-transactions=0 --s2s-await-time=0 --s2s-await-blocks=0
-
-savedBlockNumberForOptimizations
-
-cntAccumulatedForBlock
-
-*/
