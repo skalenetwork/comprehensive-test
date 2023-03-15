@@ -14,13 +14,13 @@ function cfgGet() {
         if( ! fs.existsSync( g_strPathConfig ) ) {
             log.write( cc.fatal( "Configuration loading error, file does not exist:" ) + cc.error( " " ) + cc.error( g_strPathConfig ) + "\n" );
             //return {};
-            process.exit( 126 ); // see https://tldp.org/LDP/abs/html/exitcodes.html
+            process.exit( 30 ); // see https://tldp.org/LDP/abs/html/exitcodes.html
         }
         s = fs.readFileSync( g_strPathConfig, "utf8" );
         g_joCfg = JSON.parse( s );
     } catch ( e ) {
         log.write( cc.fatal( "Configuration loading error:" ) + cc.error( " " ) + cc.j( e ) + "\n" );
-        process.exit( 126 ); // see https://tldp.org/LDP/abs/html/exitcodes.html
+        process.exit( 31 ); // see https://tldp.org/LDP/abs/html/exitcodes.html
     }
     return g_joCfg ? g_joCfg : {};
 }
@@ -45,7 +45,7 @@ function cfgSave() {
         );
     } catch ( e ) {
         log.write( cc.fatal( "Configuration saving error:" ) + cc.error( " " ) + cc.j( e ) + "\n" );
-        process.exit( 126 ); // see https://tldp.org/LDP/abs/html/exitcodes.html
+        process.exit( 32 ); // see https://tldp.org/LDP/abs/html/exitcodes.html
     }
     log.write( cc.success( "Configuration was saved to " ) + cc.info( g_strPathConfig ) + "\n" );
 }

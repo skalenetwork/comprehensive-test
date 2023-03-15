@@ -75,8 +75,11 @@ echo -e "${COLOR_INFO}Cleaning directories...${COLOR_RESET}"
 /bin/bash "./clean.sh"
 echo -e "${COLOR_INFO}Initializing infrastructure...${COLOR_RESET}"
 yarn install
-#node ./init.js 16
-node ./init.js 2 2
+# arguments of init.js are:
+# 1) count of S-chains, can be specified with GEN_CNT_CHAINS environment variable
+# 2) count of nodes per S-chain, can be specified with GEN_CNT_NODES environment variable
+# 3) count of sync-nodes per S-chain, can be specified with GEN_CNT_SYNC_NODES environment variable
+node ./init.js 2 2 1
 echo -e "${COLOR_SUCCESS}Done, infrastructure initialized${COLOR_RESET}"
 
 ############################################################################################################################

@@ -522,9 +522,11 @@ const g_arrChainNaming = [
 //         "\n" );
 // }
 
+const g_cntSyncNodesPerChain = 1;
+
 // IMPORTANT:
 // We assume all S-Chains have same number for skaled nodes for now.
-// This is limitation of both s_chain_gen/init.js and this script.
+// This is limitation of both s_chain_gen/init.js and this script(and s_chain_gen/init.sh too, of course).
 // That is why we have g_idxMostOftenUsedSChain global variable.
 const g_arrChains = [
     {
@@ -550,6 +552,9 @@ const g_arrChains = [
             // initNodeDescription( 14, process.env.URL_W3_NODE_14 || "http://127.0.0.15:3564", 0, 14, g_arrChainNaming[0].cid, 1126, "Ally", 3561 ), // "http://127.0.0.15:16400" // "ws://127.0.0.15:16420"
             // initNodeDescription( 15, process.env.URL_W3_NODE_15 || "http://127.0.0.16:3664", 0, 15, g_arrChainNaming[0].cid, 1127, "Trez", 3661 )  // "http://127.0.0.16:16500" // "ws://127.0.0.16:16520"
         ],
+        arrSyncNodeDescriptions: [
+            initNodeDescription( 4, process.env.URL_W3_NODE_02 || "http://127.0.0.3:2364", 0, 2, g_arrChainNaming[0].cid, 1114, "John", 2361 ) // "http://127.0.0.3:15200"  // "ws://127.0.0.3:15220"
+        ],
         arrAssignedNodeIndices: []
     },
     {
@@ -558,8 +563,11 @@ const g_arrChains = [
         name: g_arrChainNaming[1].name,
         joImaAbiSC: null,
         arrNodeDescriptions: [
-            initNodeDescription( 2, process.env.URL_W3_NODE_02 || "http://127.0.0.3:2364", 1, 0, g_arrChainNaming[1].cid, 1114, "John", 2361 ), // "http://127.0.0.3:15200"  // "ws://127.0.0.3:15220"
-            initNodeDescription( 3, process.env.URL_W3_NODE_03 || "http://127.0.0.4:2464", 1, 1, g_arrChainNaming[1].cid, 1115, "Seed", 2461 ) // "http://127.0.0.4:15300"  // "ws://127.0.0.4:15320"
+            initNodeDescription( 2, process.env.URL_W3_NODE_03 || "http://127.0.0.4:2464", 1, 0, g_arrChainNaming[1].cid, 1115, "Seed", 2461 ), // "http://127.0.0.4:15300"  // "ws://127.0.0.4:15320"
+            initNodeDescription( 3, process.env.URL_W3_NODE_04 || "http://127.0.0.5:2564", 1, 1, g_arrChainNaming[1].cid, 1116, "Tron", 2561 ) // "http://127.0.0.5:15400"  // "ws://127.0.0.5:15420"
+        ],
+        arrSyncNodeDescriptions: [
+            initNodeDescription( 5, process.env.URL_W3_NODE_05 || "http://127.0.0.6:2664", 1, 2, g_arrChainNaming[1].cid, 1117, "Neon", 2661 ) // "http://127.0.0.6:15500"  // "ws://127.0.0.6:15520"
         ],
         arrAssignedNodeIndices: []
     }
@@ -3056,7 +3064,11 @@ function all_skaled_nodes_fix_config_json() {
 
 async function all_skaled_nodes_prepare() {
     if( g_bExternalSC ) {
-        const joEnv = {};
+        const joEnv = {
+            "GEN_CNT_CHAINS": g_arrChains.length,
+            "GEN_CNT_NODES": g_arrChains[0].arrNodeDescriptions.length,
+            "GEN_CNT_SYNC_NODES": g_cntSyncNodesPerChain
+        };
         if( g_bSkaledWithBTRFS ) {
             joEnv.SKALED_WITH_BTRFS = "1";
             if( g_bSkaledWithSnapshots )

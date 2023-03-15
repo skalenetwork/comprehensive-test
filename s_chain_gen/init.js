@@ -12,8 +12,34 @@ const g_bSkaledWithBTRFS = s2b( process.env.SKALED_WITH_BTRFS );
 const g_bSkaledWithSnapshots = ( g_bSkaledWithBTRFS && s2b( process.env.SKALED_WITH_SNAPSHOTS ) ) ? true : false;
 
 let idxChain = 0, idxNode = 0;
-const cntChains = parseInt( process.argv[2] );
-const cntNodes = parseInt( process.argv[3] );
+const cntChains = process.env.GEN_CNT_CHAINS ? parseInt( process.env.GEN_CNT_CHAINS ) : ( process.argv.length >= 3 ? parseInt( process.argv[2] ) : 0 );
+const cntNodes = process.env.GEN_CNT_NODES ? parseInt( process.env.GEN_CNT_NODES ) : ( process.argv.length >= 4 ? parseInt( process.argv[3] ) : 0 );
+const cntSyncNodes = process.env.GEN_CNT_SYNC_NODES ? parseInt( process.env.GEN_CNT_SYNC_NODES ) : ( process.argv.length >= 5 ? parseInt( process.argv[4] ) : 0 );
+const cntTotalNodes = cntNodes + cntSyncNodes;
+
+log.write( cc.bright( "Multi node infrastructure initializer" ) + " " + cc.debug( "app" ) + "\n" );
+log.write( "    " + cc.sunny( "skaled" ) + cc.debug( " with " ) + cc.bright( "BTRFS" ) + cc.debug( "...................." ) + cc.yn( g_bSkaledWithBTRFS ) + "\n" );
+log.write( "    " + cc.sunny( "skaled" ) + cc.debug( " with " ) + cc.bright( "snapshots" ) + cc.debug( "................" ) + cc.yn( g_bSkaledWithSnapshots ) + "\n" );
+log.write( "    " + cc.debug( "Count of " ) + cc.sunny( "S-chains" ) + cc.debug( "...................." ) + cc.attention( cntChains ) + "\n" );
+log.write( "    " + cc.debug( "Count of " ) + cc.sunny( "nodes" ) + cc.debug( " per S-chain" ) + cc.debug( "..........." ) + cc.attention( cntNodes ) + "\n" );
+log.write( "    " + cc.debug( "Count of " ) + cc.sunny( "sync-nodes" ) + cc.debug( " per S-chain" ) + cc.debug( "......" ) + cc.attention( cntSyncNodes ) + "\n" );
+log.write( "    " + cc.debug( "Count of " ) + cc.sunny( "total nodes" ) + cc.debug( " per S-chain" ) + cc.debug( "....." ) + cc.attention( cntTotalNodes ) + "\n" );
+
+if( cntChains == 0 ) {
+    log.write(
+        cc.fatal( "Command line parameters error:" ) + " " +
+        cc.error( "Cannot generate anything because number of S-chains to generate is zero." ) +
+        "\n" );
+    process.exit( 20 );
+}
+if( cntNodes == 0 ) {
+    log.write(
+        cc.fatal( "Command line parameters error:" ) + " " +
+        cc.error( "Cannot generate anything because number of nodes per S-chain is zero." ) +
+        "\n" );
+    process.exit( 21 );
+}
+
 const strNestedSpace = cc.debug( "...." );
 
 function nestedSpace( cnt ) {
@@ -61,9 +87,6 @@ function s2b( s ) {
     }
 }
 
-log.write( cc.info( "Multi node infrastructure initializer app" ) + cc.debug( ", will initialize " ) + cc.bright( cntNodes ) + cc.debug( " node(s)" ) + "\n" );
-log.write( cc.sunny( "skaled" ) + cc.debug( " with " ) + cc.bright( "BTRFS" ) + cc.debug( "............" ) + cc.yn( g_bSkaledWithBTRFS ) + "\n" );
-log.write( cc.sunny( "skaled" ) + cc.debug( " with " ) + cc.bright( "snapshots" ) + cc.debug( "........" ) + cc.yn( g_bSkaledWithSnapshots ) + "\n" );
 
 //////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 
@@ -94,11 +117,10 @@ function chain_name_from_cid( cid ) {
 const g_arrEcdsaKeysCache = JSON.parse( fs.readFileSync( path.join( __dirname, "g_arrEcdsaKeysCache.json" ), "utf8" ) );
 
 function get_cached_ecdsa_key_at( idxChain, idxNode ) {
-    // const idx = idxChain * cntNodes + idxNode;
     const idx = 0 + idxNode;
     if( idx < 0 || idx >= g_arrEcdsaKeysCache.length ) {
         log.write( cc.fatal( "FATAL ERROR:" ) + cc.error( "Cannot get cached ECDSA key at index " ) + cc.warning( idx ) + cc.error( "(have " ) + cc.warning( g_arrEcdsaKeysCache.length ) + cc.error( " keys in cache)" ) + "\n" );
-        process.exit( 55 );
+        process.exit( 90 );
     }
     const joKey = JSON.parse( JSON.stringify( g_arrEcdsaKeysCache[idx] ) );
     joKey.sgxName = compose_sgx_key_name( idxChain, idxNode );
@@ -106,7 +128,6 @@ function get_cached_ecdsa_key_at( idxChain, idxNode ) {
 }
 
 function compose_sgx_key_name( idxChain, idxNode ) {
-    // const idx = idxChain * cntNodes + idxNode;
     const idx = 0 + idxNode;
     let s = "" + idx;
     while( s.length < 3 )
@@ -611,16 +632,16 @@ const infoPortShift = 16000;
 const ip6PortShift = 50;
 
 function calc_node_id( idxChain, idxNode ) { // idxNode is 0-based
-    return idxChain * cntNodes + baseNodeID + idxNode * stepNodeID;
+    return idxChain * cntTotalNodes + baseNodeID + idxNode * stepNodeID;
 }
 
 function calc_node_ip4( idxChain, idxNode ) { // idxNode is 0-based
     const idx1 = idxNode + 1; // idx1 is 1-based
-    return "127.0.0." + ( idxChain * cntNodes + idx1 );
+    return "127.0.0." + ( idxChain * cntTotalNodes + idx1 );
 }
 
 function calc_node_port( strProtocol, ipVer, strType, idxChain, idxNode ) { // idxNode is 0-based
-    let nPort = idxChain * cntNodes * stepNodePort + baseNodePort + idxNode * stepNodePort;
+    let nPort = idxChain * cntTotalNodes * stepNodePort + baseNodePort + idxNode * stepNodePort;
     switch ( strProtocol ) {
     case "base":
         break;
@@ -1046,11 +1067,29 @@ function create_node_config( idxChain, idxNode ) { // idxNode is 0-based
         // "no-txn-sending": false,
         // "no-ima-signing": false
     };
-    if( cntNodes in g_mapImaWalletConfigurations ) {
-        const arrImaWalletConfigurations = g_mapImaWalletConfigurations[cntNodes];
+    const isSyncNode = ( idxNode < cntNodes ) ? false : true;
+    if( ! isSyncNode ) {
+        // this is normal node, non-sync-node
+        if( cntNodes in g_mapImaWalletConfigurations ) {
+            const arrImaWalletConfigurations = g_mapImaWalletConfigurations[cntNodes];
+            jo.skaleConfig.nodeInfo.wallets = {};
+            jo.skaleConfig.nodeInfo.wallets.ima = arrImaWalletConfigurations[idxNode];
+        }
+    } else {
+        // this is sync-node
+        jo.skaleConfig.nodeInfo.syncNode = true;
+        // jo.skaleConfig.nodeInfo.syncFromCatchup = true;
+        jo.skaleConfig.nodeInfo.archiveMode = true;
+        jo.params.skaleDisableChainIdCheck = true;
+        jo.skaleConfig.nodeInfo.ecdsaKeyName = "";
         jo.skaleConfig.nodeInfo.wallets = {};
-        jo.skaleConfig.nodeInfo.wallets.ima = arrImaWalletConfigurations[idxNode];
-    }
+        jo.skaleConfig.nodeInfo.minCacheSize = 32000000;
+        jo.skaleConfig.nodeInfo.maxCacheSize = 64000000;
+        jo.skaleConfig.nodeInfo.collectionQueueSize = 20;
+        jo.skaleConfig.nodeInfo.collectionDuration = 60;
+        jo.skaleConfig.nodeInfo.transactionQueueSize = 100000;
+        jo.skaleConfig.nodeInfo.maxOpenLeveldbFiles = 256;
+}
     jo.params.chainID = int_to_hex_string_value_auto( g_base_schain_id + idxChain );
     jo.skaleConfig.sChain.schainID = ( g_base_schain_id + idxChain );
     jo.skaleConfig.sChain.schainName = chain_name_from_cid( g_base_schain_id + idxChain );
@@ -1088,7 +1127,7 @@ function create_node_config( idxChain, idxNode ) { // idxNode is 0-based
             "blsPublicKey2": "15589121991762249044144978977372528309937348805516902998710932069462886468932",
             "blsPublicKey3": "13486777600147833199847048857343694767579409724460974999019292787514627383420"
         } );
-    }
+    } // for( i = 0; i < cntNodes; ++i )
     jo.skaleConfig.sChain.nodes = arrNodes;
     for( let idxNodeKey = 0; idxNodeKey < g_arrEcdsaKeysCache.length; ++ idxNodeKey ) {
         const joCachedKey = g_arrEcdsaKeysCache[idxNodeKey];
@@ -1160,7 +1199,7 @@ for( idxChain = 0; idxChain < cntChains; ++idxChain ) {
         fs.mkdirSync( strImaAbiFolder ); // , { recursive: true, mode: 0o777 }
         fs.chmodSync( strImaAbiFolder, "0777" );
     }
-    for( idxNode = 0; idxNode < cntNodes; ++idxNode ) {
+    for( idxNode = 0; idxNode < cntTotalNodes; ++idxNode ) {
         strNSP = nestedSpace( 2 );
         log.write( cc.debug( "Initializing node " ) + cc.bright( idxNode ) + cc.debug( "..." ) + "\n" );
         //
@@ -1201,7 +1240,7 @@ for( idxChain = 0; idxChain < cntChains; ++idxChain ) {
         //
         if( g_bSkaledWithBTRFS ) {
         }
-    } // for( idxNode = 0; idxNode < cntNodes; ++idxNode )
+    } // for( idxNode = 0; idxNode < cntTotalNodes; ++idxNode )
     strNSP = nestedSpace( 1 );
     strContentRunSH_global += "/bin/bash " + path.join( strChainFolder, "run.sh" ) + " SKALED=$SKALED &>/dev/null &\n";
     strContentShutdownSH_global += "/bin/bash " + path.join( strChainFolder, "shutdown.sh" ) + " &>/dev/null &\n";
