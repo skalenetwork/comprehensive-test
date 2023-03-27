@@ -5156,7 +5156,7 @@ async function generate_predeployed_artifacts_schain( idxChain, fnContinue ) {
     };
     if( g_bPredeployedIMA )
         joEnv.GENERATE_ABI = "true";
-    await exec_array_of_commands_safe( [ "./update_predeployed.sh" ], __dirname, joEnv, 3 );
+    await exec_array_of_commands_safe( [ path.join( __dirname, "update_predeployed.sh" ) ], g_strFolderImaProxy, joEnv, 3 );
     fnContinue();
 }
 

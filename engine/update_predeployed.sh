@@ -1,6 +1,11 @@
 #!/bin/bash
 
-cd ../IMA/proxy
+# VERY IMPORTANT:
+# VERY IMPORTANT:
+# VERY IMPORTANT: this script must run in IMA/proxy folder as current directory
+# VERY IMPORTANT:
+# VERY IMPORTANT:
+
 yarn install
 
 # cd ./predeployed/test
@@ -255,5 +260,3 @@ else
     cp $PATH_IMA_ABI $PATH_IMA_ABI_SAVED_COPY
 fi
 echo " "
-
-cd ../../../engine
