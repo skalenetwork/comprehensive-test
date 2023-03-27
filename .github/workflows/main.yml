@@ -91,11 +91,12 @@ jobs:
         echo ------------ lscpu
         lscpu || true
 
-    - name: UPDATE - system deps and install libc6, net-tools, btrfs-progs, zip, unzip
+    - name: UPDATE - system deps and install libc6, net-tools, btrfs-progs, zip, unzip, procps
       run: |
         sudo apt-get update
         #sudo apt-get upgrade
         sudo apt-get install libc6 net-tools btrfs-progs zip unzip
+        sudo apt-get install procps
         #
         # - name: Init NTP
         #   run: |
@@ -109,7 +110,7 @@ jobs:
     - name: INIT - install docker with compose
       run: |
         echo " --------------------------- remove old packages ------------------------------------------------------------------------------------------------------ "
-        sudo apt-get remove docker* containerd* || tinstall rue
+        sudo apt-get remove docker* containerd* || true
         echo " --------------------------- install containerd.io ---------------------------------------------------------------------------------------------------- "
         sudo apt-get install containerd.io
         echo " --------------------------- install docker.io -------------------------------------------------------------------------------------------------------- "
@@ -408,7 +409,7 @@ jobs:
         docker ps
         echo "------------------------------------------------------------------------------------"
         export TM_CONTAINER_ID=$(docker ps | grep transaction-manager | awk '{print $1;}')
-        echo "Transaction mananager docker container ID:" $TM_CONTAINER_ID
+        echo "Transaction manager docker container ID:" $TM_CONTAINER_ID
         docker logs $TM_CONTAINER_ID -f &> engine/tm.log &
         echo "------------------------------------------------------------------------------------"
         export REDIS_CONTAINER_ID=$(docker ps | grep redis | awk '{print $1;}')
@@ -447,3 +448,5 @@ jobs:
     - name: SHUTDOWN - zombie cleanup, if any
       run: |
         killall -9 skaled node npx python python3 || true
+        pkill -9 -f skaled || true
+

@@ -440,7 +440,10 @@ const g_strFolderMultiNodeDeployment = findExistingDirPath( path.join( __dirname
 if( g_bVerbose )
     log.write( cc.normal( "Assuming " ) + cc.sunny( "Multi Node Deployment" ) + cc.normal( " is located at " ) + cc.info( g_strFolderMultiNodeDeployment ) + "\n" );
 
-const g_strFolderRepoIMA = findExistingDirPath( [ path.join( __dirname, "../IMA" ), path.join( __dirname, "../../../IMA" ) ] );
+const g_strFolderRepoIMA = process.env.IMA_ROOT_DIR
+    ? findExistingDirPath( process.env.IMA_ROOT_DIR )
+    : findExistingDirPath( [ path.join( __dirname, "../IMA" ), path.join( __dirname, "../../../IMA" ) ] )
+    ;
 if( g_bVerbose )
     log.write( cc.normal( "Assuming " ) + cc.sunny( "IMA" ) + cc.normal( " repo is " ) + cc.info( g_strFolderRepoIMA ) + "\n" );
 const g_strFolderImaProxy = "" + g_strFolderRepoIMA + "/proxy";
