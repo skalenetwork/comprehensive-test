@@ -84,6 +84,8 @@ const g_bAskToStartCryptoAssetTransfersTest = false;
 const g_bUpdateSkaledToLatestFromGithub = false;
 const g_strSkaledReleaseTagCookie = "develop";
 
+const g_bTestImaAgentDiscoveryCommandsAndExit = false; // special mode to test discovery commands of IMA Agent only
+
 const g_strImaOutputOpts = "" +
     " --colors" +
     " --verbose=9" +
@@ -1104,6 +1106,13 @@ function compose_ima_cli_account_options( idxChain, nNodeIndex ) {
     else
         s += " --key-s-chain=" + g_strPrivateKeyImaSC; // explicit private key
     //
+    return s;
+}
+
+function compose_ima_cli_account_options_force_raw_private_keys( idxChain, nNodeIndex ) {
+    let s = "";
+    s += " --key-main-net=" + g_strPrivateKeyImaMN; // explicit private key
+    s += " --key-s-chain=" + g_strPrivateKeyImaSC; // explicit private key
     return s;
 }
 
@@ -3771,6 +3780,381 @@ async function ima_enable_pausable_role() {
             cc.error( " Failed to adjust " ) + cc.sunny( "PAUSABLE_ROLE" ) + cc.error( " role, error description: " ) +
             cc.warning( err.toString() ) + "\n" );
         await end_of_test( 47 );
+    }
+}
+
+//////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
+//////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
+
+async function ima_test_discover_chain_id( idxChain, idxNode ) {
+    const joChain = g_arrChains[idxChain];
+    const arrNodeDescriptions = joChain.arrNodeDescriptions;
+    const joNodeDesc = arrNodeDescriptions[idxNode];
+    const idxChainTarget = ( idxChain + 1 ) % g_arrChains.length;
+    const joChainTarget = g_arrChains[idxChainTarget];
+    const arrNodeDescriptionsTarget = joChainTarget.arrNodeDescriptions;
+    const joNodeDescTarget = arrNodeDescriptionsTarget[idxNode];
+    if( g_bVerbose ) {
+        log.write( "\n\n" +
+            cc.bright( "Performing " ) + cc.sunny( "chain ID" ) +
+            cc.bright( " discovery on chain " ) + cc.info( joChain.name ) +
+            cc.bright( " known as ID " ) + cc.info( joChain.cid ) +
+            cc.bright( " via node " ) + cc.info( joNodeDesc.nameNode ) +
+            cc.bright( " with URL " ) + cc.info( joNodeDesc.strURL ) +
+            cc.bright( "..." ) + "\n\n" );
+    }
+    const schain_name = g_arrChains[joNodeDesc.idxChain].name;
+    const schain_id = g_arrChains[joNodeDesc.idxChain].cid;
+    const schain_name_target = g_arrChains[joNodeDescTarget.idxChain].name;
+    const schain_id_target = g_arrChains[joNodeDescTarget.idxChain].cid;
+    const strCommand =
+        "node " +
+        g_strFolderImaAgent + "/main.mjs" + g_strImaOutputOpts + g_strImaRuntimeOpts +
+        " --discover-cid" +
+        //
+        " --url-main-net=" + g_strMainNetURL + // URLs
+        " --url-s-chain=" + joNodeDesc.url +
+        " --url-t-chain=" + joNodeDescTarget.url +
+        " --id-main-net=" + g_strMainnetName + // chain names
+        " --id-s-chain=" + schain_name +
+        " --id-t-chain=" + schain_name_target +
+        " --cid-main-net=" + cid_main_net + // chain IDs
+        " --cid-s-chain=" + schain_id +
+        " --cid-t-chain=" + schain_id_target +
+        " --abi-skale-manager=" + g_strSkaleManagerAbiJsonPath +
+        " --abi-main-net=" + g_strPathImaAbiMN + // ABIs
+        " --abi-s-chain=" + get_ima_abi_schain_path( joNodeDesc.idxChain ) +
+        " " + compose_ima_cli_account_options_force_raw_private_keys( joNodeDesc.idxChain, joNodeDesc.idxNode ) +
+        ""
+    ;
+    const strWorkingDirectory = "" + g_strFolderRepoIMA;
+    const joEnv = {
+        "PATH": g_strRecommendedShellPATH
+    };
+    if( g_bVerbose ) {
+        log.write(
+            cc.debug( "will run " ) + cc.notice( "\"" ) + cc.info( strCommand ) + cc.notice( "\"" ) +
+                cc.debug( " in folder " ) + cc.notice( "\"" ) + cc.info( strWorkingDirectory ) + cc.notice( "\"" ) +
+                cc.debug( " with environment: " ) + cc.j( joEnv ) + cc.debug( " ..." ) +
+                "\n" );
+    }
+    child_process.execSync(
+        strCommand,
+        {
+            cwd: "" + strWorkingDirectory,
+            stdio: "inherit",
+            env: joEnv
+        } );
+    if( g_bVerbose )
+        log.write( cc.success( "Finished chain ID discovery" ) + "\n" );
+}
+
+async function ima_test_discover_chain_ids() {
+    for( let idxChain = 0; idxChain < g_arrChains.length; ++ idxChain ) {
+        const joChain = g_arrChains[idxChain];
+        const arrNodeDescriptions = joChain.arrNodeDescriptions;
+        for( let idxNode = 0; idxNode < arrNodeDescriptions.length; ++ idxNode )
+            await ima_test_discover_chain_id( idxChain, idxNode );
+    }
+}
+
+//////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
+//////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
+
+async function ima_test_browse_skale_network( idxChain, idxNode ) {
+    const joChain = g_arrChains[idxChain];
+    const arrNodeDescriptions = joChain.arrNodeDescriptions;
+    const joNodeDesc = arrNodeDescriptions[idxNode];
+    const idxChainTarget = ( idxChain + 1 ) % g_arrChains.length;
+    const joChainTarget = g_arrChains[idxChainTarget];
+    const arrNodeDescriptionsTarget = joChainTarget.arrNodeDescriptions;
+    const joNodeDescTarget = arrNodeDescriptionsTarget[idxNode];
+    if( g_bVerbose ) {
+        log.write( "\n\n" +
+            cc.bright( "Performing " ) + cc.sunny( "SKALE Network" ) +
+            cc.bright( " discovery on chain " ) + cc.info( joChain.name ) +
+            cc.bright( " known as ID " ) + cc.info( joChain.cid ) +
+            cc.bright( " via node " ) + cc.info( joNodeDesc.nameNode ) +
+            cc.bright( " with URL " ) + cc.info( joNodeDesc.strURL ) +
+            cc.bright( "..." ) + "\n\n" );
+    }
+    const schain_name = g_arrChains[joNodeDesc.idxChain].name;
+    const schain_id = g_arrChains[joNodeDesc.idxChain].cid;
+    const schain_name_target = g_arrChains[joNodeDescTarget.idxChain].name;
+    const schain_id_target = g_arrChains[joNodeDescTarget.idxChain].cid;
+    const strCommand =
+        "node " +
+        g_strFolderImaAgent + "/main.mjs" + g_strImaOutputOpts + g_strImaRuntimeOpts +
+        " --browse-skale-network" +
+        //
+        " --url-main-net=" + g_strMainNetURL + // URLs
+        " --url-s-chain=" + joNodeDesc.url +
+        " --url-t-chain=" + joNodeDescTarget.url +
+        " --id-main-net=" + g_strMainnetName + // chain names
+        " --id-s-chain=" + schain_name +
+        " --id-t-chain=" + schain_name_target +
+        " --cid-main-net=" + cid_main_net + // chain IDs
+        " --cid-s-chain=" + schain_id +
+        " --cid-t-chain=" + schain_id_target +
+        " --abi-skale-manager=" + g_strSkaleManagerAbiJsonPath +
+        " --abi-main-net=" + g_strPathImaAbiMN + // ABIs
+        " --abi-s-chain=" + get_ima_abi_schain_path( joNodeDesc.idxChain ) +
+        " " + compose_ima_cli_account_options_force_raw_private_keys( joNodeDesc.idxChain, joNodeDesc.idxNode ) +
+        ""
+    ;
+    const strWorkingDirectory = "" + g_strFolderRepoIMA;
+    const joEnv = {
+        "PATH": g_strRecommendedShellPATH
+    };
+    if( g_bVerbose ) {
+        log.write(
+            cc.debug( "will run " ) + cc.notice( "\"" ) + cc.info( strCommand ) + cc.notice( "\"" ) +
+                cc.debug( " in folder " ) + cc.notice( "\"" ) + cc.info( strWorkingDirectory ) + cc.notice( "\"" ) +
+                cc.debug( " with environment: " ) + cc.j( joEnv ) + cc.debug( " ..." ) +
+                "\n" );
+    }
+    child_process.execSync(
+        strCommand,
+        {
+            cwd: "" + strWorkingDirectory,
+            stdio: "inherit",
+            env: joEnv
+        } );
+    if( g_bVerbose )
+        log.write( cc.success( "Finished SKALE Network discovery" ) + "\n" );
+}
+
+async function ima_test_browse_skale_networks() {
+    for( let idxChain = 0; idxChain < g_arrChains.length; ++ idxChain ) {
+        const joChain = g_arrChains[idxChain];
+        const arrNodeDescriptions = joChain.arrNodeDescriptions;
+        for( let idxNode = 0; idxNode < arrNodeDescriptions.length; ++ idxNode )
+            await ima_test_browse_skale_network( idxChain, idxNode );
+    }
+}
+
+//////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
+//////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
+
+async function ima_test_browse_connected_chain( idxChain, idxNode ) {
+    const joChain = g_arrChains[idxChain];
+    const arrNodeDescriptions = joChain.arrNodeDescriptions;
+    const joNodeDesc = arrNodeDescriptions[idxNode];
+    const idxChainTarget = ( idxChain + 1 ) % g_arrChains.length;
+    const joChainTarget = g_arrChains[idxChainTarget];
+    const arrNodeDescriptionsTarget = joChainTarget.arrNodeDescriptions;
+    const joNodeDescTarget = arrNodeDescriptionsTarget[idxNode];
+    if( g_bVerbose ) {
+        log.write( "\n\n" +
+            cc.bright( "Performing " ) + cc.sunny( "connected S-Chains" ) +
+            cc.bright( " discovery on chain " ) + cc.info( joChain.name ) +
+            cc.bright( " known as ID " ) + cc.info( joChain.cid ) +
+            cc.bright( " via node " ) + cc.info( joNodeDesc.nameNode ) +
+            cc.bright( " with URL " ) + cc.info( joNodeDesc.strURL ) +
+            cc.bright( "..." ) + "\n\n" );
+    }
+    const schain_name = g_arrChains[joNodeDesc.idxChain].name;
+    const schain_id = g_arrChains[joNodeDesc.idxChain].cid;
+    const schain_name_target = g_arrChains[joNodeDescTarget.idxChain].name;
+    const schain_id_target = g_arrChains[joNodeDescTarget.idxChain].cid;
+    const strCommand =
+        "node " +
+        g_strFolderImaAgent + "/main.mjs" + g_strImaOutputOpts + g_strImaRuntimeOpts +
+        " --browse-connected-schains" +
+        //
+        " --url-main-net=" + g_strMainNetURL + // URLs
+        " --url-s-chain=" + joNodeDesc.url +
+        " --url-t-chain=" + joNodeDescTarget.url +
+        " --id-main-net=" + g_strMainnetName + // chain names
+        " --id-s-chain=" + schain_name +
+        " --id-t-chain=" + schain_name_target +
+        " --cid-main-net=" + cid_main_net + // chain IDs
+        " --cid-s-chain=" + schain_id +
+        " --cid-t-chain=" + schain_id_target +
+        " --abi-skale-manager=" + g_strSkaleManagerAbiJsonPath +
+        " --abi-main-net=" + g_strPathImaAbiMN + // ABIs
+        " --abi-s-chain=" + get_ima_abi_schain_path( joNodeDesc.idxChain ) +
+        " " + compose_ima_cli_account_options_force_raw_private_keys( joNodeDesc.idxChain, joNodeDesc.idxNode ) +
+        ""
+    ;
+    const strWorkingDirectory = "" + g_strFolderRepoIMA;
+    const joEnv = {
+        "PATH": g_strRecommendedShellPATH
+    };
+    if( g_bVerbose ) {
+        log.write(
+            cc.debug( "will run " ) + cc.notice( "\"" ) + cc.info( strCommand ) + cc.notice( "\"" ) +
+                cc.debug( " in folder " ) + cc.notice( "\"" ) + cc.info( strWorkingDirectory ) + cc.notice( "\"" ) +
+                cc.debug( " with environment: " ) + cc.j( joEnv ) + cc.debug( " ..." ) +
+                "\n" );
+    }
+    child_process.execSync(
+        strCommand,
+        {
+            cwd: "" + strWorkingDirectory,
+            stdio: "inherit",
+            env: joEnv
+        } );
+    if( g_bVerbose )
+        log.write( cc.success( "Finished connected S-Chains discovery" ) + "\n" );
+}
+
+async function ima_test_browse_connected_chains() {
+    for( let idxChain = 0; idxChain < g_arrChains.length; ++ idxChain ) {
+        const joChain = g_arrChains[idxChain];
+        const arrNodeDescriptions = joChain.arrNodeDescriptions;
+        for( let idxNode = 0; idxNode < arrNodeDescriptions.length; ++ idxNode )
+            await ima_test_browse_connected_chain( idxChain, idxNode );
+    }
+}
+
+//////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
+//////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
+
+async function ima_test_browse_s_chain( idxChain, idxNode ) {
+    const joChain = g_arrChains[idxChain];
+    const arrNodeDescriptions = joChain.arrNodeDescriptions;
+    const joNodeDesc = arrNodeDescriptions[idxNode];
+    const idxChainTarget = ( idxChain + 1 ) % g_arrChains.length;
+    const joChainTarget = g_arrChains[idxChainTarget];
+    const arrNodeDescriptionsTarget = joChainTarget.arrNodeDescriptions;
+    const joNodeDescTarget = arrNodeDescriptionsTarget[idxNode];
+    if( g_bVerbose ) {
+        log.write( "\n\n" +
+            cc.bright( "Performing " ) + cc.sunny( "own S-Chain" ) +
+            cc.bright( " investigation on chain " ) + cc.info( joChain.name ) +
+            cc.bright( " known as ID " ) + cc.info( joChain.cid ) +
+            cc.bright( " via node " ) + cc.info( joNodeDesc.nameNode ) +
+            cc.bright( " with URL " ) + cc.info( joNodeDesc.strURL ) +
+            cc.bright( "..." ) + "\n\n" );
+    }
+    const schain_name = g_arrChains[joNodeDesc.idxChain].name;
+    const schain_id = g_arrChains[joNodeDesc.idxChain].cid;
+    const schain_name_target = g_arrChains[joNodeDescTarget.idxChain].name;
+    const schain_id_target = g_arrChains[joNodeDescTarget.idxChain].cid;
+    const strCommand =
+        "node " +
+        g_strFolderImaAgent + "/main.mjs" + g_strImaOutputOpts + g_strImaRuntimeOpts +
+        " --browse-s-chain" +
+        //
+        " --url-main-net=" + g_strMainNetURL + // URLs
+        " --url-s-chain=" + joNodeDesc.url +
+        " --url-t-chain=" + joNodeDescTarget.url +
+        " --id-main-net=" + g_strMainnetName + // chain names
+        " --id-s-chain=" + schain_name +
+        " --id-t-chain=" + schain_name_target +
+        " --cid-main-net=" + cid_main_net + // chain IDs
+        " --cid-s-chain=" + schain_id +
+        " --cid-t-chain=" + schain_id_target +
+        " --abi-skale-manager=" + g_strSkaleManagerAbiJsonPath +
+        " --abi-main-net=" + g_strPathImaAbiMN + // ABIs
+        " --abi-s-chain=" + get_ima_abi_schain_path( joNodeDesc.idxChain ) +
+        " " + compose_ima_cli_account_options_force_raw_private_keys( joNodeDesc.idxChain, joNodeDesc.idxNode ) +
+        ""
+    ;
+    const strWorkingDirectory = "" + g_strFolderRepoIMA;
+    const joEnv = {
+        "PATH": g_strRecommendedShellPATH
+    };
+    if( g_bVerbose ) {
+        log.write(
+            cc.debug( "will run " ) + cc.notice( "\"" ) + cc.info( strCommand ) + cc.notice( "\"" ) +
+                cc.debug( " in folder " ) + cc.notice( "\"" ) + cc.info( strWorkingDirectory ) + cc.notice( "\"" ) +
+                cc.debug( " with environment: " ) + cc.j( joEnv ) + cc.debug( " ..." ) +
+                "\n" );
+    }
+    child_process.execSync(
+        strCommand,
+        {
+            cwd: "" + strWorkingDirectory,
+            stdio: "inherit",
+            env: joEnv
+        } );
+    if( g_bVerbose )
+        log.write( cc.success( "Finished own S-Chain investigation" ) + "\n" );
+}
+
+async function ima_test_browse_s_chains() {
+    for( let idxChain = 0; idxChain < g_arrChains.length; ++ idxChain ) {
+        const joChain = g_arrChains[idxChain];
+        const arrNodeDescriptions = joChain.arrNodeDescriptions;
+        for( let idxNode = 0; idxNode < arrNodeDescriptions.length; ++ idxNode )
+            await ima_test_browse_s_chain( idxChain, idxNode );
+    }
+}
+
+//////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
+//////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
+
+async function ima_test_show_balance( idxChain, idxNode ) {
+    const joChain = g_arrChains[idxChain];
+    const arrNodeDescriptions = joChain.arrNodeDescriptions;
+    const joNodeDesc = arrNodeDescriptions[idxNode];
+    const idxChainTarget = ( idxChain + 1 ) % g_arrChains.length;
+    const joChainTarget = g_arrChains[idxChainTarget];
+    const arrNodeDescriptionsTarget = joChainTarget.arrNodeDescriptions;
+    const joNodeDescTarget = arrNodeDescriptionsTarget[idxNode];
+    if( g_bVerbose ) {
+        log.write( "\n\n" +
+            cc.bright( "Performing " ) + cc.sunny( "Wallet Balances" ) +
+            cc.bright( " discovery on chain " ) + cc.info( joChain.name ) +
+            cc.bright( " known as ID " ) + cc.info( joChain.cid ) +
+            cc.bright( " via node " ) + cc.info( joNodeDesc.nameNode ) +
+            cc.bright( " with URL " ) + cc.info( joNodeDesc.strURL ) +
+            cc.bright( "..." ) + "\n\n" );
+    }
+    const schain_name = g_arrChains[joNodeDesc.idxChain].name;
+    const schain_id = g_arrChains[joNodeDesc.idxChain].cid;
+    const schain_name_target = g_arrChains[joNodeDescTarget.idxChain].name;
+    const schain_id_target = g_arrChains[joNodeDescTarget.idxChain].cid;
+    const strCommand =
+        "node " +
+        g_strFolderImaAgent + "/main.mjs" + g_strImaOutputOpts + g_strImaRuntimeOpts +
+        " --show-balance" +
+        //
+        " --url-main-net=" + g_strMainNetURL + // URLs
+        " --url-s-chain=" + joNodeDesc.url +
+        " --url-t-chain=" + joNodeDescTarget.url +
+        " --id-main-net=" + g_strMainnetName + // chain names
+        " --id-s-chain=" + schain_name +
+        " --id-t-chain=" + schain_name_target +
+        " --cid-main-net=" + cid_main_net + // chain IDs
+        " --cid-s-chain=" + schain_id +
+        " --cid-t-chain=" + schain_id_target +
+        " --abi-skale-manager=" + g_strSkaleManagerAbiJsonPath +
+        " --abi-main-net=" + g_strPathImaAbiMN + // ABIs
+        " --abi-s-chain=" + get_ima_abi_schain_path( joNodeDesc.idxChain ) +
+        " " + compose_ima_cli_account_options_force_raw_private_keys( joNodeDesc.idxChain, joNodeDesc.idxNode ) +
+        ""
+    ;
+    const strWorkingDirectory = "" + g_strFolderRepoIMA;
+    const joEnv = {
+        "PATH": g_strRecommendedShellPATH
+    };
+    if( g_bVerbose ) {
+        log.write(
+            cc.debug( "will run " ) + cc.notice( "\"" ) + cc.info( strCommand ) + cc.notice( "\"" ) +
+                cc.debug( " in folder " ) + cc.notice( "\"" ) + cc.info( strWorkingDirectory ) + cc.notice( "\"" ) +
+                cc.debug( " with environment: " ) + cc.j( joEnv ) + cc.debug( " ..." ) +
+                "\n" );
+    }
+    child_process.execSync(
+        strCommand,
+        {
+            cwd: "" + strWorkingDirectory,
+            stdio: "inherit",
+            env: joEnv
+        } );
+    if( g_bVerbose )
+        log.write( cc.success( "Finished Wallet Balances discovery" ) + "\n" );
+}
+
+async function ima_test_show_balances() {
+    for( let idxChain = 0; idxChain < g_arrChains.length; ++ idxChain ) {
+        const joChain = g_arrChains[idxChain];
+        const arrNodeDescriptions = joChain.arrNodeDescriptions;
+        for( let idxNode = 0; idxNode < arrNodeDescriptions.length; ++ idxNode )
+            await ima_test_show_balance( idxChain, idxNode );
     }
 }
 
@@ -9047,6 +9431,15 @@ async function run() {
     ima_register_all();
     ima_check_registration_all();
     await all_ima_agents_start();
+    //
+    if( g_bTestImaAgentDiscoveryCommandsAndExit ) {
+        await ima_test_discover_chain_ids();
+        await ima_test_browse_skale_networks();
+        await ima_test_browse_connected_chains();
+        await ima_test_browse_s_chains();
+        await ima_test_show_balances();
+        await end_of_test( 0 ); // SUCCESS
+    }
     //
     await ima_gas_reimbursement_configure_zero_timeout();
     await ima_gas_reimbursement_show();
