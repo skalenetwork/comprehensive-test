@@ -160,8 +160,6 @@ ${SSL_OPTS} ${OUTPUT_OPTS}"
 # -d $DATA_DIR \
 # --db=leveldb \
 
-# --sgx-url-no-zmq \
-
 # --db=leveldb \
 # --db=rocksdb \
 # --db=memorydb \
