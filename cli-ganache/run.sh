@@ -53,6 +53,7 @@ ganache-cli \
 	-d \
 	--db $DATA_DIR \
 	-i 456 \
+	--chain.chainId 456 \
 	--verbose \
 	--gasLimit=0xfffffffffff \
 	--host 0.0.0.0 \

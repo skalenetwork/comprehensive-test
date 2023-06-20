@@ -4253,7 +4253,9 @@ async function redeploy_skale_manager( w3, fnContinue ) {
             cc.bright( "..." ) + "\n\n" );
     }
     const strCommand = "npx hardhat run migrations/deploy.ts --network custom";
+    const strCommandClean = "rm -rf *unknown*.json";
     const strWorkingDirectory = "" + g_strFolderRepoSkaleManager;
+    const strWorkingDirectoryCleanup = "" + g_strFolderRepoSkaleManager + "/.openzeppelin";
     const joEnv = {
         "PATH": g_strRecommendedShellPATH,
         "ENDPOINT": g_strMainNetURL,
@@ -4275,7 +4277,21 @@ async function redeploy_skale_manager( w3, fnContinue ) {
     };
     if( g_bVerbose ) {
         log.write(
-            cc.debug( "will run " ) + cc.notice( "\"" ) + cc.info( strCommand ) + cc.notice( "\"" ) +
+            cc.debug( "will run cleanup command " ) + cc.notice( "\"" ) + cc.info( strCommandClean ) + cc.notice( "\"" ) +
+                cc.debug( " in folder " ) + cc.notice( "\"" ) + cc.info( strWorkingDirectoryCleanup ) + cc.notice( "\"" ) +
+                cc.debug( " with environment: " ) + cc.j( joEnv ) + cc.debug( " ..." ) +
+                "\n" );
+    }
+    child_process.execSync(
+        strCommandClean,
+        {
+            cwd: "" + strWorkingDirectoryCleanup,
+            stdio: "inherit",
+            env: joEnv
+        } );
+    if( g_bVerbose ) {
+        log.write(
+            cc.debug( "will run deployment command " ) + cc.notice( "\"" ) + cc.info( strCommand ) + cc.notice( "\"" ) +
                 cc.debug( " in folder " ) + cc.notice( "\"" ) + cc.info( strWorkingDirectory ) + cc.notice( "\"" ) +
                 cc.debug( " with environment: " ) + cc.j( joEnv ) + cc.debug( " ..." ) +
                 "\n" );
