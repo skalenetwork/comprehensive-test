@@ -50,6 +50,11 @@ DATA_DIR=`dirname $0`/data
 mkdir -p $DATA_DIR || true
 export NODE_OPTIONS="--max_old_space_size=3072"
 ( sleep 5; mkdir -p $DATA_DIR ) &
+( sleep 10; mkdir -p $DATA_DIR ) &
+( sleep 15; mkdir -p $DATA_DIR ) &
+( sleep 20; mkdir -p $DATA_DIR ) &
+( sleep 25; mkdir -p $DATA_DIR ) &
+( sleep 30; mkdir -p $DATA_DIR ) &
 ganache-cli \
 	-d \
 	--db $DATA_DIR \
