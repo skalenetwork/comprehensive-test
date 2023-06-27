@@ -67,6 +67,7 @@ const g_bVerbose = true;
 const g_bExternalMN = true; // true; // set to true to run Min Net manually outside this test
 const g_bExternalSC = false; // true; // set to true to run S-Chain manually outside this test
 const g_bExternalIMA = false; // set to true to run S-Chain manually outside this test
+const g_bDockerIMA = false; // use docker image of IMA Agent, this flag is higher priority than g_bExternalIMA
 const g_bSkipStartStopSChainOnImaDeploy = true;
 const g_bPredeployedIMA = true;
 const g_bAskExternalStartStopMN = false;
@@ -185,7 +186,19 @@ function quick_spawn( strCmd, cwd, joEnv ) {
     const options = { shell: true, stdio: [ 0, 1, 2 ], cwd: cwd ? cwd : null };
     if( joEnv && typeof joEnv == "object" && Object.keys( joEnv ).length > 0 )
         options.env = joEnv;
-    child_process.spawnSync( strCmd, options );
+    if( g_bVerbose ) {
+        log.write( cc.debug( "Will quick-spawn process with command line " ) + cc.notice( strCmd ) +
+            cc.debug( " and options " ) + cc.j( options ) + cc.normal( "..." ) + "\n" );
+    }
+    const rv = child_process.spawnSync( strCmd, options );
+    if( g_bVerbose ) {
+        if( rv.status == 0 )
+            log.write( cc.success( "Done quick-spawn process with command line " ) + cc.notice( strCmd ) + "\n" );
+        else {
+            log.write( cc.error( "Done quick-spawn process with command line " ) + cc.notice( strCmd ) +
+                cc.error( " and got exit status " ) + cc.j( rv.status ) + "\n" );
+        }
+    }
 }
 
 let g_bInsideEndOfTest = false;
@@ -3265,19 +3278,51 @@ async function schain_skaled_nodes_stop( idxChain ) {
     } catch ( err ) { }
 }
 
+const g_strImaDockerRepository = "skalenetwork/ima";
+const g_strImaDockerTag = "2.0.0-develop.3";
+const g_strImaDockerImageName = g_strImaDockerRepository + ":" + g_strImaDockerTag;
+
+async function ima_get_docker_image() {
+    if( ! g_bDockerIMA )
+        return;
+    log.write( cc.debug( "Will download docker image " ) + cc.sunny( g_strImaDockerImageName ) +
+        cc.debug( "..." ) + "\n" );
+    quick_spawn( "docker pull " + g_strImaDockerImageName );
+    log.write( cc.debug( "List of available docker containers:" ) + "\n" );
+    quick_spawn( "docker containers" );
+    log.write( cc.success( "Done." ) + "\n" );
+}
+
+function schain_ima_agent_get_docker_container_name( idxChain, idxNode ) {
+    const strImaAgentDockerContainerName =
+        "ima_agent_" + zeroPad( idxChain, 2 ) + "_" + zeroPad( idxNode, 2 );
+    return strImaAgentDockerContainerName;
+}
+
 async function all_ima_agents_start() {
     for( let idxChain = 0; idxChain < g_arrChains.length; ++ idxChain )
         await schain_ima_agents_start( idxChain );
-
 }
 
 async function all_ima_agents_stop() {
     for( let idxChain = 0; idxChain < g_arrChains.length; ++ idxChain )
         await schain_ima_agents_stop( idxChain );
-
 }
 
 async function schain_ima_agents_start( idxChain ) {
+    if( g_bDockerIMA ) {
+        if( g_bVerbose )
+            log.write( cc.normal( "Starting " ) + cc.notice( "IMA" ) + cc.normal( " agents as docker containers ..." ) + "\n" );
+        for( let i = 0; i < arrNodeDescriptions.length; ++i ) {
+            const joNodeDesc = arrNodeDescriptions[i];
+            if( g_bVerbose )
+                log.write( cc.normal( "Starting " ) + cc.success( "IMA Agent" ) + cc.normal( " for node " ) + cc.sunny( joNodeDesc.nodeID ) + "\n" );
+            quick_spawn( "docker run --name " + schain_ima_agent_get_docker_container_name( idxChain, idxNode ) + " " + g_strImaDockerImageName );
+        }
+        if( g_bVerbose )
+            log.write( cc.success( "Done, started " ) + cc.notice( "IMA" ) + cc.success( " agents as docker containers" ) + "\n" );
+        return;
+    }
     if( g_bExternalIMA ) {
         if( g_bAskExternalStartStopIMA ) {
             log.write(
@@ -3296,7 +3341,7 @@ async function schain_ima_agents_start( idxChain ) {
         return;
     }
     if( g_bVerbose )
-        log.write( cc.normal( "Starting " ) + cc.success( "IMA" ) + cc.normal( " agents ..." ) + "\n" );
+        log.write( cc.normal( "Starting " ) + cc.notice( "IMA" ) + cc.normal( " agents as node processes..." ) + "\n" );
     const arrNodeDescriptions = g_arrChains[idxChain].arrNodeDescriptions;
     for( let i = 0; i < arrNodeDescriptions.length; ++i ) {
         const joNodeDesc = arrNodeDescriptions[i];
@@ -3321,8 +3366,24 @@ async function schain_ima_agents_start( idxChain ) {
         joNodeDesc.proc4imaAgent.run();
         //joNodeDesc.proc4imaAgent.continueDetached();
     }
+    if( g_bVerbose )
+        log.write( cc.success( "Done, started " ) + cc.notice( "IMA" ) + cc.success( " agents as node processes" ) + "\n" );
 }
 async function schain_ima_agents_stop( idxChain ) {
+    if( g_bDockerIMA ) {
+        if( g_bVerbose )
+            log.write( cc.normal( "Stopping " ) + cc.success( "IMA" ) + cc.normal( " agents as docker containers..." ) + "\n" );
+        const arrNodeDescriptions = g_arrChains[idxChain].arrNodeDescriptions;
+        for( let i = 0; i < arrNodeDescriptions.length; ++i ) {
+            const joNodeDesc = arrNodeDescriptions[i];
+            if( g_bVerbose )
+                log.write( cc.normal( "Stopping " ) + cc.success( "IMA Agent" ) + cc.normal( " for node " ) + cc.sunny( joNodeDesc.nodeID ) + "\n" );
+            quick_spawn( "docker stop " + schain_ima_agent_get_docker_container_name( idxChain, idxNode ) );
+        }
+        if( g_bVerbose )
+            log.write( cc.success( "Done, stopped " ) + cc.notice( "IMA" ) + cc.success( " agents as docker containers" ) + "\n" );
+        return;
+    }
     if( g_bExternalIMA ) {
         if( g_bAskExternalStartStopIMA ) {
             log.write(
@@ -3341,7 +3402,7 @@ async function schain_ima_agents_stop( idxChain ) {
         return;
     }
     if( g_bVerbose )
-        log.write( cc.normal( "Stopping " ) + cc.success( "IMA" ) + cc.normal( " agents ..." ) + "\n" );
+        log.write( cc.normal( "Stopping " ) + cc.success( "IMA" ) + cc.normal( " agents as node processes..." ) + "\n" );
     const arrNodeDescriptions = g_arrChains[idxChain].arrNodeDescriptions;
     for( let i = 0; i < arrNodeDescriptions.length; ++i ) {
         const joNodeDesc = arrNodeDescriptions[i];
@@ -3352,6 +3413,8 @@ async function schain_ima_agents_stop( idxChain ) {
             joNodeDesc.proc4imaAgent = null;
         }
     }
+    if( g_bVerbose )
+        log.write( cc.success( "Done, stopped " ) + cc.notice( "IMA" ) + cc.success( " agents as node processes" ) + "\n" );
 }
 
 //////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
@@ -9446,6 +9509,7 @@ async function run() {
     //
     ima_register_all();
     ima_check_registration_all();
+    await ima_get_docker_image();
     await all_ima_agents_start();
     //
     if( g_bTestImaAgentDiscoveryCommandsAndExit ) {
