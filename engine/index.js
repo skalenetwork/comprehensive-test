@@ -3293,10 +3293,65 @@ async function ima_get_docker_image() {
     log.write( cc.success( "Done." ) + "\n" );
 }
 
+function ima_prepare_docker_shares_node( idxChain, idxNode ) {
+    if( g_bVerbose ) {
+        log.write( cc.normal( "Will prepare all " ) + cc.success( "IMA Agents" ) +
+            cc.normal( " shares for their docker containers on node" ) +
+            cc.j( idxNode ) + cc.normal( " of chain" ) +
+            cc.notice( g_arrChains[idxChain].name ) + cc.debug( "/" ) + cc.note( g_arrChains[idxChain].cid ) +
+            cc.normal( "..." ) + "\n" );
+    }
+    // const arrNodeDescriptions = g_arrChains[idxChain ].arrNodeDescriptions;
+    // const joNodeDesc = arrNodeDescriptions[ idxNode ];
+    const strImaDockerDataFolder = schain_ima_agent_get_docker_cwd( idxChain, idxNode );
+    quick_spawn( "mkdir -p " + strImaDockerDataFolder );
+    if( g_bVerbose ) {
+        log.write( cc.success( "Will prepare all " ) + cc.success( "IMA Agents" ) +
+            cc.success( " shares for their docker containers on node " ) +
+            cc.j( idxNode ) + cc.success( " of chain" ) +
+            cc.notice( g_arrChains[idxChain].name ) + cc.debug( "/" ) + cc.note( g_arrChains[idxChain].cid ) +
+            cc.success( "..." ) + "\n" );
+    }
+}
+function ima_prepare_docker_shares_schain( idxChain ) {
+    if( g_bVerbose ) {
+        log.write( cc.normal( "Will prepare all " ) + cc.success( "IMA Agents" ) +
+            cc.normal( " shares for their docker containers on chain" ) +
+            cc.notice( g_arrChains[idxChain].name ) + cc.debug( "/" ) + cc.note( g_arrChains[idxChain].cid ) +
+            cc.normal( "..." ) + "\n" );
+    }
+    const arrNodeDescriptions = g_arrChains[idxChain].arrNodeDescriptions;
+    for( let idxNode = 0; idxNode < arrNodeDescriptions.length; ++idxNode )
+        ima_prepare_docker_shares_node( idxChain, idxNode );
+    if( g_bVerbose ) {
+        log.write( cc.success( "Will prepare all " ) + cc.success( "IMA Agents" ) +
+            cc.success( " shares for their docker containers on chain" ) +
+            cc.notice( g_arrChains[idxChain].name ) + cc.debug( "/" ) + cc.note( g_arrChains[idxChain].cid ) +
+            cc.success( "..." ) + "\n" );
+    }
+}
+function ima_prepare_docker_shares_all() {
+    if( g_bVerbose )
+        log.write( cc.normal( "Will prepare all " ) + cc.success( "IMA Agents" ) + cc.normal( " shares for their docker containers..." ) + "\n" );
+    for( let idxChain = 0; idxChain < g_arrChains.length; ++ idxChain )
+        ima_prepare_docker_shares_schain( idxChain );
+    if( g_bVerbose )
+        log.write( cc.success( "Done preparing all " ) + cc.success( "IMA Agents" ) + cc.success( " shares for their docker containers" ) + "\n" );
+}
+
 function schain_ima_agent_get_docker_container_name( idxChain, idxNode ) {
     const strImaAgentDockerContainerName =
         "ima_agent_" + zeroPad( idxChain, 2 ) + "_" + zeroPad( idxNode, 2 );
     return strImaAgentDockerContainerName;
+}
+function schain_ima_agent_get_docker_cwd( idxChain, idxNode ) {
+    const arrNodeDescriptions = g_arrChains[idxChain].arrNodeDescriptions;
+    const joNodeDesc = arrNodeDescriptions[idxNode];
+    const strImaDockerDataFolder = "" + joNodeDesc.nodeFolder + "/ima_docker_data";
+    return strImaDockerDataFolder;
+}
+function schain_ima_agent_get_env( idxChain, idxNode ) {
+    return null;
 }
 
 async function all_ima_agents_start() {
@@ -3317,7 +3372,11 @@ async function schain_ima_agents_start( idxChain ) {
             const joNodeDesc = arrNodeDescriptions[i];
             if( g_bVerbose )
                 log.write( cc.normal( "Starting " ) + cc.success( "IMA Agent" ) + cc.normal( " for node " ) + cc.sunny( joNodeDesc.nodeID ) + "\n" );
-            quick_spawn( "docker run --name " + schain_ima_agent_get_docker_container_name( idxChain, idxNode ) + " " + g_strImaDockerImageName );
+            quick_spawn( // IMA Agent as docker container
+                "docker run --name " + schain_ima_agent_get_docker_container_name( idxChain, idxNode ) + " " + g_strImaDockerImageName,
+                schain_ima_agent_get_docker_cwd( idxChain, idxNode ),
+                schain_ima_agent_get_env( idxChain, idxNode )
+            );
         }
         if( g_bVerbose )
             log.write( cc.success( "Done, started " ) + cc.notice( "IMA" ) + cc.success( " agents as docker containers" ) + "\n" );
@@ -3378,7 +3437,11 @@ async function schain_ima_agents_stop( idxChain ) {
             const joNodeDesc = arrNodeDescriptions[i];
             if( g_bVerbose )
                 log.write( cc.normal( "Stopping " ) + cc.success( "IMA Agent" ) + cc.normal( " for node " ) + cc.sunny( joNodeDesc.nodeID ) + "\n" );
-            quick_spawn( "docker stop " + schain_ima_agent_get_docker_container_name( idxChain, idxNode ) );
+            quick_spawn( // IMA Agent as docker container
+                "docker stop " + schain_ima_agent_get_docker_container_name( idxChain, idxNode ),
+                schain_ima_agent_get_docker_cwd( idxChain, idxNode ),
+                schain_ima_agent_get_env( idxChain, idxNode )
+            );
         }
         if( g_bVerbose )
             log.write( cc.success( "Done, stopped " ) + cc.notice( "IMA" ) + cc.success( " agents as docker containers" ) + "\n" );
@@ -9510,6 +9573,7 @@ async function run() {
     ima_register_all();
     ima_check_registration_all();
     await ima_get_docker_image();
+    ima_prepare_docker_shares_all();
     await all_ima_agents_start();
     //
     if( g_bTestImaAgentDiscoveryCommandsAndExit ) {
