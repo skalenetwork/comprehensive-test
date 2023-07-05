@@ -1753,6 +1753,7 @@ async function init_schain_types( w3, privateKey ) {
     // jo_schains_internal.addSchainType(128, 16) - Large
     // jo_schains_internal.addSchainType(0, 2) - Test 2 node schain
     // jo_schains_internal.addSchainType(32, 4) - Test 4 node schain
+    // jo_schains_internal.addSchainType(32, 1) - Test 5 node schain
     // see: function addSchainType(uint8 partOfNode, uint numberOfNodes)
     const arr_schain_types = [
         {
@@ -1775,6 +1776,10 @@ async function init_schain_types( w3, privateKey ) {
             partOfNode: 32,
             numberOfNodes: 4,
             name: "test4"
+        }, {
+            partOfNode: 128,
+            numberOfNodes: 1,
+            name: "test5"
         }
     ];
     const addressFrom = private_key_2_account_address( w3, privateKey );
@@ -1818,16 +1823,19 @@ async function init_schain_types( w3, privateKey ) {
 
 function get_needed_type_of_s_chain( cntNodes ) {
     switch ( cntNodes ) {
+    case 1: return 6; // see addSchainType call
     case 2: return 4;
     case 4: return 5;
     case 16: return 1;
     } // switch( cntNodes )
-    log.write( cc.fatal( "CRITICAL ERROR:" ) + " " + cc.error( "S-Chain type does not exist for " ) + cc.warning( cntNodes ) + cc.error( " number of nodes" ) + "\n" );
+    log.write( cc.fatal( "CRITICAL ERROR:" ) + " " + cc.error( "S-Chain type does not exist for " ) +
+        cc.warning( cntNodes ) + cc.error( " number of nodes" ) + "\n" );
     throw new Error( "S-Chain type does not exist for " + cntNodes + " number of nodes" );
 }
 
 function get_needed_threshold( cntNodes ) {
     switch ( cntNodes ) {
+    case 1: return 1;
     case 2: return 1;
     case 4: return 3;
     case 16: return 11;
@@ -3088,20 +3096,22 @@ function all_skaled_nodes_fix_config_json() {
 }
 
 async function all_skaled_nodes_prepare() {
-    if( g_bExternalSC ) {
-        const joEnv = {
-            "GEN_CNT_CHAINS": g_arrChains.length,
-            "GEN_CNT_NODES": g_arrChains[0].arrNodeDescriptions.length,
-            "GEN_CNT_SYNC_NODES": g_cntSyncNodesPerChain
-        };
-        if( g_bSkaledWithBTRFS ) {
-            joEnv.SKALED_WITH_BTRFS = "1";
-            if( g_bSkaledWithSnapshots )
-                joEnv.SKALED_WITH_SNAPSHOTS = "1";
-        }
-        quick_spawn( path.join( g_strFolderMultiNodeDeployment, "/clean.sh" ), cwd, joEnv );
-        quick_spawn( path.join( g_strFolderMultiNodeDeployment, "/init.sh" ), cwd, joEnv );
+    if( g_bExternalSC )
+        return;
+    const joEnv = {
+        "GEN_CNT_CHAINS": g_arrChains.length,
+        "GEN_CNT_NODES": g_arrChains[0].arrNodeDescriptions.length,
+        "GEN_CNT_SYNC_NODES": g_cntSyncNodesPerChain
+    };
+    if( g_bSkaledWithBTRFS ) {
+        joEnv.SKALED_WITH_BTRFS = "1";
+        if( g_bSkaledWithSnapshots )
+            joEnv.SKALED_WITH_SNAPSHOTS = "1";
     }
+    const cwd = "" + g_strFolderMultiNodeDeployment;
+    quick_spawn( path.join( g_strFolderMultiNodeDeployment, "/clean.sh" ), cwd, joEnv );
+    quick_spawn( path.join( g_strFolderMultiNodeDeployment, "/clean_all_node_dirs.sh" ), cwd, joEnv );
+    quick_spawn( path.join( g_strFolderMultiNodeDeployment, "/init.sh" ), cwd, joEnv );
 }
 
 async function all_skaled_nodes_check_addresses() {
@@ -3363,6 +3373,52 @@ async function all_ima_agents_stop() {
     for( let idxChain = 0; idxChain < g_arrChains.length; ++ idxChain )
         await schain_ima_agents_stop( idxChain );
 }
+
+/*
+
+docker rm -f ima_agent_00_00
+docker stop ima_agent_00_00
+docker logs ima_agent_00_00
+
+docker rm -f ima_agent_00_00; docker run -it -v $(pwd):/tmp \
+    --name ima_agent_00_00 \
+    --env-file $(pwd)/env.file \
+    skalenetwork/ima:2.0.0-develop.3 \
+    /bin/bash
+
+docker rm -f ima_agent_00_00; docker run -v $(pwd):/tmp \
+    --name ima_agent_00_00 \
+    --env-file $(pwd)/env.file \
+    skalenetwork/ima:2.0.0-develop.3
+
+content of /home/serge/Work/comprehensive-test/s_chain_gen/chain_00/node_00/ima_docker_data:
+abi.json  client.crt  env.file  k.key  proxyMainnet.json  skale-manager-1.9.3-develop.8-custom-abi.json
+
+content of env.file there:
+SCHAIN_DIR=/home/serge/Work/comprehensive-test/s_chain_gen/chain_00/node_00/ima_docker_data
+
+MAINNET_PROXY_PATH=/tmp/proxyMainnet.json
+SCHAIN_PROXY_PATH=/tmp/abi.json
+MANAGER_ABI_PATH=/tmp/skale-manager-1.9.3-develop.8-custom-abi.json
+
+STATE_FILE=/tmp/state.file
+
+SCHAIN_NAME=Bob1000
+CID_MAIN_NET=456
+CID_SCHAIN=1000
+SCHAIN_RPC_URL=http://127.0.0.1:2164
+MAINNET_RPC_URL=http://127.0.0.1:8545
+NODE_NUMBER=0
+NODES_COUNT=2
+MONITORING_PORT=29400
+TM_URL_MAIN_NET=redis://@127.0.0.1:6379
+SGX_URL=https://127.0.0.1:1026
+ECDSA_KEY_NAME=NEK:1000
+SGX_SSL_KEY_PATH=/tmp/k.key
+SGX_SSL_CERT_PATH=/tmp/client.crt
+NODE_ADDRESS=0x57DFd5291a0d7475Eaa1D1b8A7f03248Fa26a194
+
+*/
 
 async function schain_ima_agents_start( idxChain ) {
     if( g_bDockerIMA ) {

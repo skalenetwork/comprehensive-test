@@ -16,8 +16,8 @@ cd cli-hh
 ./run.sh &> ../local_mainnet_output_log.txt &
 cd ..
 
-echo " --------------------------- pre-initializing s-chain ------------------------------------------------------------------------------------------------- "
-cd s_chain_gen; ./clean.sh; ./init.sh; cd ..
+#echo " --------------------------- pre-initializing s-chain ------------------------------------------------------------------------------------------------- "
+#cd s_chain_gen; ./clean.sh; ./clean_all_node_dirs.sh; ./init.sh; cd ..
 
 echo " --------------------------- getting skale manager deployed ------------------------------------------------------------------------------------------- "
 git clone https://github.com/skalenetwork/skale-manager.git --recursive

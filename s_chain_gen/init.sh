@@ -79,7 +79,16 @@ yarn install
 # 1) count of S-chains, can be specified with GEN_CNT_CHAINS environment variable
 # 2) count of nodes per S-chain, can be specified with GEN_CNT_NODES environment variable
 # 3) count of sync-nodes per S-chain, can be specified with GEN_CNT_SYNC_NODES environment variable
-node ./init.js 2 2 1
+
+export GEN_CNT_CHAINS=${GEN_CNT_CHAINS:=2}
+export GEN_CNT_NODES=${GEN_CNT_NODES:=2}
+export GEN_CNT_SYNC_NODES=${GEN_CNT_SYNC_NODES:=1}
+echo -e "${COLOR_VAR_NAME}GEN_CNT_CHAINS${COLOR_DOTS}.........${COLOR_VAR_DESC}Count of S-Chain(s)${COLOR_DOTS}....................${COLOR_VAR_VAL}$GEN_CNT_CHAINS${COLOR_RESET}"
+echo -e "${COLOR_VAR_NAME}GEN_CNT_NODES${COLOR_DOTS}..........${COLOR_VAR_DESC}Count of nodes per S-Chain${COLOR_DOTS}.............${COLOR_VAR_VAL}$GEN_CNT_NODES${COLOR_RESET}"
+echo -e "${COLOR_VAR_NAME}GEN_CNT_SYNC_NODES${COLOR_DOTS}.....${COLOR_VAR_DESC}Count of sync-nodes per S-Chain${COLOR_DOTS}........${COLOR_VAR_VAL}$GEN_CNT_SYNC_NODES${COLOR_RESET}"
+
+node ./init.js $GEN_CNT_CHAINS $GEN_CNT_NODES $GEN_CNT_SYNC_NODES
+
 echo -e "${COLOR_SUCCESS}Done, infrastructure initialized${COLOR_RESET}"
 
 ############################################################################################################################
