@@ -199,6 +199,7 @@ function quick_spawn( strCmd, cwd, joEnv ) {
                 cc.error( " and got exit status " ) + cc.j( rv.status ) + "\n" );
         }
     }
+    return rv;
 }
 
 let g_bInsideEndOfTest = false;
@@ -1142,6 +1143,8 @@ function compose_node_runCmd4imaAgent( joNodeDesc ) {
     // so, we initialize it in this function
     const schain_name = g_arrChains[joNodeDesc.idxChain].name;
     const schain_id = g_arrChains[joNodeDesc.idxChain].cid;
+    //
+    //
     let nMonitoringPort4ImaAgent = joNodeDesc.nMonitoringPort4ImaAgent ? ( 0 + joNodeDesc.nMonitoringPort4ImaAgent ) : 0;
     if( ! nMonitoringPort4ImaAgent ) {
         joNodeDesc.nMonitoringPort4ImaAgent = alloc_port_4_usage_on_one_machine();
@@ -1152,6 +1155,8 @@ function compose_node_runCmd4imaAgent( joNodeDesc ) {
         joNodeDesc.nJsonRpcPort4ImaAgent = alloc_port_4_usage_on_one_machine();
         nJsonRpcPort4ImaAgent = 0 + joNodeDesc.nJsonRpcPort4ImaAgent;
     }
+    //
+    //
     joNodeDesc.runCmd4imaAgent =
         "node --no-warnings " +
         g_strFolderImaAgent + "/main.mjs" + g_strImaOutputOpts + g_strImaRuntimeOpts +
@@ -1322,13 +1327,13 @@ function dirExists( strPath ) {
 //     return strDefault;
 // }
 
-// function fileSave( strPath, s ) {
-//     try {
-//         fs.writeFileSync( strPath, s );
-//         return true;
-//     } catch ( err ) {}
-//     return false;
-// }
+function fileSave( strPath, s ) {
+    try {
+        fs.writeFileSync( strPath, s );
+        return true;
+    } catch ( err ) {}
+    return false;
+}
 
 function jsonFileLoad( strPath, joDefault, bLogOutput ) {
     if( bLogOutput == undefined || bLogOutput == null )
@@ -3289,7 +3294,7 @@ async function schain_skaled_nodes_stop( idxChain ) {
 }
 
 const g_strImaDockerRepository = "skalenetwork/ima";
-const g_strImaDockerTag = "2.0.0-develop.3";
+const g_strImaDockerTag = "2.0.0-develop.11";
 const g_strImaDockerImageName = g_strImaDockerRepository + ":" + g_strImaDockerTag;
 
 async function ima_get_docker_image() {
@@ -3305,19 +3310,83 @@ async function ima_get_docker_image() {
 
 function ima_prepare_docker_shares_node( idxChain, idxNode ) {
     if( g_bVerbose ) {
-        log.write( cc.normal( "Will prepare all " ) + cc.success( "IMA Agents" ) +
-            cc.normal( " shares for their docker containers on node" ) +
+        log.write( cc.normal( "Will prepare " ) + cc.sunny( "IMA Agent#" ) +
+            cc.info( idxChain ) + cc.normal( "/" ) + cc.info( idxNode ) +
+            cc.normal( " share for its docker container on node" ) +
             cc.j( idxNode ) + cc.normal( " of chain" ) +
             cc.notice( g_arrChains[idxChain].name ) + cc.debug( "/" ) + cc.note( g_arrChains[idxChain].cid ) +
             cc.normal( "..." ) + "\n" );
     }
-    // const arrNodeDescriptions = g_arrChains[idxChain ].arrNodeDescriptions;
-    // const joNodeDesc = arrNodeDescriptions[ idxNode ];
+    const arrNodeDescriptions = g_arrChains[idxChain].arrNodeDescriptions;
+    const joNodeDesc = arrNodeDescriptions[idxNode];
     const strImaDockerDataFolder = schain_ima_agent_get_docker_cwd( idxChain, idxNode );
     quick_spawn( "mkdir -p " + strImaDockerDataFolder );
     if( g_bVerbose ) {
-        log.write( cc.success( "Will prepare all " ) + cc.success( "IMA Agents" ) +
-            cc.success( " shares for their docker containers on node " ) +
+        log.write( cc.normal( "Copying pre-requisites for " ) + cc.sunny( "IMA Agent#" ) +
+            cc.info( idxChain ) + cc.normal( "/" ) + cc.info( idxNode ) +
+            cc.normal( "..." ) + "\n" );
+    }
+    quick_spawn( "cp " + g_strSkaleManagerAbiJsonPath + " .", strImaDockerDataFolder );
+    quick_spawn( "cp " + g_strPathImaAbiMN + " .", strImaDockerDataFolder );
+    const strPathImaAbiSC = get_ima_abi_schain_path( idxChain );
+    quick_spawn( "cp " + strPathImaAbiSC + " .", strImaDockerDataFolder );
+    quick_spawn( "cp " + g_strPathForSgxSslData + "/client.crt" + " .", strImaDockerDataFolder );
+    quick_spawn( "cp " + g_strPathForSgxSslData + "/k.key" + " .", strImaDockerDataFolder );
+    quick_spawn( "ls -1", strImaDockerDataFolder );
+    if( g_bVerbose ) {
+        log.write( cc.normal( "Creating environment file for " ) + cc.sunny( "IMA Agent#" ) +
+            cc.info( idxChain ) + cc.normal( "/" ) + cc.info( idxNode ) +
+            cc.normal( "..." ) + "\n" );
+    }
+    //
+    //
+    let nMonitoringPort4ImaAgent = joNodeDesc.nMonitoringPort4ImaAgent ? ( 0 + joNodeDesc.nMonitoringPort4ImaAgent ) : 0;
+    if( ! nMonitoringPort4ImaAgent ) {
+        joNodeDesc.nMonitoringPort4ImaAgent = alloc_port_4_usage_on_one_machine();
+        nMonitoringPort4ImaAgent = 0 + joNodeDesc.nMonitoringPort4ImaAgent;
+    }
+    let nJsonRpcPort4ImaAgent = joNodeDesc.nJsonRpcPort4ImaAgent ? ( 0 + joNodeDesc.nJsonRpcPort4ImaAgent ) : 0;
+    if( ! nJsonRpcPort4ImaAgent ) {
+        joNodeDesc.nJsonRpcPort4ImaAgent = alloc_port_4_usage_on_one_machine();
+        nJsonRpcPort4ImaAgent = 0 + joNodeDesc.nJsonRpcPort4ImaAgent;
+    }
+    //
+    //
+    const strContentOfEnvFile =
+        "SCHAIN_DIR=/tmp" + "\n" +
+        "MAINNET_PROXY_PATH=/tmp/" + path.basename( g_strPathImaAbiMN ) + "\n" +
+        "SCHAIN_PROXY_PATH=/tmp/" + path.basename( strPathImaAbiSC ) + "\n" +
+        "MANAGER_ABI_PATH=/tmp/" + path.basename( g_strSkaleManagerAbiJsonPath ) + "\n" +
+        "STATE_FILE=/tmp/state.file" + "\n" +
+        "SCHAIN_NAME=" + g_arrChains[idxChain].name + "\n" +
+        "CID_MAIN_NET=" + cid_main_net + "\n" +
+        "CID_SCHAIN=" + g_arrChains[idxChain].cid + "\n" +
+        "SCHAIN_RPC_URL=" + arrNodeDescriptions[idxNode].url + "\n" +
+        "MAINNET_RPC_URL=" + g_strMainNetURL + "\n" +
+        "NODE_NUMBER=" + idxNode + "\n" +
+        "NODES_COUNT=" + arrNodeDescriptions.length + "\n" +
+        "RPC_PORT=" + nJsonRpcPort4ImaAgent + "\n" +
+        "MONITORING_PORT=" + nMonitoringPort4ImaAgent + "\n" +
+        "TM_URL_MAIN_NET=" + g_strUrlTransactionManager + "\n" + // TO-FIX: this must be one TM per one Node
+        "SGX_URL=" + g_strUrlSgxWalletHTTPS + "\n" +
+        "BLS_KEY_NAME=" + joNodeDesc.nameBlsPrivateKey + "\n" +
+        "ECDSA_KEY_NAME=" + joNodeDesc.nameEcdsaPubKey + "\n" +
+        "SGX_SSL_KEY_PATH=/tmp/k.key" + "\n" +
+        "SGX_SSL_CERT_PATH=/tmp/client.crt" + "\n" +
+        "NODE_ADDRESS=" + joNodeDesc.checkedNodeAddress + "\n" +
+        "\n";
+    const strPathOfEnvFile = strImaDockerDataFolder + "/env.file";
+    if( g_bVerbose ) {
+        log.write( cc.debug( "Content for environment file " ) + cc.notice( strPathOfEnvFile ) +
+            cc.debug( " for " ) + cc.sunny( "IMA Agent#" ) +
+            cc.info( idxChain ) + cc.normal( "/" ) + cc.info( idxNode ) +
+            cc.debug( " is:" ) + "\n" + cc.normal( strContentOfEnvFile ) );
+    }
+    fileSave( strPathOfEnvFile, strContentOfEnvFile );
+    if( g_bVerbose ) {
+        log.write( cc.success( "Did prepared " ) + cc.sunny( "IMA Agent#" ) +
+            cc.info( idxChain ) + cc.normal( "/" ) + cc.info( idxNode ) +
+            cc.success( " share for its docker container on node " ) +
             cc.j( idxNode ) + cc.success( " of chain" ) +
             cc.notice( g_arrChains[idxChain].name ) + cc.debug( "/" ) + cc.note( g_arrChains[idxChain].cid ) +
             cc.success( "..." ) + "\n" );
@@ -3374,62 +3443,25 @@ async function all_ima_agents_stop() {
         await schain_ima_agents_stop( idxChain );
 }
 
-/*
-
-docker rm -f ima_agent_00_00
-docker stop ima_agent_00_00
-docker logs ima_agent_00_00
-
-docker rm -f ima_agent_00_00; docker run -it -v $(pwd):/tmp \
-    --name ima_agent_00_00 \
-    --env-file $(pwd)/env.file \
-    skalenetwork/ima:2.0.0-develop.3 \
-    /bin/bash
-
-docker rm -f ima_agent_00_00; docker run -v $(pwd):/tmp \
-    --name ima_agent_00_00 \
-    --env-file $(pwd)/env.file \
-    skalenetwork/ima:2.0.0-develop.3
-
-content of /home/serge/Work/comprehensive-test/s_chain_gen/chain_00/node_00/ima_docker_data:
-abi.json  client.crt  env.file  k.key  proxyMainnet.json  skale-manager-1.9.3-develop.8-custom-abi.json
-
-content of env.file there:
-SCHAIN_DIR=/home/serge/Work/comprehensive-test/s_chain_gen/chain_00/node_00/ima_docker_data
-
-MAINNET_PROXY_PATH=/tmp/proxyMainnet.json
-SCHAIN_PROXY_PATH=/tmp/abi.json
-MANAGER_ABI_PATH=/tmp/skale-manager-1.9.3-develop.8-custom-abi.json
-
-STATE_FILE=/tmp/state.file
-
-SCHAIN_NAME=Bob1000
-CID_MAIN_NET=456
-CID_SCHAIN=1000
-SCHAIN_RPC_URL=http://127.0.0.1:2164
-MAINNET_RPC_URL=http://127.0.0.1:8545
-NODE_NUMBER=0
-NODES_COUNT=2
-MONITORING_PORT=29400
-TM_URL_MAIN_NET=redis://@127.0.0.1:6379
-SGX_URL=https://127.0.0.1:1026
-ECDSA_KEY_NAME=NEK:1000
-SGX_SSL_KEY_PATH=/tmp/k.key
-SGX_SSL_CERT_PATH=/tmp/client.crt
-NODE_ADDRESS=0x57DFd5291a0d7475Eaa1D1b8A7f03248Fa26a194
-
-*/
-
 async function schain_ima_agents_start( idxChain ) {
+    const arrNodeDescriptions = g_arrChains[idxChain].arrNodeDescriptions;
     if( g_bDockerIMA ) {
         if( g_bVerbose )
             log.write( cc.normal( "Starting " ) + cc.notice( "IMA" ) + cc.normal( " agents as docker containers ..." ) + "\n" );
         for( let i = 0; i < arrNodeDescriptions.length; ++i ) {
-            const joNodeDesc = arrNodeDescriptions[i];
+            const idxNode = 0 + i;
+            const joNodeDesc = arrNodeDescriptions[idxNode];
             if( g_bVerbose )
                 log.write( cc.normal( "Starting " ) + cc.success( "IMA Agent" ) + cc.normal( " for node " ) + cc.sunny( joNodeDesc.nodeID ) + "\n" );
+            const strImaDockerDataFolder = schain_ima_agent_get_docker_cwd( idxChain, idxNode );
             quick_spawn( // IMA Agent as docker container
-                "docker run --name " + schain_ima_agent_get_docker_container_name( idxChain, idxNode ) + " " + g_strImaDockerImageName,
+                "docker run " +
+                    "-v " + strImaDockerDataFolder + ":/tmp " +
+                    "--name " + schain_ima_agent_get_docker_container_name( idxChain, idxNode ) + " " +
+                    "--env-file " + strImaDockerDataFolder + "/env.file " +
+                    "--network=\"host\" " +
+                    g_strImaDockerImageName
+                ,
                 schain_ima_agent_get_docker_cwd( idxChain, idxNode ),
                 schain_ima_agent_get_env( idxChain, idxNode )
             );
@@ -3457,7 +3489,6 @@ async function schain_ima_agents_start( idxChain ) {
     }
     if( g_bVerbose )
         log.write( cc.normal( "Starting " ) + cc.notice( "IMA" ) + cc.normal( " agents as node processes..." ) + "\n" );
-    const arrNodeDescriptions = g_arrChains[idxChain].arrNodeDescriptions;
     for( let i = 0; i < arrNodeDescriptions.length; ++i ) {
         const joNodeDesc = arrNodeDescriptions[i];
         if( g_bVerbose )
@@ -3485,12 +3516,13 @@ async function schain_ima_agents_start( idxChain ) {
         log.write( cc.success( "Done, started " ) + cc.notice( "IMA" ) + cc.success( " agents as node processes" ) + "\n" );
 }
 async function schain_ima_agents_stop( idxChain ) {
+    const arrNodeDescriptions = g_arrChains[idxChain].arrNodeDescriptions;
     if( g_bDockerIMA ) {
         if( g_bVerbose )
             log.write( cc.normal( "Stopping " ) + cc.success( "IMA" ) + cc.normal( " agents as docker containers..." ) + "\n" );
-        const arrNodeDescriptions = g_arrChains[idxChain].arrNodeDescriptions;
         for( let i = 0; i < arrNodeDescriptions.length; ++i ) {
-            const joNodeDesc = arrNodeDescriptions[i];
+            const idxNode = 0 + i;
+            const joNodeDesc = arrNodeDescriptions[idxNode];
             if( g_bVerbose )
                 log.write( cc.normal( "Stopping " ) + cc.success( "IMA Agent" ) + cc.normal( " for node " ) + cc.sunny( joNodeDesc.nodeID ) + "\n" );
             quick_spawn( // IMA Agent as docker container
@@ -3522,7 +3554,6 @@ async function schain_ima_agents_stop( idxChain ) {
     }
     if( g_bVerbose )
         log.write( cc.normal( "Stopping " ) + cc.success( "IMA" ) + cc.normal( " agents as node processes..." ) + "\n" );
-    const arrNodeDescriptions = g_arrChains[idxChain].arrNodeDescriptions;
     for( let i = 0; i < arrNodeDescriptions.length; ++i ) {
         const joNodeDesc = arrNodeDescriptions[i];
         if( g_bVerbose )
@@ -4392,7 +4423,8 @@ function searchDirSyncForFirstItem( rule, dir, isRecursive, isFullPathResult ) {
 const g_strFolderRepoSkaleManager = findExistingDirPath( path.join( __dirname, "../skale-manager" ) );
 if( g_bVerbose )
     log.write( cc.normal( "Assuming " ) + cc.sunny( "Skale Manager" ) + cc.normal( " repo is " ) + cc.info( g_strFolderRepoSkaleManager ) + "\n" );
-let g_strSkaleManagerAbiJsonPath = normalizePath( g_strFolderRepoSkaleManager + "/data/skale-manager-1.8.0-develop.21-custom-abi.json" ); // "/data/test.json"
+const g_strSkaleManagerAbiJsonName = "skale-manager-1.8.0-develop.21-custom-abi.json";
+let g_strSkaleManagerAbiJsonPath = normalizePath( g_strFolderRepoSkaleManager + "/data/" + g_strSkaleManagerAbiJsonName );
 if( g_bVerbose )
     log.write( cc.normal( "Assuming " ) + cc.sunny( "Skale Manager ABI file" ) + cc.normal( " is " ) + cc.info( g_strSkaleManagerAbiJsonPath ) + "\n" );
 
