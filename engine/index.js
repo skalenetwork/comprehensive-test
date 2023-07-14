@@ -101,7 +101,7 @@ const g_strImaOutputOpts = "" +
 const g_strImaRuntimeOpts = "" +
     " --gas-price-multiplier=2" +
     " --gas-multiplier=2" +
-    " --auto-exit=0" +
+    // " --auto-exit=0" + // it's 0 by default
     // " --skip-dry-run" +
     " --no-skip-dry-run" +
     " --ignore-dry-run" +
@@ -144,7 +144,7 @@ const g_strSgxKeyNameMN = process.env.SGX_KEY_ETHEREUM || "NEK:002";
 const g_strSgxKeyNameSC = process.env.SGX_KEY_S_CHAIN || "NEK:003";
 const g_bUseTransactionManagerInImaMN = false; // use g_strUrlTransactionManager
 const g_bUseSgxInImaMN = true; // ignored if g_bUseTransactionManagerInImaMN = true
-const g_bUseSgxInImaSC = false;
+const g_bUseSgxInImaSC = true; // false;
 const g_bIsGenerateNodeEcdsaKeys = false; // true - use generateECDSAKey, false - use importECDSAKey
 // IMPORTANT NOTICE: g_bIsGenerateNodeEcdsaKeys should be false because dynamically generated ECDSA key addresses are not inserted into "mapAuthorizedCallers" in config.json files for skaled
 
@@ -199,6 +199,20 @@ function quick_spawn( strCmd, cwd, joEnv ) {
                 cc.error( " and got exit status " ) + cc.j( rv.status ) + "\n" );
         }
     }
+    return rv;
+}
+
+function quick_spawn_async( strCmd, cwd, joEnv ) {
+    const options = { shell: true, cwd: cwd ? cwd : null };
+    if( joEnv && typeof joEnv == "object" && Object.keys( joEnv ).length > 0 )
+        options.env = joEnv;
+    if( g_bVerbose ) {
+        log.write( cc.debug( "Will async-quick-spawn process with command line " ) + cc.notice( strCmd ) +
+            cc.debug( " and options " ) + cc.j( options ) + cc.normal( "..." ) + "\n" );
+    }
+    const rv = child_process.spawn( strCmd, options );
+    if( g_bVerbose )
+        log.write( cc.success( "Done async-quick-spawn process with command line " ) + cc.notice( strCmd ) + "\n" );
     return rv;
 }
 
@@ -1082,7 +1096,7 @@ function compose_ima_cli_account_options_mn_sgx( idxChain, nNodeIndex ) {
         " --sgx-ssl-cert-main-net=\"" + g_joSgxRpcOptions.cert_path + "\"" +
         // " --address-main-net=\"" + private_key_2_account_address( g_w3mod, g_strPrivateKeyImaMN ) + "\"" // address instead of key here
         // " --address-main-net=\"" + public_key_2_account_address( g_w3mod, joNodeDesc.publicKey ) + "\"" // address instead of key here
-        " --address-main-net=" + joNodeDesc.checkedNodeAddress
+        " --address-main-net=" + joNodeDesc.nodeAddress // + joNodeDesc.checkedNodeAddress
     ;
 }
 
@@ -1094,7 +1108,7 @@ function compose_ima_cli_account_options_sc_sgx( idxChain, nNodeIndex ) {
         " --sgx-ssl-cert-s-chain=\"" + g_joSgxRpcOptions.cert_path + "\"" +
         // " --address-s-chain=\"" + private_key_2_account_address( g_w3mod, g_strPrivateKeyImaSC ) + "\"" // address instead of key here
         // " --address-s-chain=\"" + public_key_2_account_address( g_w3mod, joNodeDesc.publicKey ) + "\"" // address instead of key here
-        " --address-s-chain=" + joNodeDesc.checkedNodeAddress
+        " --address-s-chain=" + joNodeDesc.nodeAddress // + joNodeDesc.checkedNodeAddress
     ;
 }
 
@@ -3294,7 +3308,7 @@ async function schain_skaled_nodes_stop( idxChain ) {
 }
 
 const g_strImaDockerRepository = "skalenetwork/ima";
-const g_strImaDockerTag = "2.0.0-develop.11";
+const g_strImaDockerTag = "2.0.0-develop.12";
 const g_strImaDockerImageName = g_strImaDockerRepository + ":" + g_strImaDockerTag;
 
 async function ima_get_docker_image() {
@@ -3373,7 +3387,7 @@ function ima_prepare_docker_shares_node( idxChain, idxNode ) {
         "ECDSA_KEY_NAME=" + joNodeDesc.nameEcdsaPubKey + "\n" +
         "SGX_SSL_KEY_PATH=/tmp/k.key" + "\n" +
         "SGX_SSL_CERT_PATH=/tmp/client.crt" + "\n" +
-        "NODE_ADDRESS=" + joNodeDesc.checkedNodeAddress + "\n" +
+        "NODE_ADDRESS=" + joNodeDesc.nodeAddress + "\n" + // + joNodeDesc.checkedNodeAddress + "\n" +
         "\n";
     const strPathOfEnvFile = strImaDockerDataFolder + "/env.file";
     if( g_bVerbose ) {
@@ -3452,9 +3466,16 @@ async function schain_ima_agents_start( idxChain ) {
             const idxNode = 0 + i;
             const joNodeDesc = arrNodeDescriptions[idxNode];
             if( g_bVerbose )
+                log.write( cc.normal( "Pre-cleaning " ) + cc.success( "IMA Agent" ) + cc.normal( " for node " ) + cc.sunny( joNodeDesc.nodeID ) + "\n" );
+            quick_spawn( // IMA Agent as docker container
+                "docker rm -f " + schain_ima_agent_get_docker_container_name( idxChain, idxNode ),
+                schain_ima_agent_get_docker_cwd( idxChain, idxNode ),
+                schain_ima_agent_get_env( idxChain, idxNode )
+            );
+            if( g_bVerbose )
                 log.write( cc.normal( "Starting " ) + cc.success( "IMA Agent" ) + cc.normal( " for node " ) + cc.sunny( joNodeDesc.nodeID ) + "\n" );
             const strImaDockerDataFolder = schain_ima_agent_get_docker_cwd( idxChain, idxNode );
-            quick_spawn( // IMA Agent as docker container
+            quick_spawn_async( // IMA Agent as docker container
                 "docker run " +
                     "-v " + strImaDockerDataFolder + ":/tmp " +
                     "--name " + schain_ima_agent_get_docker_container_name( idxChain, idxNode ) + " " +
@@ -3525,7 +3546,7 @@ async function schain_ima_agents_stop( idxChain ) {
             const joNodeDesc = arrNodeDescriptions[idxNode];
             if( g_bVerbose )
                 log.write( cc.normal( "Stopping " ) + cc.success( "IMA Agent" ) + cc.normal( " for node " ) + cc.sunny( joNodeDesc.nodeID ) + "\n" );
-            quick_spawn( // IMA Agent as docker container
+            quick_spawn_async( // IMA Agent as docker container
                 "docker stop " + schain_ima_agent_get_docker_container_name( idxChain, idxNode ),
                 schain_ima_agent_get_docker_cwd( idxChain, idxNode ),
                 schain_ima_agent_get_env( idxChain, idxNode )
@@ -4423,7 +4444,7 @@ function searchDirSyncForFirstItem( rule, dir, isRecursive, isFullPathResult ) {
 const g_strFolderRepoSkaleManager = findExistingDirPath( path.join( __dirname, "../skale-manager" ) );
 if( g_bVerbose )
     log.write( cc.normal( "Assuming " ) + cc.sunny( "Skale Manager" ) + cc.normal( " repo is " ) + cc.info( g_strFolderRepoSkaleManager ) + "\n" );
-const g_strSkaleManagerAbiJsonName = "skale-manager-1.8.0-develop.21-custom-abi.json";
+const g_strSkaleManagerAbiJsonName = "skale-manager-1.9.3-develop.8-custom-abi.json";
 let g_strSkaleManagerAbiJsonPath = normalizePath( g_strFolderRepoSkaleManager + "/data/" + g_strSkaleManagerAbiJsonName );
 if( g_bVerbose )
     log.write( cc.normal( "Assuming " ) + cc.sunny( "Skale Manager ABI file" ) + cc.normal( " is " ) + cc.info( g_strSkaleManagerAbiJsonPath ) + "\n" );
