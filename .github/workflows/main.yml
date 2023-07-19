@@ -261,12 +261,8 @@ jobs:
         #
         #
         #
-        git checkout develop
-        # git checkout ticket-1248/js-only-ima-agent
-        # git checkout ticket-1094/improve-queue-processing-in-IMA-agent
-        # git checkout ticket-1372/IMA-streams-load-balancing
-        # git checkout ticket-737/IMA-switch-toethers-js
-        # git checkout v1.6.0
+        # git checkout develop
+        git checkout ticket-1530/fix-V-sig
         git fetch
         git pull
         git branch

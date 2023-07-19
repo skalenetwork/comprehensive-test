@@ -4444,7 +4444,7 @@ function searchDirSyncForFirstItem( rule, dir, isRecursive, isFullPathResult ) {
 const g_strFolderRepoSkaleManager = findExistingDirPath( path.join( __dirname, "../skale-manager" ) );
 if( g_bVerbose )
     log.write( cc.normal( "Assuming " ) + cc.sunny( "Skale Manager" ) + cc.normal( " repo is " ) + cc.info( g_strFolderRepoSkaleManager ) + "\n" );
-const g_strSkaleManagerAbiJsonName = "skale-manager-1.9.3-develop.8-custom-abi.json";
+const g_strSkaleManagerAbiJsonName = "skale-manager-1.9.4-develop.5-custom-abi.json";
 let g_strSkaleManagerAbiJsonPath = normalizePath( g_strFolderRepoSkaleManager + "/data/" + g_strSkaleManagerAbiJsonName );
 if( g_bVerbose )
     log.write( cc.normal( "Assuming " ) + cc.sunny( "Skale Manager ABI file" ) + cc.normal( " is " ) + cc.info( g_strSkaleManagerAbiJsonPath ) + "\n" );
