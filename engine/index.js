@@ -3308,7 +3308,7 @@ async function schain_skaled_nodes_stop( idxChain ) {
 }
 
 const g_strImaDockerRepository = "skalenetwork/ima";
-const g_strImaDockerTag = "2.0.0-develop.12";
+const g_strImaDockerTag = "2.0.0-develop.14";
 const g_strImaDockerImageName = g_strImaDockerRepository + ":" + g_strImaDockerTag;
 
 async function ima_get_docker_image() {
