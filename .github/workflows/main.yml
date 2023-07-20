@@ -261,8 +261,7 @@ jobs:
         #
         #
         #
-        # git checkout develop
-        git checkout ticket-1530/fix-V-sig
+        git checkout develop
         git fetch
         git pull
         git branch
