@@ -67,7 +67,15 @@ const g_bVerbose = true;
 const g_bExternalMN = true; // true; // set to true to run Min Net manually outside this test
 const g_bExternalSC = false; // true; // set to true to run S-Chain manually outside this test
 const g_bExternalIMA = false; // set to true to run S-Chain manually outside this test
-const g_bDockerIMA = false; // use docker image of IMA Agent, this flag is higher priority than g_bExternalIMA
+
+const g_strImaDockerRepository = "skalenetwork/ima";
+const g_strImaDockerTag = process.env.IMAGE_NAME | ""; // "2.0.0-develop.14";
+const g_strImaDockerImageName = g_strImaDockerRepository + ":" + g_strImaDockerTag;
+const g_bDockerIMA = g_strImaDockerTag ? true : false; // use docker image of IMA Agent, this flag is higher priority than g_bExternalIMA
+log.write( cc.attention( "IMA Docker Mode" ) + " " + cc.debug( " is " ) + cc.yn( g_bDockerIMA ) + "\n" );
+if( g_bDockerIMA )
+    log.write( cc.attention( "IMA Docker Image" ) + " " + cc.debug( " is " ) + cc.info( g_strImaDockerImageName ) + "\n" );
+
 const g_bSkipStartStopSChainOnImaDeploy = true;
 const g_bPredeployedIMA = true;
 const g_bAskExternalStartStopMN = false;
@@ -142,7 +150,7 @@ const g_joSgxRpcOptions = { // in IMA SGX_SSL_KEY_FILE_ETHEREUM/SGX_SSL_CERT_FIL
 };
 const g_strSgxKeyNameMN = process.env.SGX_KEY_ETHEREUM || "NEK:002";
 const g_strSgxKeyNameSC = process.env.SGX_KEY_S_CHAIN || "NEK:003";
-const g_bUseTransactionManagerInImaMN = false; // use g_strUrlTransactionManager
+const g_bUseTransactionManagerInImaMN = g_bDockerIMA; // false; // use g_strUrlTransactionManager
 const g_bUseSgxInImaMN = true; // ignored if g_bUseTransactionManagerInImaMN = true
 const g_bUseSgxInImaSC = true; // false;
 const g_bIsGenerateNodeEcdsaKeys = false; // true - use generateECDSAKey, false - use importECDSAKey
@@ -3306,10 +3314,6 @@ async function schain_skaled_nodes_stop( idxChain ) {
             } );
     } catch ( err ) { }
 }
-
-const g_strImaDockerRepository = "skalenetwork/ima";
-const g_strImaDockerTag = "2.0.0-develop.14";
-const g_strImaDockerImageName = g_strImaDockerRepository + ":" + g_strImaDockerTag;
 
 async function ima_get_docker_image() {
     if( ! g_bDockerIMA )
