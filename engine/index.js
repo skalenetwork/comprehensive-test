@@ -576,25 +576,27 @@ const g_arrChains = [
         name: g_arrChainNaming[0].name,
         joImaAbiSC: null,
         arrNodeDescriptions: [
-            initNodeDescription( 0, process.env.URL_W3_NODE_00 || "http://127.0.0.1:2164", 0, 0, g_arrChainNaming[0].cid, 1112, "Aldo", 2161 ), // "http://127.0.0.1:15000" / / "ws://127.0.0.1:15020"
-            initNodeDescription( 1, process.env.URL_W3_NODE_01 || "http://127.0.0.2:2264", 0, 1, g_arrChainNaming[0].cid, 1113, "Bear", 2261 ) // "http://127.0.0.2:15100"  // "ws://127.0.0.2:15120"
-            // initNodeDescription(  2, process.env.URL_W3_NODE_02 || "http://127.0.0.3:2364",  0,  2, g_arrChainNaming[0].cid, 1114, "John", 2361 ), // "http://127.0.0.3:15200"  // "ws://127.0.0.3:15220"
-            // initNodeDescription(  3, process.env.URL_W3_NODE_03 || "http://127.0.0.4:2464",  0,  3, g_arrChainNaming[0].cid, 1115, "Seed", 2461 ), // "http://127.0.0.4:15300"  // "ws://127.0.0.4:15320"
-            // initNodeDescription(  4, process.env.URL_W3_NODE_04 || "http://127.0.0.5:2564",  0,  4, g_arrChainNaming[0].cid, 1116, "Tron", 2561 ), // "http://127.0.0.5:15400"  // "ws://127.0.0.5:15420"
-            // initNodeDescription(  5, process.env.URL_W3_NODE_05 || "http://127.0.0.6:2664",  0,  5, g_arrChainNaming[0].cid, 1117, "Neon", 2661 ), // "http://127.0.0.6:15500"  // "ws://127.0.0.6:15520"
-            // initNodeDescription(  6, process.env.URL_W3_NODE_06 || "http://127.0.0.7:2764",  0,  6, g_arrChainNaming[0].cid, 1118, "Lion", 2761 ), // "http://127.0.0.7:15600"  // "ws://127.0.0.7:15620"
-            // initNodeDescription(  7, process.env.URL_W3_NODE_07 || "http://127.0.0.8:2864",  0,  7, g_arrChainNaming[0].cid, 1119, "Bonk", 2861 ), // "http://127.0.0.8:15700"  // "ws://127.0.0.8:15720"
-            // initNodeDescription(  8, process.env.URL_W3_NODE_08 || "http://127.0.0.9:2964",  0,  8, g_arrChainNaming[0].cid, 1120, "Gold", 2961 ), // "http://127.0.0.9:15800"  // "ws://127.0.0.9:15820"
-            // initNodeDescription(  9, process.env.URL_W3_NODE_09 || "http://127.0.0.10:3064", 0,  9, g_arrChainNaming[0].cid, 1121, "Iron", 3061 ), // "http://127.0.0.10:15900" // "ws://127.0.0.10:15920"
-            // initNodeDescription( 10, process.env.URL_W3_NODE_10 || "http://127.0.0.11:3164", 0, 10, g_arrChainNaming[0].cid, 1122, "Sims", 3161 ), // "http://127.0.0.11:16000" // "ws://127.0.0.11:16020"
-            // initNodeDescription( 11, process.env.URL_W3_NODE_11 || "http://127.0.0.12:3264", 0, 11, g_arrChainNaming[0].cid, 1123, "Zeon", 3261 ), // "http://127.0.0.12:16100" // "ws://127.0.0.12:16120"
-            // initNodeDescription( 12, process.env.URL_W3_NODE_12 || "http://127.0.0.13:3364", 0, 12, g_arrChainNaming[0].cid, 1124, "Daft", 3361 ), // "http://127.0.0.13:16200" // "ws://127.0.0.13:16220"
-            // initNodeDescription( 13, process.env.URL_W3_NODE_13 || "http://127.0.0.14:3464", 0, 13, g_arrChainNaming[0].cid, 1125, "Punk", 3461 ), // "http://127.0.0.14:16300" // "ws://127.0.0.14:16320"
-            // initNodeDescription( 14, process.env.URL_W3_NODE_14 || "http://127.0.0.15:3564", 0, 14, g_arrChainNaming[0].cid, 1126, "Ally", 3561 ), // "http://127.0.0.15:16400" // "ws://127.0.0.15:16420"
-            // initNodeDescription( 15, process.env.URL_W3_NODE_15 || "http://127.0.0.16:3664", 0, 15, g_arrChainNaming[0].cid, 1127, "Trez", 3661 )  // "http://127.0.0.16:16500" // "ws://127.0.0.16:16520"
+            initNodeDescription( process.env.URL_W3_NODE_00 || "http://127.0.0.1:2164", 0, 0, g_arrChainNaming[0].cid, 1112, "Aldo" ), // "http://127.0.0.1:15000" / / "ws://127.0.0.1:15020"
+            initNodeDescription( process.env.URL_W3_NODE_01 || "http://127.0.0.2:2264", 0, 1, g_arrChainNaming[0].cid, 1113, "Bear" ) // "http://127.0.0.2:15100"  // "ws://127.0.0.2:15120"
+            // initNodeDescription( process.env.URL_W3_NODE_02 || "http://127.0.0.3:2364",  0,  2, g_arrChainNaming[0].cid, 1114, "John" ), // "http://127.0.0.3:15200"  // "ws://127.0.0.3:15220"
+            // initNodeDescription( process.env.URL_W3_NODE_03 || "http://127.0.0.4:2464",  0,  3, g_arrChainNaming[0].cid, 1115, "Seed" ), // "http://127.0.0.4:15300"  // "ws://127.0.0.4:15320"
+            // initNodeDescription( process.env.URL_W3_NODE_04 || "http://127.0.0.5:2564",  0,  4, g_arrChainNaming[0].cid, 1116, "Tron" ), // "http://127.0.0.5:15400"  // "ws://127.0.0.5:15420"
+            // initNodeDescription( process.env.URL_W3_NODE_05 || "http://127.0.0.6:2664",  0,  5, g_arrChainNaming[0].cid, 1117, "Neon" ), // "http://127.0.0.6:15500"  // "ws://127.0.0.6:15520"
+            // initNodeDescription( process.env.URL_W3_NODE_06 || "http://127.0.0.7:2764",  0,  6, g_arrChainNaming[0].cid, 1118, "Lion" ), // "http://127.0.0.7:15600"  // "ws://127.0.0.7:15620"
+            // initNodeDescription( process.env.URL_W3_NODE_07 || "http://127.0.0.8:2864",  0,  7, g_arrChainNaming[0].cid, 1119, "Bonk" ), // "http://127.0.0.8:15700"  // "ws://127.0.0.8:15720"
+            // initNodeDescription( process.env.URL_W3_NODE_08 || "http://127.0.0.9:2964",  0,  8, g_arrChainNaming[0].cid, 1120, "Gold" ), // "http://127.0.0.9:15800"  // "ws://127.0.0.9:15820"
+            // initNodeDescription( process.env.URL_W3_NODE_09 || "http://127.0.0.10:3064", 0,  9, g_arrChainNaming[0].cid, 1121, "Iron" ), // "http://127.0.0.10:15900" // "ws://127.0.0.10:15920"
+            // initNodeDescription( process.env.URL_W3_NODE_10 || "http://127.0.0.11:3164", 0, 10, g_arrChainNaming[0].cid, 1122, "Sims" ), // "http://127.0.0.11:16000" // "ws://127.0.0.11:16020"
+            // initNodeDescription( process.env.URL_W3_NODE_11 || "http://127.0.0.12:3264", 0, 11, g_arrChainNaming[0].cid, 1123, "Zeon" ), // "http://127.0.0.12:16100" // "ws://127.0.0.12:16120"
+            // initNodeDescription( process.env.URL_W3_NODE_12 || "http://127.0.0.13:3364", 0, 12, g_arrChainNaming[0].cid, 1124, "Daft" ), // "http://127.0.0.13:16200" // "ws://127.0.0.13:16220"
+            // initNodeDescription( process.env.URL_W3_NODE_13 || "http://127.0.0.14:3464", 0, 13, g_arrChainNaming[0].cid, 1125, "Punk" ), // "http://127.0.0.14:16300" // "ws://127.0.0.14:16320"
+            // initNodeDescription( process.env.URL_W3_NODE_14 || "http://127.0.0.15:3564", 0, 14, g_arrChainNaming[0].cid, 1126, "Ally" ), // "http://127.0.0.15:16400" // "ws://127.0.0.15:16420"
+            // initNodeDescription( process.env.URL_W3_NODE_15 || "http://127.0.0.16:3664", 0, 15, g_arrChainNaming[0].cid, 1127, "Trez" )  // "http://127.0.0.16:16500" // "ws://127.0.0.16:16520"
         ],
         arrSyncNodeDescriptions: [
-            initNodeDescription( 4, process.env.URL_W3_NODE_02 || "http://127.0.0.3:2364", 0, 2, g_arrChainNaming[0].cid, 1114, "John", 2361 ) // "http://127.0.0.3:15200"  // "ws://127.0.0.3:15220"
+            initNodeDescription( process.env.URL_W3_NODE_02 || "http://127.0.0.3:2364", 0, 2, g_arrChainNaming[0].cid, 1114, "John" ) // "http://127.0.0.3:15200"  // "ws://127.0.0.3:15220"
+            // initNodeDescription( process.env.URL_W3_NODE_04 || "http://127.0.0.5:2564",  0,  4, g_arrChainNaming[0].cid, 1116, "Tron" ) // "http://127.0.0.5:15400"  // "ws://127.0.0.5:15420"
+            // initNodeDescription( process.env.URL_W3_NODE_17 || "http://127.0.0.16:3764", 0, 15, g_arrChainNaming[0].cid, 1127, "Barbie" )  // "http://127.0.0.16:16600" // "ws://127.0.0.16:16620"
         ],
         arrAssignedNodeIndices: []
     },
@@ -604,15 +606,17 @@ const g_arrChains = [
         name: g_arrChainNaming[1].name,
         joImaAbiSC: null,
         arrNodeDescriptions: [
-            initNodeDescription( 2, process.env.URL_W3_NODE_03 || "http://127.0.0.4:2464", 1, 0, g_arrChainNaming[1].cid, 1115, "Seed", 2461 ), // "http://127.0.0.4:15300"  // "ws://127.0.0.4:15320"
-            initNodeDescription( 3, process.env.URL_W3_NODE_04 || "http://127.0.0.5:2564", 1, 1, g_arrChainNaming[1].cid, 1116, "Tron", 2561 ) // "http://127.0.0.5:15400"  // "ws://127.0.0.5:15420"
+            initNodeDescription( process.env.URL_W3_NODE_03 || "http://127.0.0.4:2464", 1, 0, g_arrChainNaming[1].cid, 1115, "Seed" ), // "http://127.0.0.4:15300"  // "ws://127.0.0.4:15320"
+            initNodeDescription( process.env.URL_W3_NODE_04 || "http://127.0.0.5:2564", 1, 1, g_arrChainNaming[1].cid, 1116, "Tron" ) // "http://127.0.0.5:15400"  // "ws://127.0.0.5:15420"
         ],
         arrSyncNodeDescriptions: [
-            initNodeDescription( 5, process.env.URL_W3_NODE_05 || "http://127.0.0.6:2664", 1, 2, g_arrChainNaming[1].cid, 1117, "Neon", 2661 ) // "http://127.0.0.6:15500"  // "ws://127.0.0.6:15520"
+            initNodeDescription( process.env.URL_W3_NODE_05 || "http://127.0.0.6:2664", 1, 2, g_arrChainNaming[1].cid, 1117, "Neon" ) // "http://127.0.0.6:15500"  // "ws://127.0.0.6:15520"
         ],
         arrAssignedNodeIndices: []
     }
 ];
+reset_global_serial_indices_in_global_chains_array();
+reset_port_numbers_in_global_chains_array();
 const g_idxMostOftenUsedSChain = 0; // S-Chain which is tested most for purposes line Main Net to one S-Chain IMA transfers
 
 for( let idxChain = 0; idxChain < g_arrChains.length; ++ idxChain ) {
@@ -979,24 +983,65 @@ class ProcessController {
 //////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 //////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 
-function initNodeDescription( idxSerialGlobal, strURL, idxChain, idxNode, chainId, nodeID, strName, basePort ) {
+function reset_global_serial_indices_in_global_chains_array() {
+    let nWalk = 0;
+    for( let idxChain = 0; idxChain < g_arrChains.length; ++ idxChain ) {
+        const arrNodeDescriptions = g_arrChains[idxChain].arrNodeDescriptions;
+        for( let i = 0; i < arrNodeDescriptions.length; ++i ) {
+            const joNodeDesc = arrNodeDescriptions[i];
+            joNodeDesc.idxSerialGlobal = 0 + nWalk;
+            ++ nWalk;
+        }
+    }
+    for( let idxChain = 0; idxChain < g_arrChains.length; ++ idxChain ) {
+        const arrNodeDescriptions = g_arrChains[idxChain].arrSyncNodeDescriptions;
+        for( let i = 0; i < arrNodeDescriptions.length; ++i ) {
+            const joNodeDesc = arrNodeDescriptions[i];
+            joNodeDesc.idxSerialGlobal = 0 + nWalk;
+            ++ nWalk;
+        }
+    }
+}
+
+function reset_port_numbers_in_global_chains_array() {
+    let nWalk = 2161;
+    for( let idxChain = 0; idxChain < g_arrChains.length; ++ idxChain ) {
+        let arrNodeDescriptions = g_arrChains[idxChain].arrNodeDescriptions;
+        for( let i = 0; i < arrNodeDescriptions.length; ++i ) {
+            const joNodeDesc = arrNodeDescriptions[i];
+            joNodeDesc.basePort = 0 + nWalk;
+            joNodeDesc.nJsonRpcPort4ImaAgent = joNodeDesc.basePort + 10;
+            nWalk += 100;
+        }
+        arrNodeDescriptions = g_arrChains[idxChain].arrSyncNodeDescriptions;
+        for( let i = 0; i < arrNodeDescriptions.length; ++i ) {
+            const joNodeDesc = arrNodeDescriptions[i];
+            joNodeDesc.basePort = 0 + nWalk;
+            joNodeDesc.nJsonRpcPort4ImaAgent = joNodeDesc.basePort + 10;
+            nWalk += 100;
+        }
+    }
+}
+
+function initNodeDescription( strURL, idxChain, idxNode, chainId, nodeID, strName ) {
     const schain_id = chainId;
     const strFolderNodeSkaled = g_strFolderMultiNodeDeployment + "/chain_" + zeroPad( idxChain, 2 ) + "/node_" + zeroPad( idxNode, 2 );
     const dkgID = randomFixedInteger( 5 ) % 65000; // randomHexString( 32 * 2 );
     const joNodeDesc = {
         url: "" + strURL,
         ipInfo: extract_ipInfo_from_url( strURL ), // for contracts, example of valid result: { ip: "127.0.0.1", hexIp: "7f000001", port: "2161" }
-        basePort: 0 + parseInt( basePort ),
+        basePort: 0, // will be reset in reset_port_numbers_in_global_chains_array()
         nameNode: getNonEmptyString( strName, null ),
         idxChain: 0 + idxChain,
         idxNode: 0 + idxNode,
         nodeID: 0 + nodeID,
-        idxSerialGlobal: 0 + idxSerialGlobal,
+        idxSerialGlobal: 0, // will be reset in reset_global_serial_indices_in_global_chains_array()
         nodeAddress: get_cached_ecdsa_key_at( idxNode ).address, // used later as nodeAddress for skale-manager calls
         nodePublicKey: get_cached_ecdsa_key_at( idxNode ).publicKey, // used later as nodeAddress for skale-manager calls via web3.eth.sign
         nodePrivateKey: get_cached_ecdsa_key_at( idxNode ).privateKey, // used later as nodeAddress for skale-manager calls via web3.eth.accounts.sign
         checkedNodeAddress: "", // came from Nodes.getNodeAddress call
-        //
+        //            ++ nWalk;
+
         dkgID: dkgID,
         nameEcdsaPubKey: get_cached_ecdsa_key_at( idxNode ).sgxName,
         nameSgxPoly: generateSgxPolyName( schain_id, nodeID, dkgID ),
@@ -1021,7 +1066,7 @@ function initNodeDescription( idxSerialGlobal, strURL, idxChain, idxNode, chainI
         logPath4imaAgent: normalizePath( path.join( __dirname, "imaAgent_" + zeroPad( idxChain, 2 ) + "_" + zeroPad( idxNode, 2 ) + ".log" ) ),
         proc4imaAgent: null,
         //
-        nJsonRpcPort4ImaAgent: 0 + basePort + 10
+        nJsonRpcPort4ImaAgent: 0 // basePort + 10 // will be reset in reset_port_numbers_in_global_chains_array()
     };
     return joNodeDesc;
 }
@@ -1307,6 +1352,14 @@ function toHex( w3, d, pad ) {
 //     }
 //     return toHex( w3, d, pad );
 // }
+
+function chainDescByIndex( idxChain ) {
+    const s =
+        cc.attention( idxChain ) + cc.debug( "/" ) +
+        cc.info( g_arrChains[idxChain].name ) + cc.debug( "/" ) +
+        cc.info( g_arrChains[idxChain].cid );
+    return s;
+}
 
 function nodeItemDesc( joNodeDesc ) {
     const s = cc.sunny( joNodeDesc.idxSerialGlobal ) +
@@ -2863,7 +2916,7 @@ function init_sgx_ssl_for_nodes( idxChain ) {
     } // for( let i = 0; i < arrNodeDescriptions.length; ++i )
 
     if( g_bVerbose )
-        log.write( cc.success( "Finished Multi Node deployment" ) + "\n" );
+        log.write( cc.success( "Finished SGX SSL initialization" ) + "\n" );
 }
 
 function get_node_desc_by_node_id( idxChain, nodeID ) {
@@ -5275,38 +5328,66 @@ function init_sgx_ssl() {
 //////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 //////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 
-async function node_set_maintenance( joNodeDesc, isOn ) {
+async function node_set_maintenance( joNodeDesc, isOn, countOfAttempts ) {
     if( g_bVerbose ) {
-        log.write(
+        log.write( "    " +
             cc.debug( "Will set " ) + ( isOn ? cc.success( "on" ) : cc.error( "off" ) ) +
             cc.debug( " maintenance mode on node " ) + nodeItemDesc( joNodeDesc ) +
             cc.debug( " ..." ) + "\n" );
     }
-    const privateKey = "" + g_strPrivateKeySkaleManagerMN;
-    const addressFrom = private_key_2_account_address( g_w3_main_net, privateKey );
-    const met = isOn ? jo_nodes.methods.setNodeInMaintenance : jo_nodes.methods.removeNodeFromInMaintenance;
-    await met(
-        joNodeDesc.idxSerialGlobal
-    ).send( {
-        chainId: cid_main_net,
-        from: addressFrom,
-        gas: 8000000
-    } );
+    if( countOfAttempts == null || countOfAttempts == undefined || countOfAttempts < 1 )
+        countOfAttempts = 3;
+    let isSuccess = false;
+    for( let idxAttempt = 0; idxAttempt < countOfAttempts; ++ idxAttempt ) {
+        try {
+            const privateKey = "" + g_strPrivateKeySkaleManagerMN;
+            const addressFrom = private_key_2_account_address( g_w3_main_net, privateKey );
+            const met = isOn ? jo_nodes.methods.setNodeInMaintenance : jo_nodes.methods.removeNodeFromInMaintenance;
+            await met(
+                joNodeDesc.idxSerialGlobal
+            ).send( {
+                chainId: cid_main_net,
+                from: addressFrom,
+                gas: 8000000
+            } );
+            isSuccess = true;
+            break; // success
+        } catch ( err ) {
+            log.write( "    " +
+                cc.error( "Failed to se " ) + ( isOn ? cc.success( "on" ) : cc.error( "off" ) ) +
+                cc.error( " maintenance mode on node " ) + nodeItemDesc( joNodeDesc ) +
+                cc.error( ", error description is: " ) + cc.warning( err.toString() ) + "\n" );
+        }
+        await sleep( 2000 );
+    }
+    if( ! isSuccess ) {
+        log.write( "    " + cc.fatal( "Failed." ) + "\n" );
+        await end_of_test( 55 );
+    }
     if( g_bVerbose )
         log.write( "    " + cc.success( "Done." ) + "\n" );
+
 }
 
-async function schain_set_maintenance( idxChain, isOn ) {
+async function schain_set_maintenance( idxChain, isOn, countOfAttempts ) {
+    if( g_bVerbose ) {
+        log.write(
+            cc.debug( "Will set " ) + ( isOn ? cc.success( "on" ) : cc.error( "off" ) ) +
+            cc.debug( " maintenance mode on chain " ) + chainDescByIndex( idxChain ) +
+            cc.debug( " ..." ) + "\n" );
+    }
     const arrNodeDescriptions = g_arrChains[idxChain].arrNodeDescriptions;
     for( let i = 0; i < arrNodeDescriptions.length; ++i ) {
         const joNodeDesc = arrNodeDescriptions[i];
-        await node_set_maintenance( joNodeDesc, isOn );
+        await node_set_maintenance( joNodeDesc, isOn, countOfAttempts );
     }
+    if( g_bVerbose )
+        log.write( cc.success( "Done." ) + "\n" );
 }
 
-async function all_set_maintenance( isOn ) {
+async function all_set_maintenance( isOn, countOfAttempts ) {
     for( let idxChain = 0; idxChain < g_arrChains.length; ++ idxChain )
-        await schain_set_maintenance( idxChain, isOn );
+        await schain_set_maintenance( idxChain, isOn, countOfAttempts );
 }
 
 //////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
