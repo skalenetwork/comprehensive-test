@@ -595,6 +595,7 @@ const g_arrChains = [
         ],
         arrSyncNodeDescriptions: [
             initNodeDescription( process.env.URL_W3_NODE_02 || "http://127.0.0.3:2364", 0, 2, g_arrChainNaming[0].cid, 1114, "John" ) // "http://127.0.0.3:15200"  // "ws://127.0.0.3:15220"
+            //
             // initNodeDescription( process.env.URL_W3_NODE_04 || "http://127.0.0.5:2564",  0,  4, g_arrChainNaming[0].cid, 1116, "Tron" ) // "http://127.0.0.5:15400"  // "ws://127.0.0.5:15420"
             // initNodeDescription( process.env.URL_W3_NODE_17 || "http://127.0.0.16:3764", 0, 15, g_arrChainNaming[0].cid, 1127, "Barbie" )  // "http://127.0.0.16:16600" // "ws://127.0.0.16:16620"
         ],
@@ -608,9 +609,16 @@ const g_arrChains = [
         arrNodeDescriptions: [
             initNodeDescription( process.env.URL_W3_NODE_03 || "http://127.0.0.4:2464", 1, 0, g_arrChainNaming[1].cid, 1115, "Seed" ), // "http://127.0.0.4:15300"  // "ws://127.0.0.4:15320"
             initNodeDescription( process.env.URL_W3_NODE_04 || "http://127.0.0.5:2564", 1, 1, g_arrChainNaming[1].cid, 1116, "Tron" ) // "http://127.0.0.5:15400"  // "ws://127.0.0.5:15420"
+            //
+            // initNodeDescription( process.env.URL_W3_NODE_05 || "http://127.0.0.6:2664",  1,  0, g_arrChainNaming[0].cid, 1117, "Neon" ), // "http://127.0.0.6:15500"  // "ws://127.0.0.6:15520"
+            // initNodeDescription( process.env.URL_W3_NODE_06 || "http://127.0.0.7:2764",  1,  1, g_arrChainNaming[0].cid, 1118, "Lion" ), // "http://127.0.0.7:15600"  // "ws://127.0.0.7:15620"
+            // initNodeDescription( process.env.URL_W3_NODE_07 || "http://127.0.0.8:2864",  1,  2, g_arrChainNaming[0].cid, 1119, "Bonk" ), // "http://127.0.0.8:15700"  // "ws://127.0.0.8:15720"
+            // initNodeDescription( process.env.URL_W3_NODE_08 || "http://127.0.0.9:2964",  1,  3, g_arrChainNaming[0].cid, 1120, "Gold" ) // "http://127.0.0.9:15800"  // "ws://127.0.0.9:15820"
         ],
         arrSyncNodeDescriptions: [
             initNodeDescription( process.env.URL_W3_NODE_05 || "http://127.0.0.6:2664", 1, 2, g_arrChainNaming[1].cid, 1117, "Neon" ) // "http://127.0.0.6:15500"  // "ws://127.0.0.6:15520"
+            //
+            // initNodeDescription( process.env.URL_W3_NODE_09 || "http://127.0.0.10:3064", 1,  4, g_arrChainNaming[0].cid, 1121, "Iron" ) // "http://127.0.0.10:15900" // "ws://127.0.0.10:15920"
         ],
         arrAssignedNodeIndices: []
     }
@@ -5354,7 +5362,7 @@ async function node_set_maintenance( joNodeDesc, isOn, countOfAttempts ) {
             break; // success
         } catch ( err ) {
             log.write( "    " +
-                cc.error( "Failed to se " ) + ( isOn ? cc.success( "on" ) : cc.error( "off" ) ) +
+                cc.error( "Failed to set " ) + ( isOn ? cc.success( "on" ) : cc.error( "off" ) ) +
                 cc.error( " maintenance mode on node " ) + nodeItemDesc( joNodeDesc ) +
                 cc.error( ", error description is: " ) + cc.warning( err.toString() ) + "\n" );
         }
