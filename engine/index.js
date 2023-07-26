@@ -304,9 +304,10 @@ function print_logs_at_exit() {
         for( let idxNode = 0; idxNode < g_arrChains[idxChain].arrNodeDescriptions.length; ++ idxNode ) {
             if( g_bDockerIMA ) {
                 print_empty_space_before_log();
-                log.write( cc.bright( "Log of IMA docker container " ) +
-                cc.sunny( schain_ima_agent_get_docker_container_name( idxChain, idxNode ) ) +
-                cc.bright( " logs at exit:" ) + " " + cc.attention( strPath ) + "\n" );
+                log.write(
+                    cc.bright( "Log of IMA docker container " ) +
+                    cc.sunny( schain_ima_agent_get_docker_container_name( idxChain, idxNode ) ) +
+                    cc.bright( " at exit:" ) + "\n" );
                 quick_spawn( // IMA Agent as docker container
                     "docker logs " + schain_ima_agent_get_docker_container_name( idxChain, idxNode ),
                     schain_ima_agent_get_docker_cwd( idxChain, idxNode ),
