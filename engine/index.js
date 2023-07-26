@@ -69,8 +69,12 @@ const g_bExternalSC = false; // true; // set to true to run S-Chain manually out
 const g_bExternalIMA = false; // set to true to run S-Chain manually outside this test
 
 const g_strImaDockerRepository = "skalenetwork/ima";
-const g_strImaDockerTag = process.env.IMAGE_NAME | ""; // "2.0.0-develop.14";
+log.write( cc.attention( "IMA Docker Tag" ) + " " + cc.debug( " from " ) + cc.notice( "IMAGE_NAME" ) +
+    cc.debug( " environment variable is " ) + cc.note( process.env.IMAGE_NAME ) + "\n" );
+const g_strImaDockerTag = process.env.IMAGE_NAME || ""; // "2.0.0-develop.14";
+log.write( cc.attention( "IMA Docker Tag" ) + " " + cc.debug( " is " ) + cc.note( g_strImaDockerTag ) + "\n" );
 const g_strImaDockerImageName = g_strImaDockerRepository + ":" + g_strImaDockerTag;
+log.write( cc.attention( "IMA Docker image name " ) + " " + cc.debug( " is " ) + cc.note( g_strImaDockerImageName ) + "\n" );
 const g_bDockerIMA = g_strImaDockerTag ? true : false; // use docker image of IMA Agent, this flag is higher priority than g_bExternalIMA
 log.write( cc.attention( "IMA Docker Mode" ) + " " + cc.debug( " is " ) + cc.yn( g_bDockerIMA ) + "\n" );
 if( g_bDockerIMA )
