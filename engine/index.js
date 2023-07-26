@@ -315,9 +315,7 @@ function print_logs_at_exit() {
     }
     for( let idxChain = 0; idxChain < g_arrChains.length; ++ idxChain ) {
         for( let idxNode = 0; idxNode < g_arrChains[idxChain].arrNodeDescriptions.length; ++ idxNode ) {
-            if( g_bDockerIMA )
-                print_log_at_exit( path.join( __dirname, "imaAgent_" + zeroPad( idxChain, 2 ) + "_" + zeroPad( idxNode, 2 ) + ".log" ) );
-            else {
+            if( g_bDockerIMA ) {
                 print_empty_space_before_log();
                 log.write( cc.bright( "IMA docker container " ) +
                     cc.sunny( schain_ima_agent_get_docker_container_name( idxChain, idxNode ) ) +
@@ -327,7 +325,8 @@ function print_logs_at_exit() {
                     schain_ima_agent_get_docker_cwd( idxChain, idxNode ),
                     schain_ima_agent_get_env( idxChain, idxNode )
                 );
-            }
+            } else
+                print_log_at_exit( path.join( __dirname, "imaAgent_" + zeroPad( idxChain, 2 ) + "_" + zeroPad( idxNode, 2 ) + ".log" ) );
         }
     }
     print_empty_space_before_log();
