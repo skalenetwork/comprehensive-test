@@ -259,16 +259,15 @@ async function end_of_test( nExitCode ) {
     };
     if( g_bAtExitStopIMA && ( !g_bDockerIMA ) )
         await fnProtected( async function() { await all_ima_agents_stop(); } );
-
     if( g_bAtExitStopSC )
         await fnProtected( async function() { await all_skaled_nodes_stop(); } );
-
     if( g_bAtExitStopMN )
         await fnProtected( async function() { await mainnet_stop(); } );
-
     log.write( cc.normal( "Will exit test with code " ) + cc.info( nExitCode ) + cc.normal( "..." ) + "\n" );
     if( nExitCode != 0 )
         print_logs_at_exit(); // print all the logs on error only
+    if( g_bAtExitStopIMA && g_bDockerIMA )
+        await fnProtected( async function() { await all_ima_agents_stop(); } );
     log.write( cc.normal( "Exiting test with code " ) + cc.info( nExitCode ) + cc.normal( "..." ) + "\n" );
     process.exit( nExitCode ); // see https://tldp.org/LDP/abs/html/exitcodes.html
 }
@@ -302,24 +301,12 @@ function print_log_at_exit( strPath ) {
 }
 function print_logs_at_exit() {
     for( let idxChain = 0; idxChain < g_arrChains.length; ++ idxChain ) {
-        for( let idxNode = 0; idxNode < g_arrChains[idxChain].arrNodeDescriptions.length; ++ idxNode )
-            print_log_at_exit( path.join( __dirname, "imaAgent_" + zeroPad( idxChain, 2 ) + "_" + zeroPad( idxNode, 2 ) + ".log" ) );
-    }
-    print_log_at_exit( path.join( __dirname, "tm.log" ) );
-    print_log_at_exit( path.join( __dirname, "redis.log" ) );
-    print_log_at_exit( path.join( "../local_sgxwallet_output_log.txt" ) );
-    print_log_at_exit( path.join( "../local_mainnet_output_log.txt" ) );
-    for( let idxChain = 0; idxChain < g_arrChains.length; ++ idxChain ) {
-        for( let idxNode = 0; idxNode < g_arrChains[idxChain].arrNodeDescriptions.length; ++ idxNode )
-            print_log_at_exit( path.join( __dirname, "skaled_" + zeroPad( idxChain, 2 ) + "_" + zeroPad( idxNode, 2 ) + ".log" ) );
-    }
-    for( let idxChain = 0; idxChain < g_arrChains.length; ++ idxChain ) {
         for( let idxNode = 0; idxNode < g_arrChains[idxChain].arrNodeDescriptions.length; ++ idxNode ) {
             if( g_bDockerIMA ) {
                 print_empty_space_before_log();
-                log.write( cc.bright( "IMA docker container " ) +
-                    cc.sunny( schain_ima_agent_get_docker_container_name( idxChain, idxNode ) ) +
-                    cc.bright( " logs at exit:" ) + " " + cc.attention( strPath ) + "\n" );
+                log.write( cc.bright( "Log of IMA docker container " ) +
+                cc.sunny( schain_ima_agent_get_docker_container_name( idxChain, idxNode ) ) +
+                cc.bright( " logs at exit:" ) + " " + cc.attention( strPath ) + "\n" );
                 quick_spawn( // IMA Agent as docker container
                     "docker logs " + schain_ima_agent_get_docker_container_name( idxChain, idxNode ),
                     schain_ima_agent_get_docker_cwd( idxChain, idxNode ),
@@ -328,6 +315,14 @@ function print_logs_at_exit() {
             } else
                 print_log_at_exit( path.join( __dirname, "imaAgent_" + zeroPad( idxChain, 2 ) + "_" + zeroPad( idxNode, 2 ) + ".log" ) );
         }
+    }
+    print_log_at_exit( path.join( __dirname, "tm.log" ) );
+    print_log_at_exit( path.join( __dirname, "redis.log" ) );
+    print_log_at_exit( path.join( "../local_sgxwallet_output_log.txt" ) );
+    print_log_at_exit( path.join( "../local_mainnet_output_log.txt" ) );
+    for( let idxChain = 0; idxChain < g_arrChains.length; ++ idxChain ) {
+        for( let idxNode = 0; idxNode < g_arrChains[idxChain].arrNodeDescriptions.length; ++ idxNode )
+            print_log_at_exit( path.join( __dirname, "skaled_" + zeroPad( idxChain, 2 ) + "_" + zeroPad( idxNode, 2 ) + ".log" ) );
     }
     print_empty_space_before_log();
 }
