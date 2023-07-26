@@ -257,7 +257,7 @@ async function end_of_test( nExitCode ) {
             log.write( cc.fatal( "CRITICAL ERROR:" ) + cc.error( " Exception while finishing test: " ) + cc.warning( err.toString() ) + "\n" );
         }
     };
-    if( g_bAtExitStopIMA )
+    if( g_bAtExitStopIMA && ( !g_bDockerIMA ) )
         await fnProtected( async function() { await all_ima_agents_stop(); } );
 
     if( g_bAtExitStopSC )
@@ -312,6 +312,23 @@ function print_logs_at_exit() {
     for( let idxChain = 0; idxChain < g_arrChains.length; ++ idxChain ) {
         for( let idxNode = 0; idxNode < g_arrChains[idxChain].arrNodeDescriptions.length; ++ idxNode )
             print_log_at_exit( path.join( __dirname, "skaled_" + zeroPad( idxChain, 2 ) + "_" + zeroPad( idxNode, 2 ) + ".log" ) );
+    }
+    for( let idxChain = 0; idxChain < g_arrChains.length; ++ idxChain ) {
+        for( let idxNode = 0; idxNode < g_arrChains[idxChain].arrNodeDescriptions.length; ++ idxNode ) {
+            if( g_bDockerIMA )
+                print_log_at_exit( path.join( __dirname, "imaAgent_" + zeroPad( idxChain, 2 ) + "_" + zeroPad( idxNode, 2 ) + ".log" ) );
+            else {
+                print_empty_space_before_log();
+                log.write( cc.bright( "IMA docker container " ) +
+                    cc.sunny( schain_ima_agent_get_docker_container_name( idxChain, idxNode ) ) +
+                    cc.bright( " logs at exit:" ) + " " + cc.attention( strPath ) + "\n" );
+                quick_spawn( // IMA Agent as docker container
+                    "docker logs " + schain_ima_agent_get_docker_container_name( idxChain, idxNode ),
+                    schain_ima_agent_get_docker_cwd( idxChain, idxNode ),
+                    schain_ima_agent_get_env( idxChain, idxNode )
+                );
+            }
+        }
     }
     print_empty_space_before_log();
 }
