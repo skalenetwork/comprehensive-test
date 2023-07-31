@@ -1,4 +1,4 @@
-require("@nomiclabs/hardhat-waffle");
+require( "@nomiclabs/hardhat-waffle" );
 
 function getAccounts() {
     // var accounts = [];
@@ -9,7 +9,7 @@ function getAccounts() {
     //         privateKey: plainKey,
     //         balance: balance
     //     });
-    // }   
+    // }
     // return accounts;
     return [
         { privateKey: "0x23ABDBD3C61B5330AF61EBE8BEF582F4E5CC08E554053A718BDCE7813B9DC1FC", balance: "1000000000000000000000000000000000" },
@@ -71,15 +71,15 @@ function getAccounts() {
         { privateKey: "0x0544121707ad8cc0d84f7723e1c40ee0b5e79f8a0f6150636c35569dae901b52", balance: "1000000000000000000000000000000000" },
         { privateKey: "0xabcb50972537a996591b8c38800850120d77f363cdadf47532bd6c2d7fae1c54", balance: "1000000000000000000000000000000000" },
         { privateKey: "0x1c951f4cc5a396d9f6f74cf7a2f8fd2fe650e701c52ee68289326c3950c6a1b1", balance: "1000000000000000000000000000000000" },
-        { privateKey: "0xaf9774ac7841020935538eaf68df15eb3e5b2c6cdfe16e32c9f49e7df7abbfd2", balance: "1000000000000000000000000000000000" },
+        { privateKey: "0xaf9774ac7841020935538eaf68df15eb3e5b2c6cdfe16e32c9f49e7df7abbfd2", balance: "1000000000000000000000000000000000" }
     ];
 }
 
-task( "accounts", "Prints the list of accounts", async ( taskArgs, hre ) => {
+task( "accounts", "Prints the list of accounts", async( taskArgs, hre ) => {
     const accounts = await hre.ethers.getSigners();
-    for (const account of accounts) {
-        console.log(account.address);
-    }
+    for( const account of accounts )
+        console.log( account.address );
+
 } );
 
 // Go to https://hardhat.org/config/ for more info
@@ -103,9 +103,9 @@ module.exports = {
     },
     gasReporter: {
         enabled: true,
-        currency: "USD",
-    },
+        currency: "USD"
+    }
     // etherscan: {
     //     apiKey: process.env.ETHERSCAN_API_KEY,
-    // },    
+    // },
 };

@@ -154,9 +154,12 @@ const g_joSgxRpcOptions = { // in IMA SGX_SSL_KEY_FILE_ETHEREUM/SGX_SSL_CERT_FIL
 };
 const g_strSgxKeyNameMN = process.env.SGX_KEY_ETHEREUM || "NEK:002";
 const g_strSgxKeyNameSC = process.env.SGX_KEY_S_CHAIN || "NEK:003";
-const g_bUseTransactionManagerInImaMN = g_bDockerIMA; // false; // use g_strUrlTransactionManager
+const g_bUseTransactionManagerInImaMN = g_bDockerIMA ? true : false; // false; // use g_strUrlTransactionManager
+log.write( cc.attention( "Transaction Manager" ) + " " + cc.debug( " mode is " ) + cc.yn( g_bUseTransactionManagerInImaMN ) + "\n" );
 const g_bUseSgxInImaMN = true; // ignored if g_bUseTransactionManagerInImaMN = true
+log.write( cc.attention( "SGX/MN" ) + " " + cc.debug( " mode is " ) + cc.yn( g_bUseSgxInImaMN ) + "\n" );
 const g_bUseSgxInImaSC = true; // false;
+log.write( cc.attention( "SGX/MN" ) + " " + cc.debug( " mode is " ) + cc.yn( g_bUseSgxInImaSC ) + "\n" );
 const g_bIsGenerateNodeEcdsaKeys = false; // true - use generateECDSAKey, false - use importECDSAKey
 // IMPORTANT NOTICE: g_bIsGenerateNodeEcdsaKeys should be false because dynamically generated ECDSA key addresses are not inserted into "mapAuthorizedCallers" in config.json files for skaled
 
@@ -312,19 +315,19 @@ function print_logs_at_exit() {
     }
     for( let idxChain = 0; idxChain < g_arrChains.length; ++ idxChain ) {
         for( let idxNode = 0; idxNode < g_arrChains[idxChain].arrNodeDescriptions.length; ++ idxNode ) {
-            // if( g_bDockerIMA ) {
-            //     print_empty_space_before_log();
-            //     log.write(
-            //         cc.bright( "Log of IMA docker container " ) +
-            //         cc.sunny( schain_ima_agent_get_docker_container_name( idxChain, idxNode ) ) +
-            //         cc.bright( " at exit:" ) + "\n" );
-            //     quick_spawn( // IMA Agent as docker container
-            //         "docker logs " + schain_ima_agent_get_docker_container_name( idxChain, idxNode ),
-            //         schain_ima_agent_get_docker_cwd( idxChain, idxNode ),
-            //         schain_ima_agent_get_env( idxChain, idxNode )
-            //     );
-            // } else
-            print_log_at_exit( path.join( __dirname, "imaAgent_" + zeroPad( idxChain, 2 ) + "_" + zeroPad( idxNode, 2 ) + ".log" ) );
+            if( g_bDockerIMA ) {
+                print_empty_space_before_log();
+                log.write(
+                    cc.bright( "Log of IMA docker container " ) +
+                    cc.sunny( schain_ima_agent_get_docker_container_name( idxChain, idxNode ) ) +
+                    cc.bright( " at exit:" ) + "\n" );
+                quick_spawn( // IMA Agent as docker container
+                    "docker logs " + schain_ima_agent_get_docker_container_name( idxChain, idxNode ),
+                    schain_ima_agent_get_docker_cwd( idxChain, idxNode ),
+                    schain_ima_agent_get_env( idxChain, idxNode )
+                );
+            } else
+                print_log_at_exit( path.join( __dirname, "imaAgent_" + zeroPad( idxChain, 2 ) + "_" + zeroPad( idxNode, 2 ) + ".log" ) );
         }
     }
     print_log_at_exit( path.join( __dirname, "tm.log" ) );
@@ -651,6 +654,7 @@ const g_arrChains = [
 ];
 reset_global_serial_indices_in_global_chains_array();
 reset_port_numbers_in_global_chains_array();
+prepare_for_ima_docker_mode_global_chains_array();
 const g_idxMostOftenUsedSChain = 0; // S-Chain which is tested most for purposes line Main Net to one S-Chain IMA transfers
 
 for( let idxChain = 0; idxChain < g_arrChains.length; ++ idxChain ) {
@@ -1054,6 +1058,18 @@ function reset_port_numbers_in_global_chains_array() {
             joNodeDesc.nJsonRpcPort4ImaAgent = joNodeDesc.basePort + 10;
             nWalk += 100;
         }
+    }
+}
+
+function prepare_for_ima_docker_mode_global_chains_array() {
+    if( ! g_bDockerIMA )
+        return;
+    while( g_arrChains.length > 1 )
+        g_arrChains.pop();
+    if( g_arrChains.length > 0 ) {
+        const arrNodeDescriptions = g_arrChains[0].arrNodeDescriptions;
+        while( arrNodeDescriptions.length > 1 )
+            arrNodeDescriptions.pop();
     }
 }
 
@@ -3568,14 +3584,14 @@ async function schain_ima_agents_start( idxChain ) {
             const strImaDockerDataFolder = schain_ima_agent_get_docker_cwd( idxChain, idxNode );
             quick_spawn_async( // IMA Agent as docker container
                 "docker run " +
-                    "-it " + // interactive mode
+                    // "-it " + // interactive mode
                     "-v " + strImaDockerDataFolder + ":/tmp " +
                     "--name " + schain_ima_agent_get_docker_container_name( idxChain, idxNode ) + " " +
                     "--env-file " + strImaDockerDataFolder + "/env.file " +
                     "--network=\"host\" " +
-                    g_strImaDockerImageName +
-                    " > " + path.join( __dirname, "imaAgent_" + zeroPad( idxChain, 2 ) + "_" + zeroPad( idxNode, 2 ) + ".log" ) + // redirect
-                    " &" // background mode
+                    g_strImaDockerImageName // +
+                    // " > " + path.join( __dirname, "imaAgent_" + zeroPad( idxChain, 2 ) + "_" + zeroPad( idxNode, 2 ) + ".log" ) + // redirect
+                    // " &" // background mode
                 ,
                 schain_ima_agent_get_docker_cwd( idxChain, idxNode ),
                 schain_ima_agent_get_env( idxChain, idxNode )
