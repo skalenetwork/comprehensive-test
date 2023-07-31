@@ -273,7 +273,6 @@ jobs:
 
     - name: INIT - initialize IMA dependencies
       run: |
-        ./IMA/npms/scrypt/get_scrypt_npm.sh
         cd IMA
         yarn install
         cd ..
