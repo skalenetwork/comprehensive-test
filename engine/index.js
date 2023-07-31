@@ -218,7 +218,7 @@ function quick_spawn( strCmd, cwd, joEnv ) {
 }
 
 function quick_spawn_async( strCmd, cwd, joEnv ) {
-    const options = { shell: true, cwd: cwd ? cwd : null, "detached": true };
+    const options = { shell: true, cwd: cwd ? cwd : null }; // , "detached": true
     if( joEnv && typeof joEnv == "object" && Object.keys( joEnv ).length > 0 )
         options.env = joEnv;
     if( g_bVerbose ) {
