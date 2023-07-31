@@ -318,7 +318,7 @@ function print_logs_at_exit() {
             if( g_bDockerIMA ) {
                 print_empty_space_before_log();
                 log.write(
-                    cc.bright( "Log of IMA docker container " ) +
+                    cc.bright( "At-shutdown log of IMA docker container " ) +
                     cc.sunny( schain_ima_agent_get_docker_container_name( idxChain, idxNode ) ) +
                     cc.bright( " at exit:" ) + "\n" );
                 quick_spawn( // IMA Agent as docker container
@@ -3596,6 +3596,24 @@ async function schain_ima_agents_start( idxChain ) {
                 schain_ima_agent_get_docker_cwd( idxChain, idxNode ),
                 schain_ima_agent_get_env( idxChain, idxNode )
             );
+        }
+        await sleep( 10 * 1000 );
+        for( let idxChain = 0; idxChain < g_arrChains.length; ++ idxChain ) {
+            for( let idxNode = 0; idxNode < g_arrChains[idxChain].arrNodeDescriptions.length; ++ idxNode ) {
+                if( g_bDockerIMA ) {
+                    print_empty_space_before_log();
+                    log.write(
+                        cc.bright( "At-startup log of IMA docker container " ) +
+                        cc.sunny( schain_ima_agent_get_docker_container_name( idxChain, idxNode ) ) +
+                        cc.bright( " after it was just started:" ) + "\n" );
+                    quick_spawn( // IMA Agent as docker container
+                        "docker logs " + schain_ima_agent_get_docker_container_name( idxChain, idxNode ),
+                        schain_ima_agent_get_docker_cwd( idxChain, idxNode ),
+                        schain_ima_agent_get_env( idxChain, idxNode )
+                    );
+                } else
+                    print_log_at_exit( path.join( __dirname, "imaAgent_" + zeroPad( idxChain, 2 ) + "_" + zeroPad( idxNode, 2 ) + ".log" ) );
+            }
         }
         if( g_bVerbose )
             log.write( cc.success( "Done, started " ) + cc.notice( "IMA" ) + cc.success( " agents as docker containers" ) + "\n" );
