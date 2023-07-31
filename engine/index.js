@@ -205,7 +205,9 @@ function quick_spawn( strCmd, cwd, joEnv ) {
         log.write( cc.debug( "Will quick-spawn process with command line " ) + cc.notice( strCmd ) +
             cc.debug( " and options " ) + cc.j( options ) + cc.normal( "..." ) + "\n" );
     }
-    const rv = child_process.spawnSync( strCmd, options );
+    const args = strCmd.match( /"[^"]+"|'[^']+'|\S+/g );
+    const cmd = args.shift();
+    const rv = child_process.spawnSync( cmd, args, options );
     if( g_bVerbose ) {
         if( rv.status == 0 )
             log.write( cc.success( "Done quick-spawn process with command line " ) + cc.notice( strCmd ) + "\n" );
@@ -225,7 +227,9 @@ function quick_spawn_async( strCmd, cwd, joEnv ) {
         log.write( cc.debug( "Will async-quick-spawn process with command line " ) + cc.notice( strCmd ) +
             cc.debug( " and options " ) + cc.j( options ) + cc.normal( "..." ) + "\n" );
     }
-    const rv = child_process.spawn( strCmd, options );
+    const args = strCmd.match( /"[^"]+"|'[^']+'|\S+/g );
+    const cmd = args.shift();
+    const rv = child_process.spawn( cmd, args, options );
     if( g_bVerbose )
         log.write( cc.success( "Done async-quick-spawn process with command line " ) + cc.notice( strCmd ) + "\n" );
     return rv;
