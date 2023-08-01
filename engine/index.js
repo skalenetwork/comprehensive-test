@@ -3580,30 +3580,38 @@ async function schain_ima_agents_start( idxChain ) {
             const joNodeDesc = arrNodeDescriptions[idxNode];
             if( g_bVerbose )
                 log.write( cc.normal( "Pre-cleaning " ) + cc.success( "IMA Agent" ) + cc.normal( " for node " ) + cc.sunny( joNodeDesc.nodeID ) + "\n" );
+            const cname = schain_ima_agent_get_docker_container_name( idxChain, idxNode );
             const cwd = schain_ima_agent_get_docker_cwd( idxChain, idxNode );
             const env = schain_ima_agent_get_env( idxChain, idxNode );
-            quick_spawn( // IMA Agent as docker container
-                "docker rm -f " + schain_ima_agent_get_docker_container_name( idxChain, idxNode ),
-                cwd,
-                env
-            );
+            //const strImaDockerDataFolder = "" + cwd;
+            const tmp = cwd; // path.relative( strImaDockerDataFolder, cwd );
+            const ef = "./env.file"; // path.relative( path.join( strImaDockerDataFolder, "/env.file" ), cwd );
+            const rm_cmd = "docker rm -f " + cname;
+            const run_cmd = "docker run " +
+                // "-it " + // interactive mode
+                "-v " + tmp + ":/tmp " +
+                "--name " + cname + " " +
+                "--env-file " + ef + " " +
+                "--network=\"host\" " +
+                g_strImaDockerImageName // +
+                // " > " + path.join( __dirname, "imaAgent_" + zeroPad( idxChain, 2 ) + "_" + zeroPad( idxNode, 2 ) + ".log" ) + // redirect
+                // " &" // background mode
+                ;
+            if( g_bVerbose ) {
+                log.write(
+                    cc.debug( "............Docker container is.... " ) + cc.sunny( cname ) + "\n" +
+                    cc.debug( "............Docker CWD is.......... " ) + cc.info( cwd ) + "\n" +
+                    cc.debug( "............Docker ENV vars are.... " ) + cc.j( env ) + "\n" +
+                    cc.debug( "............Docker TMP is.......... " ) + cc.info( tmp ) + "\n" +
+                    cc.debug( "............Docker ENV file is..... " ) + cc.info( ef ) + "\n" +
+                    cc.debug( "............Cleanup command is..... " ) + cc.normal( rm_cmd ) + "\n" +
+                    cc.debug( "............Run command is......... " ) + cc.normal( run_cmd ) + "\n"
+                );
+            }
+            quick_spawn( rm_cmd, cwd, env );
             if( g_bVerbose )
                 log.write( cc.normal( "Starting " ) + cc.success( "IMA Agent" ) + cc.normal( " for node " ) + cc.sunny( joNodeDesc.nodeID ) + "\n" );
-            const strImaDockerDataFolder = "" + cwd;
-            quick_spawn_async( // IMA Agent as docker container
-                "docker run " +
-                    // "-it " + // interactive mode
-                    "-v " + path.relative( strImaDockerDataFolder, cwd ) + ":/tmp " +
-                    "--name " + schain_ima_agent_get_docker_container_name( idxChain, idxNode ) + " " +
-                    "--env-file " + path.relative( strImaDockerDataFolder + "/env.file ", cwd ) +
-                    "--network=\"host\" " +
-                    g_strImaDockerImageName // +
-                    // " > " + path.join( __dirname, "imaAgent_" + zeroPad( idxChain, 2 ) + "_" + zeroPad( idxNode, 2 ) + ".log" ) + // redirect
-                    // " &" // background mode
-                ,
-                cwd,
-                env
-            );
+            quick_spawn_async( run_cmd, cwd, env );
         }
         await sleep( 10 * 1000 );
         for( let idxChain = 0; idxChain < g_arrChains.length; ++ idxChain ) {
@@ -3611,16 +3619,11 @@ async function schain_ima_agents_start( idxChain ) {
                 if( g_bDockerIMA ) {
                     print_empty_space_before_log();
                     log.write(
-                        cc.bright( "At-startup log of IMA docker container " ) +
-                        cc.sunny( schain_ima_agent_get_docker_container_name( idxChain, idxNode ) ) +
+                        cc.bright( "At-startup log of IMA docker container " ) + cc.sunny( cname ) +
                         cc.bright( " after it was just started:" ) + "\n" );
                     const cwd = schain_ima_agent_get_docker_cwd( idxChain, idxNode );
                     const env = schain_ima_agent_get_env( idxChain, idxNode );
-                    quick_spawn( // IMA Agent as docker container
-                        "docker logs " + schain_ima_agent_get_docker_container_name( idxChain, idxNode ),
-                        cwd,
-                        env
-                    );
+                    quick_spawn( "docker logs " + cname, cwd, env );
                 } else
                     print_log_at_exit( path.join( __dirname, "imaAgent_" + zeroPad( idxChain, 2 ) + "_" + zeroPad( idxNode, 2 ) + ".log" ) );
             }
