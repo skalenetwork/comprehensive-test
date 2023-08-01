@@ -64,16 +64,19 @@ const g_strRecommendedShellPATH = "$PATH:/usr/local/bin/:/bin/:/usr/sbin:/usr/bi
 
 const g_bVerbose = true;
 
-const g_bExternalMN = true; // true; // set to true to run Min Net manually outside this test
+const g_bExternalMN = true; // true; // set to true to run Min Net manually outside this test)
 const g_bExternalSC = false; // true; // set to true to run S-Chain manually outside this test
 const g_bExternalIMA = false; // set to true to run S-Chain manually outside this test
 
-const g_strImaDockerRepository = "skalenetwork/ima";
-log.write( cc.attention( "IMA Docker Tag" ) + " " + cc.debug( " from " ) + cc.notice( "IMAGE_NAME" ) +
-    cc.debug( " environment variable is " ) + cc.note( process.env.IMAGE_NAME ) + "\n" );
-const g_strImaDockerTag = process.env.IMAGE_NAME || ""; // "2.0.0-develop.14";
+const g_strImaDockerRepository = process.env.REPO_NAME || "skalenetwork/ima";
+log.write( cc.attention( "IMA Docker Tag" ) + " " + cc.debug( " from " ) + cc.notice( "VERSION" ) +
+    cc.debug( " environment variable is " ) + cc.note( process.env.VERSION ) + "\n" );
+const g_strImaDockerTag = process.env.VERSION || ""; // "2.0.0-develop.14";
 log.write( cc.attention( "IMA Docker Tag" ) + " " + cc.debug( " is " ) + cc.note( g_strImaDockerTag ) + "\n" );
-const g_strImaDockerImageName = g_strImaDockerRepository + ":" + g_strImaDockerTag;
+const g_strImaDockerImageName =
+    ( g_strImaDockerRepository.length > 0 && g_strImaDockerTag.length > 0 )
+        ? ( g_strImaDockerRepository + ":" + g_strImaDockerTag )
+        : ( process.env.IMAGE_NAME || "" );
 log.write( cc.attention( "IMA Docker image name " ) + " " + cc.debug( " is " ) + cc.note( g_strImaDockerImageName ) + "\n" );
 const g_bDockerIMA = g_strImaDockerTag ? true : false; // use docker image of IMA Agent, this flag is higher priority than g_bExternalIMA
 log.write( cc.attention( "IMA Docker Mode" ) + " " + cc.debug( " is " ) + cc.yn( g_bDockerIMA ) + "\n" );
@@ -3588,11 +3591,11 @@ async function schain_ima_agents_start( idxChain ) {
             const ef = "./env.file"; // path.relative( path.join( strImaDockerDataFolder, "/env.file" ), cwd );
             const rm_cmd = "docker rm -f " + cname;
             const run_cmd = "docker run " +
-                        // // "-it " + // interactive mode
-                        // "-v " + tmp + ":/tmp " +
-                        // "--name " + cname + " " +
-                        // "--env-file " + ef + " " +
-                        // "--network=\"host\" " +
+                // "-it " + // interactive mode
+                "-v " + tmp + ":/tmp " +
+                "--name " + cname + " " +
+                "--env-file " + ef + " " +
+                "--network=\"host\" " +
                 g_strImaDockerImageName // +
                 // " > " + path.join( __dirname, "imaAgent_" + zeroPad( idxChain, 2 ) + "_" + zeroPad( idxNode, 2 ) + ".log" ) + // redirect
                 // " &" // background mode
