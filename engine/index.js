@@ -3588,11 +3588,11 @@ async function schain_ima_agents_start( idxChain ) {
             const ef = "./env.file"; // path.relative( path.join( strImaDockerDataFolder, "/env.file" ), cwd );
             const rm_cmd = "docker rm -f " + cname;
             const run_cmd = "docker run " +
-                // "-it " + // interactive mode
-                "-v " + tmp + ":/tmp " +
-                "--name " + cname + " " +
-                "--env-file " + ef + " " +
-                "--network=\"host\" " +
+                        // // "-it " + // interactive mode
+                        // "-v " + tmp + ":/tmp " +
+                        // "--name " + cname + " " +
+                        // "--env-file " + ef + " " +
+                        // "--network=\"host\" " +
                 g_strImaDockerImageName // +
                 // " > " + path.join( __dirname, "imaAgent_" + zeroPad( idxChain, 2 ) + "_" + zeroPad( idxNode, 2 ) + ".log" ) + // redirect
                 // " &" // background mode
