@@ -3617,6 +3617,7 @@ async function schain_ima_agents_start( idxChain ) {
         for( let idxChain = 0; idxChain < g_arrChains.length; ++ idxChain ) {
             for( let idxNode = 0; idxNode < g_arrChains[idxChain].arrNodeDescriptions.length; ++ idxNode ) {
                 if( g_bDockerIMA ) {
+                    const cname = schain_ima_agent_get_docker_container_name( idxChain, idxNode );
                     print_empty_space_before_log();
                     log.write(
                         cc.bright( "At-startup log of IMA docker container " ) + cc.sunny( cname ) +
