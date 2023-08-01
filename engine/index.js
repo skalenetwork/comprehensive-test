@@ -325,10 +325,12 @@ function print_logs_at_exit() {
                     cc.bright( "At-shutdown log of IMA docker container " ) +
                     cc.sunny( schain_ima_agent_get_docker_container_name( idxChain, idxNode ) ) +
                     cc.bright( " at exit:" ) + "\n" );
+                const cwd = schain_ima_agent_get_docker_cwd( idxChain, idxNode );
+                const env = schain_ima_agent_get_env( idxChain, idxNode );
                 quick_spawn( // IMA Agent as docker container
                     "docker logs " + schain_ima_agent_get_docker_container_name( idxChain, idxNode ),
-                    schain_ima_agent_get_docker_cwd( idxChain, idxNode ),
-                    schain_ima_agent_get_env( idxChain, idxNode )
+                    cwd,
+                    env
                 );
             } else
                 print_log_at_exit( path.join( __dirname, "imaAgent_" + zeroPad( idxChain, 2 ) + "_" + zeroPad( idxNode, 2 ) + ".log" ) );
@@ -3578,27 +3580,29 @@ async function schain_ima_agents_start( idxChain ) {
             const joNodeDesc = arrNodeDescriptions[idxNode];
             if( g_bVerbose )
                 log.write( cc.normal( "Pre-cleaning " ) + cc.success( "IMA Agent" ) + cc.normal( " for node " ) + cc.sunny( joNodeDesc.nodeID ) + "\n" );
+            const cwd = schain_ima_agent_get_docker_cwd( idxChain, idxNode );
+            const env = schain_ima_agent_get_env( idxChain, idxNode );
             quick_spawn( // IMA Agent as docker container
                 "docker rm -f " + schain_ima_agent_get_docker_container_name( idxChain, idxNode ),
-                schain_ima_agent_get_docker_cwd( idxChain, idxNode ),
-                schain_ima_agent_get_env( idxChain, idxNode )
+                cwd,
+                env
             );
             if( g_bVerbose )
                 log.write( cc.normal( "Starting " ) + cc.success( "IMA Agent" ) + cc.normal( " for node " ) + cc.sunny( joNodeDesc.nodeID ) + "\n" );
-            const strImaDockerDataFolder = schain_ima_agent_get_docker_cwd( idxChain, idxNode );
+            const strImaDockerDataFolder = "" + cwd;
             quick_spawn_async( // IMA Agent as docker container
                 "docker run " +
                     // "-it " + // interactive mode
-                    "-v " + strImaDockerDataFolder + ":/tmp " +
+                    "-v " + path.relative( strImaDockerDataFolder, cwd ) + ":/tmp " +
                     "--name " + schain_ima_agent_get_docker_container_name( idxChain, idxNode ) + " " +
-                    "--env-file " + strImaDockerDataFolder + "/env.file " +
+                    "--env-file " + path.relative( strImaDockerDataFolder + "/env.file ", cwd ) +
                     "--network=\"host\" " +
                     g_strImaDockerImageName // +
                     // " > " + path.join( __dirname, "imaAgent_" + zeroPad( idxChain, 2 ) + "_" + zeroPad( idxNode, 2 ) + ".log" ) + // redirect
                     // " &" // background mode
                 ,
-                schain_ima_agent_get_docker_cwd( idxChain, idxNode ),
-                schain_ima_agent_get_env( idxChain, idxNode )
+                cwd,
+                env
             );
         }
         await sleep( 10 * 1000 );
@@ -3610,10 +3614,12 @@ async function schain_ima_agents_start( idxChain ) {
                         cc.bright( "At-startup log of IMA docker container " ) +
                         cc.sunny( schain_ima_agent_get_docker_container_name( idxChain, idxNode ) ) +
                         cc.bright( " after it was just started:" ) + "\n" );
+                    const cwd = schain_ima_agent_get_docker_cwd( idxChain, idxNode );
+                    const env = schain_ima_agent_get_env( idxChain, idxNode );
                     quick_spawn( // IMA Agent as docker container
                         "docker logs " + schain_ima_agent_get_docker_container_name( idxChain, idxNode ),
-                        schain_ima_agent_get_docker_cwd( idxChain, idxNode ),
-                        schain_ima_agent_get_env( idxChain, idxNode )
+                        cwd,
+                        env
                     );
                 } else
                     print_log_at_exit( path.join( __dirname, "imaAgent_" + zeroPad( idxChain, 2 ) + "_" + zeroPad( idxNode, 2 ) + ".log" ) );
@@ -3678,10 +3684,12 @@ async function schain_ima_agents_stop( idxChain ) {
             const joNodeDesc = arrNodeDescriptions[idxNode];
             if( g_bVerbose )
                 log.write( cc.normal( "Stopping " ) + cc.success( "IMA Agent" ) + cc.normal( " for node " ) + cc.sunny( joNodeDesc.nodeID ) + "\n" );
+            const cwd = schain_ima_agent_get_docker_cwd( idxChain, idxNode );
+            const env = schain_ima_agent_get_env( idxChain, idxNode );
             quick_spawn_async( // IMA Agent as docker container
                 "docker stop " + schain_ima_agent_get_docker_container_name( idxChain, idxNode ),
-                schain_ima_agent_get_docker_cwd( idxChain, idxNode ),
-                schain_ima_agent_get_env( idxChain, idxNode )
+                cwd,
+                env
             );
         }
         if( g_bVerbose )
