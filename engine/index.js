@@ -3584,7 +3584,7 @@ async function schain_ima_agents_start( idxChain ) {
             const cwd = schain_ima_agent_get_docker_cwd( idxChain, idxNode );
             const env = schain_ima_agent_get_env( idxChain, idxNode );
             //const strImaDockerDataFolder = "" + cwd;
-            const tmp = "."; // cwd; // path.relative( strImaDockerDataFolder, cwd );
+            const tmp = cwd; // path.relative( strImaDockerDataFolder, cwd );
             const ef = "./env.file"; // path.relative( path.join( strImaDockerDataFolder, "/env.file" ), cwd );
             const rm_cmd = "docker rm -f " + cname;
             const run_cmd = "docker run " +
