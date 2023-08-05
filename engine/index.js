@@ -3056,8 +3056,6 @@ function perform_multi_node_deployment( idxChain ) {
             "SchainsInternal": "" + g_joSkaleManagerABI.schains_internal_address,
             "Nodes": "" + g_joSkaleManagerABI.nodes_address
         };
-        joNodeDesc.joConfig.skaleConfig.nodeInfo["skale-network-browser-refresh"] = 30;
-        joNodeDesc.joConfig.skaleConfig.nodeInfo["skale-network-browser-verbose"] = true; // false;
         //
         for( const joConfigNode of joNodeDesc.joConfig.skaleConfig.sChain.nodes ) {
             // update ECDSA public keys for all nodes in particular config.json
