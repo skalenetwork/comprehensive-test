@@ -775,7 +775,7 @@ class ProcessController {
                     log.write( cc.notice( "NOTICE:" ) + " " +
                         cc.success( "1st Tree-kill " + strType + " PID " ) + cc.info( pid ) +
                         cc.success( " of process " ) + self.strShortProcessDescription +
-                        cc.success( " was passed OKay" ) +
+                        cc.success( " passed OKay" ) +
                         "\n" );
                 }
             } catch ( err ) {
@@ -792,7 +792,7 @@ class ProcessController {
                     log.write( cc.notice( "NOTICE:" ) + " " +
                         cc.success( "2nd Tree-kill " + strType + " PID " ) + cc.info( pid ) +
                         cc.success( " of process " ) + self.strShortProcessDescription +
-                        cc.success( " was passed OKay" ) +
+                        cc.success( " passed OKay" ) +
                         "\n" );
                 }
             } catch ( err ) {
@@ -811,7 +811,7 @@ class ProcessController {
                     log.write( cc.notice( "NOTICE:" ) + " " +
                         cc.success( "1st F-kill " + strType + " PID " ) + cc.info( pid ) +
                         cc.success( " of process " ) + self.strShortProcessDescription +
-                        cc.success( " was passed OKay" ) +
+                        cc.success( " passed OKay" ) +
                         "\n" );
                 }
             } catch ( err ) {
@@ -830,7 +830,7 @@ class ProcessController {
                     log.write( cc.notice( "NOTICE:" ) + " " +
                         cc.success( "2nd F-kill " + strType + " PID " ) + cc.info( pid ) +
                         cc.success( " of process " ) + self.strShortProcessDescription +
-                        cc.success( " was passed OKay" ) +
+                        cc.success( " passed OKay" ) +
                         "\n" );
                 }
             } catch ( err ) {
@@ -850,7 +850,7 @@ class ProcessController {
                     log.write( cc.notice( "NOTICE:" ) + " " +
                         cc.success( "C-kill " + strType + " PID " ) + cc.info( pid ) +
                         cc.success( " of process " ) + self.strShortProcessDescription +
-                        cc.success( " was passed OKay" ) +
+                        cc.success( " passed OKay" ) +
                         "\n" );
                 }
             } catch ( err ) {
@@ -880,7 +880,7 @@ class ProcessController {
                     log.write( cc.notice( "NOTICE:" ) + " " +
                         cc.success( " Killing process(es) listening on port " ) + cc.info( self.nListeningPort ) +
                         cc.success( " as attempt to stop process " ) + self.strShortProcessDescription +
-                        cc.success( " was passed OKay" ) +
+                        cc.success( " passed OKay" ) +
                         "\n" );
                 }
             } catch ( err ) {
@@ -1335,6 +1335,7 @@ function compose_node_runCmd4imaAgent( joNodeDesc ) {
         " --time-framing=" + 120 + // ..................Specifies period(in seconds) for time framing. Zero means disable time framing
         " --time-gap=" + 10 + // ......................Specifies gap(in seconds) before next time frame
         " --pwa --no-expose-pwa --pwa-timeout=" + 90 +
+        // " --pwa --expose-pwa --pwa-timeout=" + 90 +
         // " --no-pwa --no-expose-pwa" +
         // " --enable-oracle" +
         " --disable-oracle" +
