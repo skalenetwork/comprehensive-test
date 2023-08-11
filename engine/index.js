@@ -1286,7 +1286,7 @@ function compose_node_runCmd4imaAgent( joNodeDesc ) {
     joNodeDesc.runCmd4imaAgent =
         "node --no-warnings " +
         g_strFolderImaAgent + "/main.mjs" + g_strImaOutputOpts + g_strImaRuntimeOpts +
-        " " + ( g_isCloudMode ? "--simple-loop" : "--loop" ) +
+        " --loop" + // " " + ( g_isCloudMode ? "--simple-loop" : "--loop" ) +
         //
         ( g_bDisableNewCrossImaRPC
             ? " --json-rpc-port=0 --no-cross-ima"
