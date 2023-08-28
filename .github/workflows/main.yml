@@ -91,12 +91,13 @@ jobs:
         echo ------------ lscpu
         lscpu || true
 
-    - name: UPDATE - system deps and install libc6, net-tools, btrfs-progs, zip, unzip, procps
+    - name: UPDATE - system deps and install libc6, net-tools, btrfs-progs, zip, unzip, procps, curl
       run: |
         sudo apt-get update
         #sudo apt-get upgrade
         sudo apt-get install libc6 net-tools btrfs-progs zip unzip
         sudo apt-get install procps
+        sudo apt-get install curl
         #
         # - name: Init NTP
         #   run: |
@@ -106,6 +107,11 @@ jobs:
         #     # sudo systemctl enable systemd-timesyncd.service
         #     # sudo systemctl start systemd-timesyncd.service
         #     sudo timedatectl set-ntp on
+
+    - name: INIT - install docker
+      run: |
+        curl -fsSL https://get.docker.com -o install-docker.sh
+        sudo sh install-docker.sh
 
     - name: INIT - install docker with compose
       run: |
