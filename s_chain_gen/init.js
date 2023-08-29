@@ -138,6 +138,7 @@ function compose_sgx_key_name( idxChain, idxNode ) {
 const joConfigurationTemplate = {
     "sealEngine": "Ethash",
     "params": {
+        "externalGasDifficulty": "0x01", // enable PoW mining
         "accountStartNonce": "0x00",
         "homesteadForkBlock": "0x0",
         "daoHardforkBlock": "0x0",
