@@ -321,6 +321,8 @@ function print_logs_at_exit() {
         quick_spawn( "docker ps" );
     }
     for( let idxChain = 0; idxChain < g_arrChains.length; ++ idxChain ) {
+        if( ! g_arrChains[idxChain].isStartEnabled )
+            continue;
         for( let idxNode = 0; idxNode < g_arrChains[idxChain].arrNodeDescriptions.length; ++ idxNode ) {
             if( g_bDockerIMA ) {
                 print_empty_space_before_log();
@@ -344,6 +346,8 @@ function print_logs_at_exit() {
     print_log_at_exit( path.join( "../local_sgxwallet_output_log.txt" ) );
     print_log_at_exit( path.join( "../local_mainnet_output_log.txt" ) );
     for( let idxChain = 0; idxChain < g_arrChains.length; ++ idxChain ) {
+        if( ! g_arrChains[idxChain].isStartEnabled )
+            continue;
         for( let idxNode = 0; idxNode < g_arrChains[idxChain].arrNodeDescriptions.length; ++ idxNode )
             print_log_at_exit( path.join( __dirname, "skaled_" + zeroPad( idxChain, 2 ) + "_" + zeroPad( idxNode, 2 ) + ".log" ) );
     }
@@ -591,7 +595,13 @@ if( strUbuntuVersion ) {
 
 const g_arrChainNaming = [
     { name: "Bob1000", cid: 1000 },
-    { name: "Bob1001", cid: 1001 }
+    { name: "Bob1001", cid: 1001 },
+    { name: "Bob1002", cid: 1002 },
+    { name: "Bob1003", cid: 1003 },
+    { name: "Bob1004", cid: 1004 },
+    { name: "Bob1005", cid: 1005 },
+    { name: "Bob1006", cid: 1006 },
+    { name: "Bob1007", cid: 1007 }
 ];
 // for( let idxChain = 0; idxChain < g_arrChainNaming.length; ++ idxChain ) {
 //     g_arrChainNaming[idxChain].cid = compute_chain_id_from_schain_name( g_arrChainNaming[idxChain].name );
@@ -610,6 +620,7 @@ const g_cntSyncNodesPerChain = 1;
 const g_arrChains = [
     {
         idxChain: 0,
+        isStartEnabled: true,
         cid: g_arrChainNaming[0].cid,
         name: g_arrChainNaming[0].name,
         joImaAbiSC: null,
@@ -641,6 +652,7 @@ const g_arrChains = [
     },
     {
         idxChain: 1,
+        isStartEnabled: true,
         cid: g_arrChainNaming[1].cid,
         name: g_arrChainNaming[1].name,
         joImaAbiSC: null,
@@ -659,6 +671,21 @@ const g_arrChains = [
             // initNodeDescription( process.env.URL_W3_NODE_09 || "http://127.0.0.10:3064", 1,  4, g_arrChainNaming[0].cid, 1121, "Iron" ) // "http://127.0.0.10:15900" // "ws://127.0.0.10:15920"
         ],
         arrAssignedNodeIndices: []
+    },
+    {
+        idxChain: 2,
+        isStartEnabled: false,
+        cid: g_arrChainNaming[2].cid,
+        name: g_arrChainNaming[2].name,
+        joImaAbiSC: null,
+        arrNodeDescriptions: [
+            initNodeDescription( process.env.URL_W3_NODE_06 || "http://127.0.0.7:2764", 2, 0, g_arrChainNaming[2].cid, 1118, "Lion" ), // "http://127.0.0.7:15600"  // "ws://127.0.0.7:15620"
+            initNodeDescription( process.env.URL_W3_NODE_07 || "http://127.0.0.8:2864", 2, 1, g_arrChainNaming[2].cid, 1119, "Bonk" ) // "http://127.0.0.8:15700"  // "ws://127.0.0.8:15720"
+        ],
+        arrSyncNodeDescriptions: [
+            initNodeDescription( process.env.URL_W3_NODE_08 || "http://127.0.0.9:2964", 1, 3, g_arrChainNaming[2].cid, 1120, "Gold" ) // "http://127.0.0.9:15800"  // "ws://127.0.0.9:15820"
+        ],
+        arrAssignedNodeIndices: []
     }
 ];
 reset_global_serial_indices_in_global_chains_array();
@@ -670,8 +697,8 @@ for( let idxChain = 0; idxChain < g_arrChains.length; ++ idxChain ) {
     log.write(
         cc.debug( "Did initialized test chain name " ) + cc.info( g_arrChains[idxChain].name ) +
         cc.debug( " with chain ID " ) + cc.attention( g_arrChains[idxChain].cid ) +
-        cc.debug( " and " ) + cc.info( g_arrChains[idxChain].arrNodeDescriptions.length ) + cc.debug( " node(s)" ) +
-        "\n" );
+        cc.debug( " and " ) + cc.info( g_arrChains[idxChain].arrNodeDescriptions.length ) + cc.debug( " node(s), startup is " ) +
+        ( g_arrChains[idxChain].isStartEnabled ? cc.success( "enabled" ) : cc.error( "disabled" ) ) + "\n" );
 }
 
 let g_joChainEventInfoSM = null;
@@ -3265,13 +3292,19 @@ async function all_skaled_nodes_check_addresses() {
 async function all_skaled_nodes_init_BTRFS_if_needed() {
     if( ! g_bSkaledWithBTRFS )
         return;
-    for( let idxChain = 0; idxChain < g_arrChains.length; ++ idxChain )
+    for( let idxChain = 0; idxChain < g_arrChains.length; ++ idxChain ) {
+        if( ! g_arrChains[idxChain].isStartEnabled )
+            continue;
         await schain_skaled_nodes_init_BTRFS_if_needed( idxChain );
+    }
 }
 
 async function all_skaled_nodes_start() {
-    for( let idxChain = 0; idxChain < g_arrChains.length; ++ idxChain )
+    for( let idxChain = 0; idxChain < g_arrChains.length; ++ idxChain ) {
+        if( ! g_arrChains[idxChain].isStartEnabled )
+            continue;
         await schain_skaled_nodes_start( idxChain );
+    }
     if( g_nTimeToSleepAfterAllSkaledNodesStartMilliseconds > 0 ) {
         log.write( cc.debug( ".......Sleeping " ) + cc.info( g_nTimeToSleepAfterAllSkaledNodesStartMilliseconds ) + cc.debug( " milliseconds..." ) + "\n" );
         await sleep( g_nTimeToSleepAfterAllSkaledNodesStartMilliseconds );
@@ -3280,8 +3313,11 @@ async function all_skaled_nodes_start() {
 }
 
 async function all_skaled_nodes_stop() {
-    for( let idxChain = 0; idxChain < g_arrChains.length; ++ idxChain )
+    for( let idxChain = 0; idxChain < g_arrChains.length; ++ idxChain ) {
+        if( ! g_arrChains[idxChain].isStartEnabled )
+            continue;
         await schain_skaled_nodes_stop( idxChain );
+    }
 
 }
 
@@ -3306,6 +3342,8 @@ async function schain_skaled_nodes_init_BTRFS_if_needed( idxChain ) {
 }
 
 async function schain_skaled_nodes_start( idxChain ) {
+    if( ! g_arrChains[idxChain].isStartEnabled )
+        return;
     if( g_bExternalSC ) {
         if( g_bAskExternalStartStopSC ) {
             log.write(
@@ -3351,6 +3389,8 @@ async function schain_skaled_nodes_start( idxChain ) {
 }
 
 async function schain_skaled_nodes_stop( idxChain ) {
+    if( ! g_arrChains[idxChain].isStartEnabled )
+        return;
     if( g_bExternalSC ) {
         if( g_bAskExternalStartStopSC ) {
             log.write(
@@ -3438,6 +3478,8 @@ async function ima_get_docker_image() {
 }
 
 function ima_prepare_docker_shares_node( idxChain, idxNode ) {
+    if( ! g_arrChains[idxChain].isStartEnabled )
+        return;
     if( g_bVerbose ) {
         log.write( cc.normal( "Will prepare " ) + cc.sunny( "IMA Agent#" ) +
             cc.info( idxChain ) + cc.normal( "/" ) + cc.info( idxNode ) +
@@ -3541,8 +3583,11 @@ function ima_prepare_docker_shares_schain( idxChain ) {
 function ima_prepare_docker_shares_all() {
     if( g_bVerbose )
         log.write( cc.normal( "Will prepare all " ) + cc.success( "IMA Agents" ) + cc.normal( " shares for their docker containers..." ) + "\n" );
-    for( let idxChain = 0; idxChain < g_arrChains.length; ++ idxChain )
+    for( let idxChain = 0; idxChain < g_arrChains.length; ++ idxChain ) {
+        if( ! g_arrChains[idxChain].isStartEnabled )
+            continue;
         ima_prepare_docker_shares_schain( idxChain );
+    }
     if( g_bVerbose )
         log.write( cc.success( "Done preparing all " ) + cc.success( "IMA Agents" ) + cc.success( " shares for their docker containers" ) + "\n" );
 }
@@ -3563,16 +3608,24 @@ function schain_ima_agent_get_env( idxChain, idxNode ) {
 }
 
 async function all_ima_agents_start() {
-    for( let idxChain = 0; idxChain < g_arrChains.length; ++ idxChain )
+    for( let idxChain = 0; idxChain < g_arrChains.length; ++ idxChain ) {
+        if( ! g_arrChains[idxChain].isStartEnabled )
+            continue;
         await schain_ima_agents_start( idxChain );
+    }
 }
 
 async function all_ima_agents_stop() {
-    for( let idxChain = 0; idxChain < g_arrChains.length; ++ idxChain )
+    for( let idxChain = 0; idxChain < g_arrChains.length; ++ idxChain ) {
+        if( ! g_arrChains[idxChain].isStartEnabled )
+            continue;
         await schain_ima_agents_stop( idxChain );
+    }
 }
 
 async function schain_ima_agents_start( idxChain ) {
+    if( ! g_arrChains[idxChain].isStartEnabled )
+        return;
     const arrNodeDescriptions = g_arrChains[idxChain].arrNodeDescriptions;
     if( g_bDockerIMA ) {
         if( g_bVerbose )
@@ -3681,6 +3734,8 @@ async function schain_ima_agents_start( idxChain ) {
         log.write( cc.success( "Done, started " ) + cc.notice( "IMA" ) + cc.success( " agents as node processes" ) + "\n" );
 }
 async function schain_ima_agents_stop( idxChain ) {
+    if( ! g_arrChains[idxChain].isStartEnabled )
+        return;
     const arrNodeDescriptions = g_arrChains[idxChain].arrNodeDescriptions;
     if( g_bDockerIMA ) {
         if( g_bVerbose )
@@ -3840,6 +3895,10 @@ async function skaled_backup_current() {
 //////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 
 async function ima_connect_two_schains( idxChainA, idxChainB, cntAttempts ) {
+    if( ! g_arrChains[idxChainA].isStartEnabled )
+        return;
+    if( ! g_arrChains[idxChainB].isStartEnabled )
+        return;
     cntAttempts = cntAttempts || 1;
     const schain_id_A = g_arrChains[idxChainA].cid;
     const schain_id_B = g_arrChains[idxChainB].cid;
@@ -3936,6 +3995,10 @@ async function ima_connect_all_schains_together_each_other( cntAttempts ) {
         for( let idxChainB = 0; idxChainB < g_arrChains.length; ++ idxChainB ) {
             if( idxChainA == idxChainB )
                 continue;
+            if( ! g_arrChains[idxChainA].isStartEnabled )
+                continue;
+            if( ! g_arrChains[idxChainB].isStartEnabled )
+                continue;
             await ima_connect_two_schains( idxChainA, idxChainB, cntAttempts );
         }
     }
@@ -3947,12 +4010,17 @@ async function ima_connect_all_schains_together_each_other( cntAttempts ) {
 //////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 
 async function ima_gas_reimbursement_configure_zero_timeout() {
-    for( let idxChain = 0; idxChain < g_arrChains.length; ++ idxChain )
+    for( let idxChain = 0; idxChain < g_arrChains.length; ++ idxChain ) {
+        if( ! g_arrChains[idxChain].isStartEnabled )
+            continue;
         await schain_ima_gas_reimbursement_configure_zero_timeout( idxChain );
+    }
 
 }
 
 async function schain_ima_gas_reimbursement_configure_zero_timeout( idxChain, fnContinue ) {
+    if( ! g_arrChains[idxChain].isStartEnabled )
+        return;
     fnContinue = fnContinue || function() { };
     if( g_bVerbose ) {
         log.write( "\n\n" +
@@ -4017,12 +4085,17 @@ async function schain_ima_gas_reimbursement_configure_zero_timeout( idxChain, fn
 }
 
 async function ima_gas_reimbursement_show() {
-    for( let idxChain = 0; idxChain < g_arrChains.length; ++ idxChain )
+    for( let idxChain = 0; idxChain < g_arrChains.length; ++ idxChain ) {
+        if( ! g_arrChains[idxChain].isStartEnabled )
+            continue;
         await schain_ima_gas_reimbursement_show( idxChain );
+    }
 
 }
 
 async function schain_ima_gas_reimbursement_show( idxChain, fnContinue ) {
+    if( ! g_arrChains[idxChain].isStartEnabled )
+        return;
     fnContinue = fnContinue || function() { };
     if( g_bVerbose ) {
         log.write( "\n\n" +
@@ -4075,12 +4148,16 @@ async function schain_ima_gas_reimbursement_show( idxChain, fnContinue ) {
 }
 
 async function ima_gas_reimbursement_recharge() {
-    for( let idxChain = 0; idxChain < g_arrChains.length; ++ idxChain )
+    for( let idxChain = 0; idxChain < g_arrChains.length; ++ idxChain ) {
+        if( ! g_arrChains[idxChain].isStartEnabled )
+            continue;
         await schain_ima_gas_reimbursement_recharge( idxChain );
-
+    }
 }
 
 async function schain_ima_gas_reimbursement_recharge( idxChain, fnContinue ) {
+    if( ! g_arrChains[idxChain].isStartEnabled )
+        return;
     fnContinue = fnContinue || function() { };
     if( g_bVerbose ) {
         log.write( "\n\n" +
@@ -4167,6 +4244,8 @@ async function ima_enable_pausable_role() {
 //////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 
 async function ima_test_discover_chain_id( idxChain, idxNode ) {
+    if( ! g_arrChains[idxChain].isStartEnabled )
+        return;
     const joChain = g_arrChains[idxChain];
     const arrNodeDescriptions = joChain.arrNodeDescriptions;
     const joNodeDesc = arrNodeDescriptions[idxNode];
@@ -4231,6 +4310,8 @@ async function ima_test_discover_chain_id( idxChain, idxNode ) {
 
 async function ima_test_discover_chain_ids() {
     for( let idxChain = 0; idxChain < g_arrChains.length; ++ idxChain ) {
+        if( ! g_arrChains[idxChain].isStartEnabled )
+            continue;
         const joChain = g_arrChains[idxChain];
         const arrNodeDescriptions = joChain.arrNodeDescriptions;
         for( let idxNode = 0; idxNode < arrNodeDescriptions.length; ++ idxNode )
@@ -4242,6 +4323,8 @@ async function ima_test_discover_chain_ids() {
 //////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 
 async function ima_test_browse_skale_network( idxChain, idxNode ) {
+    if( ! g_arrChains[idxChain].isStartEnabled )
+        return;
     const joChain = g_arrChains[idxChain];
     const arrNodeDescriptions = joChain.arrNodeDescriptions;
     const joNodeDesc = arrNodeDescriptions[idxNode];
@@ -4306,6 +4389,8 @@ async function ima_test_browse_skale_network( idxChain, idxNode ) {
 
 async function ima_test_browse_skale_networks() {
     for( let idxChain = 0; idxChain < g_arrChains.length; ++ idxChain ) {
+        if( ! g_arrChains[idxChain].isStartEnabled )
+            continue;
         const joChain = g_arrChains[idxChain];
         const arrNodeDescriptions = joChain.arrNodeDescriptions;
         for( let idxNode = 0; idxNode < arrNodeDescriptions.length; ++ idxNode )
@@ -4317,6 +4402,8 @@ async function ima_test_browse_skale_networks() {
 //////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 
 async function ima_test_browse_connected_chain( idxChain, idxNode ) {
+    if( ! g_arrChains[idxChain].isStartEnabled )
+        return;
     const joChain = g_arrChains[idxChain];
     const arrNodeDescriptions = joChain.arrNodeDescriptions;
     const joNodeDesc = arrNodeDescriptions[idxNode];
@@ -4381,6 +4468,8 @@ async function ima_test_browse_connected_chain( idxChain, idxNode ) {
 
 async function ima_test_browse_connected_chains() {
     for( let idxChain = 0; idxChain < g_arrChains.length; ++ idxChain ) {
+        if( ! g_arrChains[idxChain].isStartEnabled )
+            continue;
         const joChain = g_arrChains[idxChain];
         const arrNodeDescriptions = joChain.arrNodeDescriptions;
         for( let idxNode = 0; idxNode < arrNodeDescriptions.length; ++ idxNode )
@@ -4392,6 +4481,8 @@ async function ima_test_browse_connected_chains() {
 //////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 
 async function ima_test_browse_s_chain( idxChain, idxNode ) {
+    if( ! g_arrChains[idxChain].isStartEnabled )
+        return;
     const joChain = g_arrChains[idxChain];
     const arrNodeDescriptions = joChain.arrNodeDescriptions;
     const joNodeDesc = arrNodeDescriptions[idxNode];
@@ -4456,6 +4547,8 @@ async function ima_test_browse_s_chain( idxChain, idxNode ) {
 
 async function ima_test_browse_s_chains() {
     for( let idxChain = 0; idxChain < g_arrChains.length; ++ idxChain ) {
+        if( ! g_arrChains[idxChain].isStartEnabled )
+            continue;
         const joChain = g_arrChains[idxChain];
         const arrNodeDescriptions = joChain.arrNodeDescriptions;
         for( let idxNode = 0; idxNode < arrNodeDescriptions.length; ++ idxNode )
@@ -4467,6 +4560,8 @@ async function ima_test_browse_s_chains() {
 //////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 
 async function ima_test_show_balance( idxChain, idxNode ) {
+    if( ! g_arrChains[idxChain].isStartEnabled )
+        return;
     const joChain = g_arrChains[idxChain];
     const arrNodeDescriptions = joChain.arrNodeDescriptions;
     const joNodeDesc = arrNodeDescriptions[idxNode];
@@ -4531,6 +4626,8 @@ async function ima_test_show_balance( idxChain, idxNode ) {
 
 async function ima_test_show_balances() {
     for( let idxChain = 0; idxChain < g_arrChains.length; ++ idxChain ) {
+        if( ! g_arrChains[idxChain].isStartEnabled )
+            continue;
         const joChain = g_arrChains[idxChain];
         const arrNodeDescriptions = joChain.arrNodeDescriptions;
         for( let idxNode = 0; idxNode < arrNodeDescriptions.length; ++ idxNode )
@@ -5818,10 +5915,15 @@ async function redeploy_ima_to_main_net( fnContinue ) {
 async function redeploy_ima_to_schain_all() {
     if( g_bPredeployedIMA )
         return;
-    for( let idxChain = 0; idxChain < g_arrChains.length; ++ idxChain )
+    for( let idxChain = 0; idxChain < g_arrChains.length; ++ idxChain ) {
+        if( ! g_arrChains[idxChain].isStartEnabled )
+            continue;
         await redeploy_ima_to_schain_one( idxChain );
+    }
 }
 async function redeploy_ima_to_schain_one( idxChain, fnContinue ) {
+    if( ! g_arrChains[idxChain].isStartEnabled )
+        return;
     fnContinue = fnContinue || function() { };
     if( g_bPredeployedIMA ) {
         fnContinue();
@@ -5905,6 +6007,8 @@ async function reload_ima_abi_for_schain_all() {
         await reload_ima_abi_for_schain_one( idxChain );
 }
 async function reload_ima_abi_for_schain_one( idxChain, fnContinue ) {
+    if( ! g_arrChains[idxChain].isStartEnabled )
+        return;
     fnContinue = fnContinue || function() { };
     const strPathImaAbiSC = get_ima_abi_schain_path( idxChain );
     const strPathImaAbiSC_saved_copy = get_ima_abi_schain_path_saved_copy( idxChain );
@@ -6000,11 +6104,16 @@ function write_down_mn_contract_addresses_into_config_json_tree( joSkaledConfigJ
 }
 
 async function ima_update_skaled_configurations_all( fnContinue ) {
-    for( let idxChain = 0; idxChain < g_arrChains.length; ++ idxChain )
+    for( let idxChain = 0; idxChain < g_arrChains.length; ++ idxChain ) {
+        if( ! g_arrChains[idxChain].isStartEnabled )
+            continue;
         await ima_update_skaled_configurations_schain( idxChain );
+    }
 }
 
 async function ima_update_skaled_configurations_schain( idxChain, fnContinue ) {
+    if( ! g_arrChains[idxChain].isStartEnabled )
+        return;
     fnContinue = fnContinue || function() { };
     if( g_bVerbose ) {
         log.write( "\n\n" +
@@ -6044,11 +6153,16 @@ async function ima_update_skaled_configurations_schain( idxChain, fnContinue ) {
 //////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 
 function ima_register_all( ) {
-    for( let idxChain = 0; idxChain < g_arrChains.length; ++ idxChain )
+    for( let idxChain = 0; idxChain < g_arrChains.length; ++ idxChain ) {
+        if( ! g_arrChains[idxChain].isStartEnabled )
+            continue;
         ima_register_schain( idxChain );
+    }
 }
 
 function ima_register_schain( idxChain, fnContinue ) {
+    if( ! g_arrChains[idxChain].isStartEnabled )
+        return;
     fnContinue = fnContinue || function() { };
     if( g_bVerbose ) {
         log.write( "\n\n" +
@@ -6100,11 +6214,16 @@ function ima_register_schain( idxChain, fnContinue ) {
 }
 
 function ima_check_registration_all() {
-    for( let idxChain = 0; idxChain < g_arrChains.length; ++ idxChain )
+    for( let idxChain = 0; idxChain < g_arrChains.length; ++ idxChain ) {
+        if( ! g_arrChains[idxChain].isStartEnabled )
+            continue;
         ima_check_registration_schain( idxChain );
+    }
 }
 
 function ima_check_registration_schain( idxChain, fnContinue ) {
+    if( ! g_arrChains[idxChain].isStartEnabled )
+        return;
     fnContinue = fnContinue || function() { };
     if( g_bVerbose ) {
         log.write( "\n\n" +
@@ -6254,6 +6373,8 @@ async function impl_get_ballance_erc20( w3, strAddress, strNetworkName, joABI, s
 }
 
 async function ima_send_eth( idxChain, strPrivateKeyFrom, strPrivateKeyTo, strDirection, moneySpec, nPreferredNodeIndex ) {
+    if( ! g_arrChains[idxChain].isStartEnabled )
+        return;
     try {
         if( g_bVerbose ) {
             log.write( "\n\n" +
@@ -6467,6 +6588,8 @@ function clean_test_tokens() {
 }
 
 async function deploy_test_tokens_to( idxChain, strDeploymentNetworkName, strMintToAddress, isMint, isInit, optOut ) { // network name like "mn", "sc00", "sc01"
+    if( ! g_arrChains[idxChain].isStartEnabled )
+        return;
     try {
         if( g_bVerbose ) {
             log.write( "\n\n" +
@@ -6699,6 +6822,8 @@ async function enableAutomaticDeploy(
     strPrivateKeyFrom,
     isEnableAutomaticDeploy
 ) {
+    if( ! g_arrChains[idxChain].isStartEnabled )
+        return;
     const strTokenSuffixLC = strTokenSuffix.toLowerCase();
     const strTokenSuffixUC = replaceAll( strTokenSuffix.toUpperCase(), "_WITH_METADATA", "_with_metadata" );
     if( isEnableAutomaticDeploy === null || isEnableAutomaticDeploy === undefined )
@@ -7358,6 +7483,8 @@ async function wait_for_cloned_token_to_appear(
 //////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 
 async function ima_send_erc20_mn2sc( idxChain, strPrivateKeyFrom, strPrivateKeyTo, amount, nPreferredNodeIndex ) {
+    if( ! g_arrChains[idxChain].isStartEnabled )
+        return;
     const arrNodeDescriptions = g_arrChains[idxChain].arrNodeDescriptions;
     const amountToSend = ( amount == null || amount == undefined ) ? 100 : parseInt( amount );
     nPreferredNodeIndex = nPreferredNodeIndex || 0;
@@ -7508,6 +7635,8 @@ async function ima_send_erc20_mn2sc( idxChain, strPrivateKeyFrom, strPrivateKeyT
 }
 
 async function ima_send_erc20_sc2mn( idxChain, strPrivateKeyFrom, strPrivateKeyTo, amount, nPreferredNodeIndex ) {
+    if( ! g_arrChains[idxChain].isStartEnabled )
+        return;
     const arrNodeDescriptions = g_arrChains[idxChain].arrNodeDescriptions;
     const amountToSend = ( amount == null || amount == undefined ) ? 100 : parseInt( amount );
     nPreferredNodeIndex = nPreferredNodeIndex || 0;
@@ -7666,6 +7795,8 @@ async function ima_send_erc20_sc2mn( idxChain, strPrivateKeyFrom, strPrivateKeyT
 //////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 
 async function ima_send_erc721_mn2sc( idxChain, strPrivateKeyFrom, strPrivateKeyTo, tokenID, nPreferredNodeIndex, isWithMetadata721 ) {
+    if( ! g_arrChains[idxChain].isStartEnabled )
+        return;
     const strERC721 = isWithMetadata721 ? "ERC721_with_metadata" : "ERC721";
     const strerc721 = isWithMetadata721 ? "erc721_with_metadata" : "erc721";
     const arrNodeDescriptions = g_arrChains[idxChain].arrNodeDescriptions;
@@ -7907,6 +8038,8 @@ async function ima_send_erc721_mn2sc( idxChain, strPrivateKeyFrom, strPrivateKey
 }
 
 async function ima_send_erc721_sc2mn( idxChain, strPrivateKeyFrom, strPrivateKeyTo, tokenID, nPreferredNodeIndex, isWithMetadata721 ) {
+    if( ! g_arrChains[idxChain].isStartEnabled )
+        return;
     const strERC721 = isWithMetadata721 ? "ERC721_with_metadata" : "ERC721";
     const strerc721 = isWithMetadata721 ? "erc721_with_metadata" : "erc721";
     const arrNodeDescriptions = g_arrChains[idxChain].arrNodeDescriptions;
@@ -8135,6 +8268,8 @@ async function ima_send_erc721_sc2mn( idxChain, strPrivateKeyFrom, strPrivateKey
 //////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 
 async function ima_send_erc1155_mn2sc( idxChain, strPrivateKeyFrom, strPrivateKeyTo, tokenID, nAmount, nPreferredNodeIndex ) {
+    if( ! g_arrChains[idxChain].isStartEnabled )
+        return;
     const arrNodeDescriptions = g_arrChains[idxChain].arrNodeDescriptions;
     const tokenIdToSend = ( tokenID == null || tokenID == undefined ) ? 100 : parseInt( tokenID );
     nPreferredNodeIndex = nPreferredNodeIndex || 0;
@@ -8297,6 +8432,8 @@ async function ima_send_erc1155_mn2sc( idxChain, strPrivateKeyFrom, strPrivateKe
 }
 
 async function ima_send_erc1155_sc2mn( idxChain, strPrivateKeyFrom, strPrivateKeyTo, tokenID, nAmount, nPreferredNodeIndex ) {
+    if( ! g_arrChains[idxChain].isStartEnabled )
+        return;
     const arrNodeDescriptions = g_arrChains[idxChain].arrNodeDescriptions;
     const tokenIdToSend = ( tokenID == null || tokenID == undefined ) ? 100 : parseInt( tokenID );
     nPreferredNodeIndex = nPreferredNodeIndex || 0;
@@ -8476,6 +8613,8 @@ function is_all_balances_changed( a1, a2, arrAmounts ) {
 }
 
 async function ima_batch_send_erc1155_mn2sc( idxChain, strPrivateKeyFrom, strPrivateKeyTo, arrTokenIDs, arrAmounts, nPreferredNodeIndex ) {
+    if( ! g_arrChains[idxChain].isStartEnabled )
+        return;
     const arrNodeDescriptions = g_arrChains[idxChain].arrNodeDescriptions;
     const arrTokenIDsToSend = ( arrTokenIDs == null || arrTokenIDs == undefined ) ? [ 100 ] : arrTokenIDs;
     const cntTokenIDs = arrTokenIDsToSend.length;
@@ -8639,6 +8778,8 @@ async function ima_batch_send_erc1155_mn2sc( idxChain, strPrivateKeyFrom, strPri
 }
 
 async function ima_batch_send_erc1155_sc2mn( idxChain, strPrivateKeyFrom, strPrivateKeyTo, arrTokenIDs, arrAmounts, nPreferredNodeIndex ) {
+    if( ! g_arrChains[idxChain].isStartEnabled )
+        return;
     const arrNodeDescriptions = g_arrChains[idxChain].arrNodeDescriptions;
     const arrTokenIDsToSend = ( arrTokenIDs == null || arrTokenIDs == undefined ) ? [ 100 ] : arrTokenIDs;
     const cntTokenIDs = arrTokenIDsToSend.length;
@@ -8830,6 +8971,10 @@ function s2s_extract_tt_abi_part( strAbiPathSrc, strAbiPathDst, strTokenName ) {
 }
 
 async function s2s_prepare_chains_for_token_transfers( idxChainSrc, idxChainDst, joTokensAbiSC_src, joTokensAbiSC_dst, isAutomaticDeploy ) {
+    if( ! g_arrChains[idxChainSrc].isStartEnabled )
+        return;
+    if( ! g_arrChains[idxChainDst].isStartEnabled )
+        return;
     const joChainSrc = g_arrChains[idxChainSrc];
     const joChainDst = g_arrChains[idxChainDst];
     const schain_name_src = joChainSrc.name;
@@ -8958,6 +9103,10 @@ async function s2s_link_test_tokens_ex(
     joImaAbiSC_A, joImaAbiSC_B,
     joTokensAbiSC_A, joTokensAbiSC_B
 ) {
+    if( ! g_arrChains[idxChainA].isStartEnabled )
+        return;
+    if( ! g_arrChains[idxChainB].isStartEnabled )
+        return;
     //
     // notice: chains are already connected to each other earlier
     //
@@ -9070,6 +9219,10 @@ async function s2s_transfer(
     privateKeySrc,
     privateKeyDst
 ) {
+    if( ! g_arrChains[idxChainSrc].isStartEnabled )
+        return;
+    if( ! g_arrChains[idxChainDst].isStartEnabled )
+        return;
     const strForwardReverse = isForward ? "forward" : "reverse";
     strCoinName = replaceAll( strCoinName.toUpperCase(), "_WITH_METADATA", "_with_metadata" );
     const strCoinNameLC = strCoinName.toLowerCase();
@@ -9531,6 +9684,8 @@ async function execute_send_on_method_with_arguments( w3, cid, privateKey, metho
 }
 
 async function run_cross_chain_chat_test_m2s( idxChainDst ) {
+    if( ! g_arrChains[idxChainDst].isStartEnabled )
+        return;
     const arrNodeDescriptionsDst = g_arrChains[idxChainDst].arrNodeDescriptions;
     const nPreferredNodeIndexDst = 0;
     const schain_name_dst = g_arrChains[idxChainDst].name;
@@ -9567,6 +9722,10 @@ async function run_cross_chain_chat_test_m2s( idxChainDst ) {
 }
 
 async function run_cross_chain_chat_test_s2s( idxChainSrc, idxChainDst, joAbiTestTokensSrc, joAbiTestTokensDst ) {
+    if( ! g_arrChains[idxChainSrc].isStartEnabled )
+        return;
+    if( ! g_arrChains[idxChainDst].isStartEnabled )
+        return;
     const arrNodeDescriptionsSrc = g_arrChains[idxChainSrc].arrNodeDescriptions;
     const arrNodeDescriptionsDst = g_arrChains[idxChainDst].arrNodeDescriptions;
     const nPreferredNodeIndexSrc = 0;
