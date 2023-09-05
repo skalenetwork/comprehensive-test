@@ -701,6 +701,21 @@ const g_arrChains = [
             initNodeDescription( process.env.URL_W3_NODE_11 || "http://127.0.0.12:3264", 3, 2, g_arrChainNaming[3].cid, 1123, "Zeon" ) // "http://127.0.0.12:16100" // "ws://127.0.0.12:16120"
         ],
         arrAssignedNodeIndices: []
+    },
+    {
+        idxChain: 4,
+        isStartEnabled: false,
+        cid: g_arrChainNaming[4].cid,
+        name: g_arrChainNaming[4].name,
+        joImaAbiSC: null,
+        arrNodeDescriptions: [
+            initNodeDescription( process.env.URL_W3_NODE_12 || "http://127.0.0.13:3364", 4, 0, g_arrChainNaming[4].cid, 1124, "Daft" ), // "http://127.0.0.13:16200" // "ws://127.0.0.13:16220"
+            initNodeDescription( process.env.URL_W3_NODE_13 || "http://127.0.0.14:3464", 4, 1, g_arrChainNaming[4].cid, 1125, "Punk" ) // "http://127.0.0.14:16300" // "ws://127.0.0.14:16320"
+        ],
+        arrSyncNodeDescriptions: [
+            initNodeDescription( process.env.URL_W3_NODE_14 || "http://127.0.0.15:3564", 4, 2, g_arrChainNaming[4].cid, 1126, "Ally" ) // "http://127.0.0.15:16400" // "ws://127.0.0.15:16420"
+        ],
+        arrAssignedNodeIndices: []
     }
 ];
 reset_global_serial_indices_in_global_chains_array();
