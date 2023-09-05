@@ -683,7 +683,22 @@ const g_arrChains = [
             initNodeDescription( process.env.URL_W3_NODE_07 || "http://127.0.0.8:2864", 2, 1, g_arrChainNaming[2].cid, 1119, "Bonk" ) // "http://127.0.0.8:15700"  // "ws://127.0.0.8:15720"
         ],
         arrSyncNodeDescriptions: [
-            initNodeDescription( process.env.URL_W3_NODE_08 || "http://127.0.0.9:2964", 1, 3, g_arrChainNaming[2].cid, 1120, "Gold" ) // "http://127.0.0.9:15800"  // "ws://127.0.0.9:15820"
+            initNodeDescription( process.env.URL_W3_NODE_08 || "http://127.0.0.9:2964", 2, 3, g_arrChainNaming[2].cid, 1120, "Gold" ) // "http://127.0.0.9:15800"  // "ws://127.0.0.9:15820"
+        ],
+        arrAssignedNodeIndices: []
+    },
+    {
+        idxChain: 3,
+        isStartEnabled: false,
+        cid: g_arrChainNaming[3].cid,
+        name: g_arrChainNaming[3].name,
+        joImaAbiSC: null,
+        arrNodeDescriptions: [
+            initNodeDescription( process.env.URL_W3_NODE_09 || "http://127.0.0.10:3064", 3, 0, g_arrChainNaming[3].cid, 1121, "Iron" ), // "http://127.0.0.10:15900" // "ws://127.0.0.10:15920"
+            initNodeDescription( process.env.URL_W3_NODE_10 || "http://127.0.0.11:3164", 3, 1, g_arrChainNaming[3].cid, 1122, "Sims" ) // "http://127.0.0.11:16000" // "ws://127.0.0.11:16020"
+        ],
+        arrSyncNodeDescriptions: [
+            initNodeDescription( process.env.URL_W3_NODE_11 || "http://127.0.0.12:3264", 3, 2, g_arrChainNaming[3].cid, 1123, "Zeon" ) // "http://127.0.0.12:16100" // "ws://127.0.0.12:16120"
         ],
         arrAssignedNodeIndices: []
     }
