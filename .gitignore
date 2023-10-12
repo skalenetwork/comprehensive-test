@@ -132,6 +132,7 @@ s_chain_gen/package-lock.json
 skale-manager
 skaled
 IMA
+ima-agent
 sgxwallet
 local_sgxwallet_output_log.txt
 local_mainnet_output_log.txt

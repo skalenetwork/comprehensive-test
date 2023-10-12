@@ -23,6 +23,8 @@ jobs:
     steps:
     # Checks-out your repository under $GITHUB_WORKSPACE, so your job can access it
     - uses: actions/checkout@v2
+      with:
+          submodules: recursive
 
     - name: INFO - github environment variable checks
       run: |
@@ -251,15 +253,16 @@ jobs:
         yarn install
         cd ..
 
-    - name: INIT - download IMA
+    - name: INIT - download IMA Agent and contracts
       run: |
-        # git clone https://adb200b8c85f61ba1ebd393e91ab421f881186ec@github.com/skalenetwork/IMA.git --recursive
-        git clone https://github.com/skalenetwork/IMA.git --recursive
+        git clone https://github.com/skalenetwork/ima-agent.git --recursive
         cd IMA
         #
         #
         #
-        git checkout develop
+        #git checkout develop
+        git checkout ticket-1577/move-IMA-Agent-into-standing-alone-repository
+        git submodule update --init --recursive
         git fetch
         git pull
         git branch
@@ -425,6 +428,7 @@ jobs:
       run: |
         cd engine
         export ALL_SKALE_TEST_CLOUD_RUN=1
+        export SEPARATED_IMA_AGENT_MODE=1
         node ./index.js
         cd ..
 

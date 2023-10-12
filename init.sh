@@ -84,9 +84,16 @@ cd engine && ./init.sh && cd ..
 # cd ..
 
 echo " --------------------------- getting ima -------------------------------------------------------------------------------------------------------------- "
-#git clone https://github.com/skalenetwork/IMA.git --recursive
-git clone git@github.com:skalenetwork/IMA.git --recursive
-cd IMA && yarn install && cd ..
+git clone git@github.com:skalenetwork/ima-agent.git --recursive
+cd IMA
+#git checkout develop
+git checkout ticket-1577/move-IMA-Agent-into-standing-alone-repository
+git submodule update --init --recursive
+git fetch
+git pull
+git branch
+git status
+cd ..
 
 # echo " --------------------------- getting skaled and bls toolset built ----------------------------------------------------------------------------------- "
 # git clone https://github.com/skalenetwork/skaled.git --recursive

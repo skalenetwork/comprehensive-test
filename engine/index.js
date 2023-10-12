@@ -520,14 +520,22 @@ const g_strFolderMultiNodeDeployment = findExistingDirPath( path.join( __dirname
 if( g_bVerbose )
     log.write( cc.normal( "Assuming " ) + cc.sunny( "Multi Node Deployment" ) + cc.normal( " is located at " ) + cc.info( g_strFolderMultiNodeDeployment ) + "\n" );
 
-const g_strFolderRepoIMA = process.env.IMA_ROOT_DIR
-    ? findExistingDirPath( process.env.IMA_ROOT_DIR )
-    : findExistingDirPath( [ path.join( __dirname, "../IMA" ), path.join( __dirname, "../../../IMA" ) ] )
-    ;
+const g_bSeparatedImaAgentMode = process.env.SEPARATED_IMA_AGENT_MODE ? true : false;
 if( g_bVerbose )
-    log.write( cc.normal( "Assuming " ) + cc.sunny( "IMA" ) + cc.normal( " repo is " ) + cc.info( g_strFolderRepoIMA ) + "\n" );
-const g_strFolderImaProxy = "" + g_strFolderRepoIMA + "/proxy";
-const g_strFolderImaAgent = "" + g_strFolderRepoIMA + "/agent";
+    log.write( cc.normal( "Assuming " ) + cc.sunny( "New Separated IMA Agent" ) + cc.normal( " mode is " ) + cc.yn( g_bSeparatedImaAgentMode ) + "\n" );
+
+const g_strFolderRepoImaAgent = process.env.IMA_AGENT_ROOT_DIR
+    ? findExistingDirPath( process.env.IMA_AGENT_ROOT_DIR )
+    : findExistingDirPath( [ path.join( __dirname, "../ima-agent" ), path.join( __dirname, "../../../ima-agent" ) ] )
+const g_strFolderRepoImaContracts = g_bSeparatedImaAgentMode
+    ? path.join( g_strFolderRepoImaAgent, "IMA" )
+    : ( "" + g_strFolderRepoImaAgent )
+if( g_bVerbose ) {
+    log.write( cc.normal( "Assuming " ) + cc.sunny( "IMA Agent" ) + cc.normal( " repo is " ) + cc.info( g_strFolderRepoImaAgent ) + "\n" );
+    log.write( cc.normal( "Assuming " ) + cc.sunny( "IMA Contracts" ) + cc.normal( " repo is " ) + cc.info( g_strFolderRepoImaContracts ) + "\n" );
+}
+const g_strFolderImaProxy = "" + g_strFolderRepoImaContracts + "/proxy";
+const g_strFolderImaAgent = "" + g_strFolderRepoImaAgent + "/src";
 // IMA ABI files
 const g_strPathImaAbiMN = g_strFolderImaProxy + "/data/proxyMainnet.json";
 
@@ -4316,7 +4324,7 @@ async function ima_test_discover_chain_id( idxChain, idxNode ) {
         " " + compose_ima_cli_account_options_force_raw_private_keys( joNodeDesc.idxChain, joNodeDesc.idxNode ) +
         ""
     ;
-    const strWorkingDirectory = "" + g_strFolderRepoIMA;
+    const strWorkingDirectory = "" + g_strFolderRepoImaAgent;
     const joEnv = {
         "PATH": g_strRecommendedShellPATH
     };
@@ -4395,7 +4403,7 @@ async function ima_test_browse_skale_network( idxChain, idxNode ) {
         " " + compose_ima_cli_account_options_force_raw_private_keys( joNodeDesc.idxChain, joNodeDesc.idxNode ) +
         ""
     ;
-    const strWorkingDirectory = "" + g_strFolderRepoIMA;
+    const strWorkingDirectory = "" + g_strFolderRepoImaAgent;
     const joEnv = {
         "PATH": g_strRecommendedShellPATH
     };
@@ -4474,7 +4482,7 @@ async function ima_test_browse_connected_chain( idxChain, idxNode ) {
         " " + compose_ima_cli_account_options_force_raw_private_keys( joNodeDesc.idxChain, joNodeDesc.idxNode ) +
         ""
     ;
-    const strWorkingDirectory = "" + g_strFolderRepoIMA;
+    const strWorkingDirectory = "" + g_strFolderRepoImaAgent;
     const joEnv = {
         "PATH": g_strRecommendedShellPATH
     };
@@ -4553,7 +4561,7 @@ async function ima_test_browse_s_chain( idxChain, idxNode ) {
         " " + compose_ima_cli_account_options_force_raw_private_keys( joNodeDesc.idxChain, joNodeDesc.idxNode ) +
         ""
     ;
-    const strWorkingDirectory = "" + g_strFolderRepoIMA;
+    const strWorkingDirectory = "" + g_strFolderRepoImaAgent;
     const joEnv = {
         "PATH": g_strRecommendedShellPATH
     };
@@ -4632,7 +4640,7 @@ async function ima_test_show_balance( idxChain, idxNode ) {
         " " + compose_ima_cli_account_options_force_raw_private_keys( joNodeDesc.idxChain, joNodeDesc.idxNode ) +
         ""
     ;
-    const strWorkingDirectory = "" + g_strFolderRepoIMA;
+    const strWorkingDirectory = "" + g_strFolderRepoImaAgent;
     const joEnv = {
         "PATH": g_strRecommendedShellPATH
     };
@@ -6085,7 +6093,7 @@ async function generate_predeployed_artifacts_schain( idxChain, fnContinue ) {
         "linker": "" + ensure_starts_with_0x( g_joImaAbiMN.linker_address ),
         "community_pool": "" + ensure_starts_with_0x( g_joImaAbiMN.community_pool_address )
     };
-    const strAdditionalPath = path.join( g_strFolderRepoIMA, "/proxy/predeployed/test/additional.json" );
+    const strAdditionalPath = path.join( g_strFolderRepoImaContracts, "/proxy/predeployed/test/additional.json" );
     log.write( cc.normal( "Saving additional information for skaled configuration update: " ) + cc.j( joAdditional ) +
         cc.normal( " to file " ) + cc.info( strAdditionalPath ) + cc.normal( "..." ) +
         "\n" );
