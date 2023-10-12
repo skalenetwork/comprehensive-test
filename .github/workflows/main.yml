@@ -17,10 +17,15 @@ jobs:
   # This workflow contains a single job called "build"
   build:
     # The type of runner that the job will run on # ubuntu-latest
-    runs-on: ubuntu-latest # ubuntu-22.04 # ubuntu-20.04 # ubuntu-latest
+    runs-on: self-hosted # ubuntu-latest # ubuntu-22.04 # ubuntu-20.04 # ubuntu-latest
 
     # Steps represent a sequence of tasks that will be executed as part of the job
     steps:
+
+    - name: INFO - force pre-clean
+      run: |
+        sudo rm -rf comprehensive-test || true
+
     # Checks-out your repository under $GITHUB_WORKSPACE, so your job can access it
     - uses: actions/checkout@v2
       with:
@@ -239,6 +244,7 @@ jobs:
 
     - name: INIT - download Skale Manager
       run: |
+        sudo rm -rf ./skale-manager || true
         git clone https://github.com/skalenetwork/skale-manager.git --recursive
 
     - name: INIT - install Skale Manager dependencies
@@ -255,6 +261,7 @@ jobs:
 
     - name: INIT - download IMA Agent and contracts
       run: |
+        sudo rm -rf ./ima-agent || true
         git clone https://github.com/skalenetwork/ima-agent.git --recursive
         cd ima-agent
         #
@@ -326,6 +333,8 @@ jobs:
 
     - name: INIT - download SGX Wallet
       run: |
+        sudo docker stop run_sgx_sim_sgxwallet_1 || true
+        sudo rm -rf ./sgxwallet || true
         git clone https://github.com/skalenetwork/sgxwallet.git --recursive
         cd sgxwallet
         git checkout develop
@@ -338,7 +347,7 @@ jobs:
     - name: INIT - update docker image SGX Wallet in the emulation mode
       run: |
         cd sgxwallet/run_sgx_sim
-        rm -rf ../../local_sgxwallet_output_log.txt &> /dev/null
+        sudo rm -rf ../../local_sgxwallet_output_log.txt &> /dev/null
         echo " --------------------------- stopping sgx wallet ------------------------------------------------------------------------------------------------------ "
         docker-compose down
         echo " --------------------------- fixing sgx wallets docker config ----------------------------------------------------------------------------------------- "
@@ -390,7 +399,7 @@ jobs:
 
     - name: INIT - download transaction manager
       run: |
-        rm -rf transaction-manager || true
+        sudo rm -rf transaction-manager || true
         git clone https://github.com/skalenetwork/transaction-manager
 
     - name: INIT - start transaction manager and redis
@@ -420,6 +429,13 @@ jobs:
     - name: RUN - create certificates
       run: |
         cd engine/create_pems
+        sudo rm -rf ./new_certs/* || true
+        sudo rm -rf ./k.key || true
+        sudo rm -rf ./k.pem || true
+        sudo rm -rf ./k.crt || true
+        sudo rm -rf ./client.key || true
+        sudo rm -rf ./client.pem || true
+        sudo rm -rf ./client.crt || true
         ./create_pems.sh
         cd ../..
 
