@@ -256,7 +256,7 @@ jobs:
     - name: INIT - download IMA Agent and contracts
       run: |
         git clone https://github.com/skalenetwork/ima-agent.git --recursive
-        cd IMA
+        cd ima-agent
         #
         #
         #
@@ -274,7 +274,7 @@ jobs:
 
     - name: INIT - initialize IMA dependencies
       run: |
-        cd IMA
+        cd ima-agent
         yarn install
         cd ..
 
