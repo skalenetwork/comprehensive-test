@@ -25,6 +25,7 @@ jobs:
     - name: INFO - force pre-clean
       run: |
         sudo rm -rf comprehensive-test || true
+        sudo rm -rf ./sgxwallet || true
 
     # Checks-out your repository under $GITHUB_WORKSPACE, so your job can access it
     - uses: actions/checkout@v2
@@ -347,7 +348,7 @@ jobs:
     - name: INIT - update docker image SGX Wallet in the emulation mode
       run: |
         cd sgxwallet/run_sgx_sim
-        sudo rm -rf ../../local_sgxwallet_output_log.txt &> /dev/null
+        sudo rm -rf ../../local_sgxwallet_output_log.txt || true &> /dev/null
         echo " --------------------------- stopping sgx wallet ------------------------------------------------------------------------------------------------------ "
         docker-compose down
         echo " --------------------------- fixing sgx wallets docker config ----------------------------------------------------------------------------------------- "
