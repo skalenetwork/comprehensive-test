@@ -22,12 +22,17 @@ jobs:
     # Steps represent a sequence of tasks that will be executed as part of the job
     steps:
 
-    - name: INFO - force pre-clean
+    - name: INIT - force pre-clean
       run: |
+        echo "------------------------------------------------------------------------------------"
+        sudo docker ps
+        echo "------------------------------------------------------------------------------------"
         sudo docker stop run_sgx_sim_sgxwallet_1 || true
         sudo docker stop tm || true
         sudo docker stop redis || true
+        echo "------------------------------------------------------------------------------------"
         sudo docker ps
+        echo "------------------------------------------------------------------------------------"
         sudo rm -rf comprehensive-test || true
         sudo rm -rf ./sgxwallet || true
         sudo rm -rf ./transaction-manager || true
