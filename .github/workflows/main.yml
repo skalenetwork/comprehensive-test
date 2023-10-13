@@ -30,6 +30,7 @@ jobs:
         sudo docker ps
         sudo rm -rf comprehensive-test || true
         sudo rm -rf ./sgxwallet || true
+        sudo rm -rf ./transaction-manager || true
 
     # Checks-out your repository under $GITHUB_WORKSPACE, so your job can access it
     - uses: actions/checkout@v2
@@ -404,7 +405,7 @@ jobs:
 
     - name: INIT - download transaction manager
       run: |
-        sudo rm -rf transaction-manager || true
+        sudo rm -rf ./transaction-manager || true
         git clone https://github.com/skalenetwork/transaction-manager
 
     - name: INIT - start transaction manager and redis
