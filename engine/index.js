@@ -520,13 +520,18 @@ const g_strFolderMultiNodeDeployment = findExistingDirPath( path.join( __dirname
 if( g_bVerbose )
     log.write( cc.normal( "Assuming " ) + cc.sunny( "Multi Node Deployment" ) + cc.normal( " is located at " ) + cc.info( g_strFolderMultiNodeDeployment ) + "\n" );
 
-const g_bSeparatedImaAgentMode = process.env.SEPARATED_IMA_AGENT_MODE ? true : false;
+let g_bSeparatedImaAgentMode = process.env.SEPARATED_IMA_AGENT_MODE ? true : false;
 if( g_bVerbose )
     log.write( cc.normal( "Assuming " ) + cc.sunny( "New Separated IMA Agent" ) + cc.normal( " mode is " ) + cc.yn( g_bSeparatedImaAgentMode ) + "\n" );
 
-const g_strFolderRepoImaAgent = process.env.IMA_AGENT_ROOT_DIR
+let g_strFolderRepoImaAgent = process.env.IMA_AGENT_ROOT_DIR
     ? findExistingDirPath( process.env.IMA_AGENT_ROOT_DIR )
     : findExistingDirPath( [ path.join( __dirname, "../ima-agent" ), path.join( __dirname, "../../../ima-agent" ) ] )
+if( ! g_strFolderRepoImaAgent ) {
+    g_bSeparatedImaAgentMode = false;
+    g_strFolderRepoImaAgent =
+        findExistingDirPath( [ path.join( __dirname, "../IMA" ), path.join( __dirname, "../../../IMA" ) ] )
+}
 const g_strFolderRepoImaContracts = g_bSeparatedImaAgentMode
     ? path.join( g_strFolderRepoImaAgent, "IMA" )
     : ( "" + g_strFolderRepoImaAgent )
