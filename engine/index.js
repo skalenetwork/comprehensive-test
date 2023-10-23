@@ -540,7 +540,7 @@ if( g_bVerbose ) {
     log.write( cc.normal( "Assuming " ) + cc.sunny( "IMA Contracts" ) + cc.normal( " repo is " ) + cc.info( g_strFolderRepoImaContracts ) + "\n" );
 }
 const g_strFolderImaProxy = "" + g_strFolderRepoImaContracts + "/proxy";
-const g_strFolderImaAgent = "" + g_strFolderRepoImaAgent + "/src";
+const g_strFolderImaAgent = "" + g_strFolderRepoImaAgent + ( g_bSeparatedImaAgentMode ? "/src" : "/agent" );
 // IMA ABI files
 const g_strPathImaAbiMN = g_strFolderImaProxy + "/data/proxyMainnet.json";
 
