@@ -285,6 +285,7 @@ jobs:
         #
         #
         #
+        git remote update
         git fetch --all
         #git checkout develop
         git checkout ticket-1577/move-IMA-Agent-into-standing-alone-repository
