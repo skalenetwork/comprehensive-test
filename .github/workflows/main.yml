@@ -28,6 +28,20 @@ jobs:
 
     # Steps represent a sequence of tasks that will be executed as part of the job
     steps:
+    - name: INIT - force pre-remove everything from docker
+      run: |
+        docker ps | grep redis | awk '{print $1}' | xargs docker stop || true
+        docker ps | grep skalenetwork | awk '{print $1}' | xargs docker stop || true
+        docker ps | grep transaction-manager | awk '{print $1}' | xargs docker stop || true
+        docker ps | grep hnode | awk '{print $1}' | xargs docker stop || true
+        docker ps
+        docker rmi $(docker images | grep 'skalenetwork/ima') || true
+        docker rmi --force $(docker images -q 'skalenetwork/ima' | uniq) || true
+        docker rmi --force $(docker images -q 'skalenetwork/sgxwallet_sim' | uniq) || true
+        docker rmi --force $(docker images -q 'redis' | uniq) || true
+        docker rmi --force $(docker images -q 'transaction-manager' | uniq) || true
+        docker rmi --force $(docker images -q 'hnode' | uniq) || true
+        docker images
 
     - name: INIT - force pre-clean
       run: |
@@ -120,7 +134,7 @@ jobs:
       run: |
         sudo apt-get update
         #sudo apt-get upgrade
-        sudo apt-get install libc6 net-tools btrfs-progs zip unzip
+        sudo apt-get install libc6 net-tools btrfs-progs zip unzip findutils
         sudo apt-get install procps
         sudo apt-get install curl
         #
