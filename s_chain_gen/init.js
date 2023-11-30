@@ -1,6 +1,7 @@
 const fs = require( "fs" );
 const path = require( "path" );
 const child_process = require( "child_process" );
+global.g_w3mod = require( "web3" );
 
 const cc = require( "./cc.js" );
 const log = require( "./log.js" );
@@ -104,15 +105,50 @@ function int_to_hex_string_value_auto( s ) {
 
 //////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 
-const g_base_chain_name_prefix = "Bob";
-const g_base_schain_id = parse_int_auto( process.env.CID_SCHAIN || 1000 ); // "123"; "0x01"; // "0x54A7E"
-
-function chain_name_from_cid( cid ) {
-    const strChainName = g_base_chain_name_prefix + cid;
-    // if( strChainName == ( g_base_chain_name_prefix + g_base_schain_id ) )
-    //     strChainName = "elated-tan-skat"; // use this instead of "Bob1000"
-    return strChainName;
+function ensure_starts_with_0x( s, isAutoCheckLength ) {
+    if( s == null || s == undefined || typeof s !== "string" )
+        return s;
+    if( s.length < 2 )
+        return "0x" + s;
+    if( s[0] == "0" && s[1] == "x" )
+        return s;
+    if( isAutoCheckLength && ( s.length % 2 ) != 0 )
+        s = "0" + s;
+    return "0x" + s;
 }
+
+function remove_starting_0x( s ) {
+    if( s == null || s == undefined || typeof s !== "string" )
+        return s;
+    if( s.length < 2 )
+        return s;
+    if( s[0] == "0" && s[1] == "x" )
+        return s.substr( 2 );
+    return s;
+}
+
+//////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
+
+function compute_chain_id_from_schain_name( strName ) {
+    let h = global.g_w3mod.utils.soliditySha3( strName );
+    h = remove_starting_0x( h ).toLowerCase();
+    while( h.length < 64 )
+        h = "0" + h;
+    h = h.substr( 0, 14 );
+    return "0x" + h;
+}
+
+const g_arrChainNaming = [
+    { name: "Bob1000", cid: compute_chain_id_from_schain_name( "Bob1000" ) }, // 0x975a4814cff8b9 / 975a4814cff8b9fd85b48879dade195028650b0a23f339ca81bd3b1231f72974
+    { name: "Bob1001", cid: compute_chain_id_from_schain_name( "Bob1001" ) }, // 0xde9b5e1c7bac0a / de9b5e1c7bac0a60f917397dfab6ead3f6441acf0399ec81145568874dd829e9
+    { name: "Bob1002", cid: compute_chain_id_from_schain_name( "Bob1002" ) }, // 0xc1f03a6ab1cc11 / c1f03a6ab1cc11851e91e0916d41f6094056a27083bef4b91fa9ecf2d3e82aab
+    { name: "Bob1003", cid: compute_chain_id_from_schain_name( "Bob1003" ) }, // 0x1bda0b7c239816 / 1bda0b7c23981640bd35c7f6a70485002643fe79be2611f91689d9e2e3ebea03
+    { name: "Bob1004", cid: compute_chain_id_from_schain_name( "Bob1004" ) }, // 0x440eb05c299390 / 440eb05c2993907e132063d5303f6eecb896782de42b25dbd771269d02d3a785
+    { name: "Bob1005", cid: compute_chain_id_from_schain_name( "Bob1005" ) }, // 0x0846bfa594c891 / 0846bfa594c8919f9efbdebc8f875b48da66e26bd4807110bba2a93d7ef2b0cc
+    { name: "Bob1006", cid: compute_chain_id_from_schain_name( "Bob1006" ) }, // 0xebd56b3f563b1e / ebd56b3f563b1e4401c8e39b7e24ece0bfee26066d1279995f21309fea144c29
+    { name: "Bob1007", cid: compute_chain_id_from_schain_name( "Bob1007" ) }  // 0xbfb3f7408e72d8 / bfb3f7408e72d883f4086cff38989e1868346f1580f966c7f0922b91123da57e
+];
+log.write( cc.debug( "Chain naming templates are: " ) + cc.j( g_arrChainNaming ) + "\n" );
 
 const g_arrEcdsaKeysCache = JSON.parse( fs.readFileSync( path.join( __dirname, "g_arrEcdsaKeysCache.json" ), "utf8" ) );
 
@@ -148,7 +184,7 @@ const joConfigurationTemplate = {
         "constantinopleForkBlock": "0x0",
         "istanbulForkBlock": "0x0",
         "networkID": "12313219",
-        "chainID": int_to_hex_string_value_auto( g_base_schain_id + 0 ),
+        "chainID": g_arrChainNaming[0].cid,
         "maximumExtraDataSize": "0x20",
         "tieBreakingGas": false,
         "minGasLimit": "0x47E7C4000000",
@@ -616,8 +652,8 @@ const joConfigurationTemplate = {
         },
         "sChain": {
             "snapshotIntervalSec": g_bSkaledWithSnapshots ? 120 : (-1),
-            "schainName": chain_name_from_cid( g_base_schain_id + 0 ), // ( 0 ),
-            "schainID": ( g_base_schain_id + 0 ),
+            "schainName": "" + g_arrChainNaming[0].name,
+            "schainID": "" + g_arrChainNaming[0].cid,
             "schainOwner": process.env.ACCOUNT_FOR_SCHAIN || "0x66c5a87f4a49dd75e970055a265e8dd5c3f8f852",
             "contractStorageLimit": 10000000,
             "emptyBlockIntervalMs": 5000, // 3600000000
@@ -1109,9 +1145,9 @@ function create_node_config( idxChain, idxNode ) { // idxNode is 0-based
         jo.skaleConfig.nodeInfo.transactionQueueSize = 100000;
         jo.skaleConfig.nodeInfo.maxOpenLeveldbFiles = 256;
 }
-    jo.params.chainID = int_to_hex_string_value_auto( g_base_schain_id + idxChain );
-    jo.skaleConfig.sChain.schainID = ( g_base_schain_id + idxChain );
-    jo.skaleConfig.sChain.schainName = chain_name_from_cid( g_base_schain_id + idxChain );
+    jo.params.chainID = "" + g_arrChainNaming[idxChain].cid;
+    jo.skaleConfig.sChain.schainID = "" + g_arrChainNaming[idxChain].cid;
+    jo.skaleConfig.sChain.schainName = "" + g_arrChainNaming[idxChain].name;
     const arrNodes = [];
     for( i = 0; i < cntNodes; ++i ) {
         arrNodes.push( {

@@ -603,32 +603,26 @@ if( strUbuntuVersion ) {
 //     public_key: "1ba2bfbd7f4c9251c4cd88ce31fbef66f0d6855a98fafff8fbfe3b6bcb37d26bdbf31adba8030b56264e4336824023badb4861cd15293b7d124168ddd15763aa"
 // },
 
-// function compute_chain_id_from_schain_name( strName ) {
-//     let h = g_w3mod.utils.soliditySha3( strName );
-//     h = remove_starting_0x( h ).toLowerCase();
-//     while( h.length < 64 )
-//         h = "0" + h;
-//     h = h.substr( 0, 14 );
-//     return "0x" + h;
-// }
+function compute_chain_id_from_schain_name( strName ) {
+    let h = global.g_w3mod.utils.soliditySha3( strName );
+    h = remove_starting_0x( h ).toLowerCase();
+    while( h.length < 64 )
+        h = "0" + h;
+    h = h.substr( 0, 14 );
+    return "0x" + h;
+}
 
 const g_arrChainNaming = [
-    { name: "Bob1000", cid: 1000 },
-    { name: "Bob1001", cid: 1001 },
-    { name: "Bob1002", cid: 1002 },
-    { name: "Bob1003", cid: 1003 },
-    { name: "Bob1004", cid: 1004 },
-    { name: "Bob1005", cid: 1005 },
-    { name: "Bob1006", cid: 1006 },
-    { name: "Bob1007", cid: 1007 }
+    { name: "Bob1000", cid: compute_chain_id_from_schain_name( "Bob1000" ) }, // 0x975a4814cff8b9 / 975a4814cff8b9fd85b48879dade195028650b0a23f339ca81bd3b1231f72974
+    { name: "Bob1001", cid: compute_chain_id_from_schain_name( "Bob1001" ) }, // 0xde9b5e1c7bac0a / de9b5e1c7bac0a60f917397dfab6ead3f6441acf0399ec81145568874dd829e9
+    { name: "Bob1002", cid: compute_chain_id_from_schain_name( "Bob1002" ) }, // 0xc1f03a6ab1cc11 / c1f03a6ab1cc11851e91e0916d41f6094056a27083bef4b91fa9ecf2d3e82aab
+    { name: "Bob1003", cid: compute_chain_id_from_schain_name( "Bob1003" ) }, // 0x1bda0b7c239816 / 1bda0b7c23981640bd35c7f6a70485002643fe79be2611f91689d9e2e3ebea03
+    { name: "Bob1004", cid: compute_chain_id_from_schain_name( "Bob1004" ) }, // 0x440eb05c299390 / 440eb05c2993907e132063d5303f6eecb896782de42b25dbd771269d02d3a785
+    { name: "Bob1005", cid: compute_chain_id_from_schain_name( "Bob1005" ) }, // 0x0846bfa594c891 / 0846bfa594c8919f9efbdebc8f875b48da66e26bd4807110bba2a93d7ef2b0cc
+    { name: "Bob1006", cid: compute_chain_id_from_schain_name( "Bob1006" ) }, // 0xebd56b3f563b1e / ebd56b3f563b1e4401c8e39b7e24ece0bfee26066d1279995f21309fea144c29
+    { name: "Bob1007", cid: compute_chain_id_from_schain_name( "Bob1007" ) } // 0xbfb3f7408e72d8 / bfb3f7408e72d883f4086cff38989e1868346f1580f966c7f0922b91123da57e
 ];
-// for( let idxChain = 0; idxChain < g_arrChainNaming.length; ++ idxChain ) {
-//     g_arrChainNaming[idxChain].cid = compute_chain_id_from_schain_name( g_arrChainNaming[idxChain].name );
-//     log.write(
-//         cc.debug( "Have prepared test chain name " ) + cc.info( g_arrChainNaming[idxChain].name ) +
-//         cc.debug( " with chain ID " ) + cc.attention( g_arrChainNaming[idxChain].cid ) +
-//         "\n" );
-// }
+log.write( cc.debug( "Chain naming templates are: " ) + cc.j( g_arrChainNaming ) + "\n" );
 
 const g_cntSyncNodesPerChain = 1;
 
@@ -1164,7 +1158,8 @@ function prepare_for_ima_docker_mode_global_chains_array() {
 }
 
 function initNodeDescription( strURL, idxChain, idxNode, chainId, nodeID, strName ) {
-    const schain_id = chainId;
+    // const schain_id = chainId;
+    const simpleNumber = 1000 + idxChain;
     const strFolderNodeSkaled = g_strFolderMultiNodeDeployment + "/chain_" + zeroPad( idxChain, 2 ) + "/node_" + zeroPad( idxNode, 2 );
     const dkgID = randomFixedInteger( 5 ) % 65000; // randomHexString( 32 * 2 );
     const joNodeDesc = {
@@ -1184,10 +1179,10 @@ function initNodeDescription( strURL, idxChain, idxNode, chainId, nodeID, strNam
 
         dkgID: dkgID,
         nameEcdsaPubKey: get_cached_ecdsa_key_at( idxNode ).sgxName,
-        nameSgxPoly: generateSgxPolyName( schain_id, nodeID, dkgID ),
+        nameSgxPoly: generateSgxPolyName( simpleNumber, nodeID, dkgID ),
         publicKey: get_cached_ecdsa_key_at( idxNode ).publicKey,
         isSecretVerified: false,
-        nameBlsPrivateKey: generateBlsPrivateKey( schain_id, nodeID, dkgID ),
+        nameBlsPrivateKey: generateBlsPrivateKey( simpleNumber, nodeID, dkgID ),
         isBlsPrivateKeyCreated: false,
         blsPublicKey: null,
         joNodeEventInfoSM: null,
@@ -1375,6 +1370,7 @@ function compose_node_runCmd4imaAgent( joNodeDesc ) {
         ) +
         //
         " --monitoring-port=" + nMonitoringPort4ImaAgent +
+        get_ima_network_browser_cli_opt( joNodeDesc.idxChain ) + " " +
         " --s2s-enable" +
         " --url-main-net=" + g_strMainNetURL + // URLs
         " --url-s-chain=" + joNodeDesc.url +
@@ -2194,16 +2190,17 @@ async function getSChainNodeIndices( w3, strSChainName ) {
 //////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 
 function init_schain_node_description( w3, joNodeDesc ) {
-    const schain_id = g_arrChains[joNodeDesc.idxChain].cid;
+    // const schain_id = g_arrChains[joNodeDesc.idxChain].cid;
+    const simpleNumber = 1000 + joNodeDesc.idxChain;
     const nDefaultNameLength = 5;
     if( joNodeDesc.nameNode == null || joNodeDesc.nameNode == undefined || typeof joNodeDesc.nameNode != "string" || joNodeDesc.nameNode.length == 0 )
         joNodeDesc.nameNode = randomString( nDefaultNameLength );
     if( joNodeDesc.nameSgxPoly == null || joNodeDesc.nameSgxPoly == undefined || typeof joNodeDesc.nameSgxPoly != "string" || joNodeDesc.nameSgxPoly.length == 0 )
-        joNodeDesc.nameSgxPoly = generateSgxPolyName( schain_id, joNodeDesc.nodeID, joNodeDesc.dkgID );
+        joNodeDesc.nameSgxPoly = generateSgxPolyName( simpleNumber, joNodeDesc.nodeID, joNodeDesc.dkgID );
     if( joNodeDesc.nameEcdsaPubKey == null || joNodeDesc.nameEcdsaPubKey == undefined || typeof joNodeDesc.nameEcdsaPubKey != "string" || joNodeDesc.nameEcdsaPubKey.length == 0 )
         joNodeDesc.nameEcdsaPubKey = get_cached_ecdsa_key_at( joNodeDesc.idxNode ).sgxName;
     if( joNodeDesc.nameBlsPrivateKey == null || joNodeDesc.nameBlsPrivateKey == undefined || typeof joNodeDesc.nameBlsPrivateKey != "string" || joNodeDesc.nameBlsPrivateKey.length == 0 )
-        joNodeDesc.nameBlsPrivateKey = generateBlsPrivateKey( schain_id, joNodeDesc.nodeID, joNodeDesc.dkgID );
+        joNodeDesc.nameBlsPrivateKey = generateBlsPrivateKey( simpleNumber, joNodeDesc.nodeID, joNodeDesc.dkgID );
     // joNodeDesc.publicKey = private_key_2_public_key( w3, joNodeDesc.privateKey );
     // joNodeDesc.address = private_key_2_account_address( w3, joNodeDesc.privateKey );
     joNodeDesc.arrVerificationVector = [];
@@ -3857,6 +3854,12 @@ function detect_ima_network_browser_path() {
 
 function get_ima_network_browser_data_json_path( idxChain ) {
     return g_strFolderMultiNodeDeployment + "/chain_" + zeroPad( idxChain, 2 ) + "/network-browser-data.json";
+}
+
+function get_ima_network_browser_cli_opt( idxChain ) {
+    if( ! detect_ima_network_browser_path() )
+        return "";
+    return "--network-browser-path=" + get_ima_network_browser_data_json_path( idxChain );
 }
 
 async function all_ima_network_browsers_start() {
