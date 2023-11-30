@@ -268,8 +268,10 @@ async function end_of_test( nExitCode ) {
         }
     };
     // if( g_bAtExitStopIMA && ( !g_bDockerIMA ) )
-    if( g_bAtExitStopIMA )
+    if( g_bAtExitStopIMA ) {
         await fnProtected( async function() { await all_ima_agents_stop(); } );
+        await fnProtected( async function() { await all_ima_network_browsers_stop(); } );
+    }
     if( g_bAtExitStopSC )
         await fnProtected( async function() { await all_skaled_nodes_stop(); } );
     if( g_bAtExitStopMN )
@@ -277,8 +279,10 @@ async function end_of_test( nExitCode ) {
     log.write( cc.normal( "Will exit test with code " ) + cc.info( nExitCode ) + cc.normal( "..." ) + "\n" );
     if( nExitCode != 0 )
         print_logs_at_exit(); // print all the logs on error only
-    // if( g_bAtExitStopIMA && g_bDockerIMA )
+    // if( g_bAtExitStopIMA && g_bDockerIMA ) {
     //     await fnProtected( async function() { await all_ima_agents_stop(); } );
+    //     await fnProtected( async function() { await all_ima_network_browsers_stop(); } );
+    // }
     log.write( cc.normal( "Exiting test with code " ) + cc.info( nExitCode ) + cc.normal( "..." ) + "\n" );
     process.exit( nExitCode ); // see https://tldp.org/LDP/abs/html/exitcodes.html
 }
@@ -339,6 +343,8 @@ function print_logs_at_exit() {
                 );
             } else
                 print_log_at_exit( path.join( __dirname, "imaAgent_" + zeroPad( idxChain, 2 ) + "_" + zeroPad( idxNode, 2 ) + ".log" ) );
+
+            print_log_at_exit( path.join( __dirname, "imaNetworkBrowser_" + zeroPad( idxChain, 2 ) + ".log" ) );
         }
     }
     print_log_at_exit( path.join( __dirname, "tm.log" ) );
@@ -526,15 +532,15 @@ if( g_bVerbose )
 
 let g_strFolderRepoImaAgent = process.env.IMA_AGENT_ROOT_DIR
     ? findExistingDirPath( process.env.IMA_AGENT_ROOT_DIR )
-    : findExistingDirPath( [ path.join( __dirname, "../ima-agent" ), path.join( __dirname, "../../../ima-agent" ) ] )
+    : findExistingDirPath( [ path.join( __dirname, "../ima-agent" ), path.join( __dirname, "../../../ima-agent" ) ] );
 if( ! g_strFolderRepoImaAgent ) {
     g_bSeparatedImaAgentMode = false;
     g_strFolderRepoImaAgent =
-        findExistingDirPath( [ path.join( __dirname, "../IMA" ), path.join( __dirname, "../../../IMA" ) ] )
+        findExistingDirPath( [ path.join( __dirname, "../IMA" ), path.join( __dirname, "../../../IMA" ) ] );
 }
 const g_strFolderRepoImaContracts = g_bSeparatedImaAgentMode
     ? path.join( g_strFolderRepoImaAgent, "IMA" )
-    : ( "" + g_strFolderRepoImaAgent )
+    : ( "" + g_strFolderRepoImaAgent );
 if( g_bVerbose ) {
     log.write( cc.normal( "Assuming " ) + cc.sunny( "IMA Agent" ) + cc.normal( " repo is " ) + cc.info( g_strFolderRepoImaAgent ) + "\n" );
     log.write( cc.normal( "Assuming " ) + cc.sunny( "IMA Contracts" ) + cc.normal( " repo is " ) + cc.info( g_strFolderRepoImaContracts ) + "\n" );
@@ -796,7 +802,7 @@ function getNonEmptyString( s, defVal ) {
 class ProcessController {
     // see https://stackoverflow.com/questions/25323703/nodejs-execute-command-in-background-and-forget
     // see https://nodejs.org/api/child_process.html#child_process_child_process_spawn_command_args_options
-    constructor( strCommand, arrArgs, strLogPath, nListeningPort, cwd ) {
+    constructor( strCommand, arrArgs, strLogPath, nListeningPort, cwd, env ) {
         this.strCommand = strCommand ? "" + strCommand : "";
         this.arrArgs = arrArgs || [];
         this.strLogPath = strLogPath ? "" + strLogPath : "";
@@ -809,6 +815,7 @@ class ProcessController {
         this.redirectedStreamErr = null;
         this.strColorizedProcessDescription = cc.notice( "\"" ) + cc.note( this.strCommand ) + cc.notice( "\"" );
         this.strShortProcessDescription = "" + this.strColorizedProcessDescription;
+        this.env = env || null;
     }
     close_redirected_streams() {
         if( this.redirectedStreamOut ) {
@@ -1002,6 +1009,13 @@ class ProcessController {
             self.redirectedStreamErr = fs.openSync( self.strLogPath, "a" );
             stdio_option = [ "ignore", self.redirectedStreamOut, self.redirectedStreamErr ];
         }
+        let envEffective = self.env;
+        if( ! envEffective ) {
+            envEffective = {
+                "PATH": g_strRecommendedShellPATH,
+                "NO_ULIMIT_CHECK": 1
+            };
+        }
         self.child = child_process.spawn(
             "" + self.strCommand
             , [] // args
@@ -1009,10 +1023,7 @@ class ProcessController {
                 cwd: cwd,
                 "detached": bIsDetached,
                 "shell": true,
-                env: {
-                    "PATH": g_strRecommendedShellPATH,
-                    "NO_ULIMIT_CHECK": 1
-                },
+                env: envEffective,
                 stdio: stdio_option // stdio_option // "inherit" // [ "ignore", "ignore", "ignore" ] // [ 0, 1, 2 ]
             }
         );
@@ -3830,6 +3841,89 @@ async function schain_ima_agents_stop( idxChain ) {
     }
     if( g_bVerbose )
         log.write( cc.success( "Done, stopped " ) + cc.notice( "IMA" ) + cc.success( " agents as node processes" ) + "\n" );
+}
+
+//////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
+//////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
+
+function detect_ima_network_browser_path() {
+    if( g_bDockerIMA )
+        return null;
+    const strPathImaNetworkBrowser = path.join( g_strFolderRepoImaAgent, "network-browser" );
+    if( ! dirExists( strPathImaNetworkBrowser ) )
+        return null;
+    return strPathImaNetworkBrowser;
+}
+
+function get_ima_network_browser_data_json_path( idxChain ) {
+    return g_strFolderMultiNodeDeployment + "/chain_" + zeroPad( idxChain, 2 ) + "/network-browser-data.json";
+}
+
+async function all_ima_network_browsers_start() {
+    if( g_bDockerIMA )
+        return;
+    const strPathImaNetworkBrowser = detect_ima_network_browser_path();
+    if( ! strPathImaNetworkBrowser )
+        return;
+    for( let idxChain = 0; idxChain < g_arrChains.length; ++ idxChain ) {
+        const joChain = g_arrChains[idxChain];
+        if( ! joChain.isStartEnabled )
+            continue;
+        if( g_bVerbose )
+            log.write( cc.normal( "Starting one " ) + cc.notice( "IMA network browser" ) + cc.normal( " for S-Chain " ) + cc.notice( idxChain ) + cc.normal( "..." ) + "\n" );
+        const joNode = joChain.arrNodeDescriptions[0];
+        joChain.runCmd4imaNetworkBrowser = "bun browse";
+        joChain.logPath4imaNetworkBrowser = normalizePath( path.join( __dirname, "imaNetworkBrowser_" + zeroPad( idxChain, 2 ) + ".log" ) );
+        const env = {
+            "PATH": g_strRecommendedShellPATH + ":" + normalizePath( "~/.bun/bin" ),
+            "MAINNET_RPC_URL": "" + g_strMainNetURL,
+            "SCHAIN_RPC_URL": "" + joNode.url,
+            "SCHAIN_NAME": "" + joChain.name,
+            "SCHAIN_PROXY_PATH": get_ima_abi_schain_path( idxChain ),
+            "MANAGER_ABI_PATH": "" + g_strSkaleManagerAbiJsonPath,
+            "IMA_NETWORK_BROWSER_DATA_PATH": get_ima_network_browser_data_json_path( idxChain ),
+            "MULTICALL": "false",
+            "LOG_PATH_IS": joChain.logPath4imaNetworkBrowser
+        };
+        joChain.proc4imaNetworkBrowser = new ProcessController(
+            joChain.runCmd4imaNetworkBrowser,
+            [],
+            joChain.logPath4imaNetworkBrowser, // "detached"
+            undefined, // port
+            strPathImaNetworkBrowser,
+            env
+        );
+        if( g_bVerbose ) {
+            log.write( cc.normal( "Notice, " ) + cc.bright( "IMA Network Browser" ) + cc.normal( " for chain " ) + cc.sunny( idxChain ) +
+                cc.normal( " folder is " ) + cc.info( strPathImaNetworkBrowser ) +
+                cc.normal( ", environment is " ) + cc.j( env ) +
+                cc.normal( ", log output is " ) + cc.info( joChain.logPath4imaNetworkBrowser ) +
+                "\n" );
+        }
+        joChain.proc4imaNetworkBrowser.run();
+        //joChain.proc4imaNetworkBrowser.continueDetached();
+        if( g_bVerbose )
+            log.write( cc.success( "Done, started one " ) + cc.notice( "IMA network browser" ) + cc.success( " for S-Chain " ) + cc.notice( idxChain ) + cc.success( "." ) + "\n" );
+    }
+}
+
+async function all_ima_network_browsers_stop() {
+    const strPathImaNetworkBrowser = detect_ima_network_browser_path();
+    if( ! strPathImaNetworkBrowser )
+        return;
+    for( let idxChain = 0; idxChain < g_arrChains.length; ++ idxChain ) {
+        const joChain = g_arrChains[idxChain];
+        if( ! joChain.isStartEnabled )
+            continue;
+        if( g_bVerbose )
+            log.write( cc.normal( "Stopping one " ) + cc.notice( "IMA network browser" ) + cc.normal( " for S-Chain " ) + cc.notice( idxChain ) + cc.normal( "..." ) + "\n" );
+        if( joChain.proc4imaNetworkBrowser ) {
+            await joChain.proc4imaNetworkBrowser.stop();
+            joChain.proc4imaNetworkBrowser = null;
+        }
+        if( g_bVerbose )
+            log.write( cc.success( "Done, stopped one " ) + cc.notice( "IMA network browser" ) + cc.success( " for S-Chain " ) + cc.notice( idxChain ) + cc.success( "." ) + "\n" );
+    }
 }
 
 //////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
@@ -10060,6 +10154,7 @@ async function run() {
     await ima_get_docker_image();
     ima_prepare_docker_shares_all();
     await all_ima_agents_start();
+    await all_ima_network_browsers_start();
     //
     if( g_bTestImaAgentDiscoveryCommandsAndExit ) {
         await ima_test_discover_chain_ids();
@@ -10078,6 +10173,7 @@ async function run() {
         await ima_connect_all_schains_together_each_other( 10 );
         // NOTICE: IMA agents here restarted to re-load connected S-Chains info
         await all_ima_agents_stop();
+        await all_ima_network_browsers_stop();
         //
         // log.write(
         //     "\n\n" + cc.normal( "Press " ) + cc.attention( "<ENTER>" ) +
@@ -10087,6 +10183,7 @@ async function run() {
         // log.write( cc.normal( "Resuming test..." ) + "\n" );
         //
         await all_ima_agents_start();
+        await all_ima_network_browsers_start();
         //
         // log.write(
         //     "\n\n" + cc.normal( "Press " ) + cc.attention( "<ENTER>" ) +
