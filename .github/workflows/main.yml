@@ -204,6 +204,17 @@ jobs:
         which node-gyp
         node-gyp --version
 
+    - name: INIT - install Bun SH
+      run: |
+        curl -fsSL https://bun.sh/install | bash
+        export BUN_INSTALL="$HOME/.bun"
+        export PATH=$BUN_INSTALL/bin:$PATH
+
+    - name: INIT - version checks of Bun SH
+      run: |
+        which bun
+        bun --version
+
     - name: INIT - install Ethereum Main Net emulation
       run: |
         #
