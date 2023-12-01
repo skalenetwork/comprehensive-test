@@ -1356,7 +1356,7 @@ function compose_node_runCmd4imaAgent( joNodeDesc ) {
     // because it needs final count of nodes
     // so, we initialize it in this function
     const schain_name = g_arrChains[joNodeDesc.idxChain].name;
-    const schain_id = g_arrChains[joNodeDesc.idxChain].cid;
+    const cid = g_arrChains[joNodeDesc.idxChain].cid;
     //
     //
     let nMonitoringPort4ImaAgent = joNodeDesc.nMonitoringPort4ImaAgent ? ( 0 + joNodeDesc.nMonitoringPort4ImaAgent ) : 0;
@@ -1389,7 +1389,7 @@ function compose_node_runCmd4imaAgent( joNodeDesc ) {
         " --id-main-net=" + g_strMainnetName + // chain names
         " --id-s-chain=" + schain_name +
         " --cid-main-net=" + cid_main_net + // chain IDs
-        " --cid-s-chain=" + schain_id +
+        " --cid-s-chain=" + cid +
         " --abi-skale-manager=" + g_strSkaleManagerAbiJsonPath +
         " --abi-main-net=" + g_strPathImaAbiMN + // ABIs
         " --abi-s-chain=" + get_ima_abi_schain_path( joNodeDesc.idxChain ) +
@@ -4185,11 +4185,11 @@ async function schain_ima_gas_reimbursement_configure_zero_timeout( idxChain, fn
     init_account_from_private_key( w3schain, g_strPrivateKeyImaSC );
     const joImaAbiSC = g_arrChains[idxChain].joImaAbiSC;
     const jo_community_locker = new w3schain.eth.Contract( joImaAbiSC.community_locker_abi, joImaAbiSC.community_locker_address );
-    const schain_id = g_arrChains[idxChain].cid;
+    const cid = g_arrChains[idxChain].cid;
     const schain_name = g_arrChains[idxChain].name;
     await role_check_and_grant( // CONSTANT_SETTER_ROLE
         w3schain,
-        schain_id,
+        cid,
         g_strPrivateKeyImaSC,
         jo_community_locker,
         "CONSTANT_SETTER_ROLE",
@@ -4205,7 +4205,7 @@ async function schain_ima_gas_reimbursement_configure_zero_timeout( idxChain, fn
         " --id-main-net=" + g_strMainnetName + // chain names
         " --id-s-chain=" + schain_name +
         " --cid-main-net=" + cid_main_net + // chain IDs
-        " --cid-s-chain=" + schain_id +
+        " --cid-s-chain=" + cid +
         " --abi-skale-manager=" + g_strSkaleManagerAbiJsonPath +
         " --abi-main-net=" + g_strPathImaAbiMN + // ABIs
         " --abi-s-chain=" + get_ima_abi_schain_path( idxChain ) +
