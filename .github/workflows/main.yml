@@ -28,6 +28,9 @@ jobs:
 
     # Steps represent a sequence of tasks that will be executed as part of the job
     steps:
+
+    - uses: oven-sh/setup-bun@v1
+
     - name: INIT - force pre-remove everything from docker
       run: |
         docker ps | grep redis | awk '{print $1}' | xargs docker stop || true
@@ -203,14 +206,6 @@ jobs:
         yarn --version
         which node-gyp
         node-gyp --version
-
-    - name: INIT - install Bun SH
-      run: |
-        curl -fsSL https://bun.sh/install | bash
-        export BUN_INSTALL="$HOME/.bun"
-        export PATH=$BUN_INSTALL/bin:$PATH
-        source /home/gha/.bashrc
-        sudo ln -s $BUN_INSTALL/bun /usr/local/bin/bun || true
 
     - name: INIT - version checks of Bun SH
       run: |
