@@ -4100,7 +4100,7 @@ async function ima_connect_two_schains( idxChainA, idxChainB, cntAttempts ) {
             const jo_token_manager_linker = new w3schain.eth.Contract( joImaAbiSC.token_manager_linker_abi, joImaAbiSC.token_manager_linker_address );
             await role_check_and_grant( // CHAIN_CONNECTOR_ROLE
                 w3schain,
-                schain_id,
+                cid,
                 g_strPrivateKeyImaSC,
                 jo_message_proxy_s_chain,
                 "CHAIN_CONNECTOR_ROLE",
