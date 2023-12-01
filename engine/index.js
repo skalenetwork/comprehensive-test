@@ -1384,14 +1384,14 @@ function compose_node_runCmd4imaAgent( joNodeDesc ) {
         " --monitoring-port=" + nMonitoringPort4ImaAgent +
         get_ima_network_browser_cli_opt( joNodeDesc.idxChain ) +
         " --s2s-enable" +
-        " --url-main-net=" + g_strMainNetURL + // URLs
+        " --url-main-net=" + g_strMainNetURL +
         " --url-s-chain=" + joNodeDesc.url +
-        " --id-main-net=" + g_strMainnetName + // chain names
+        " --id-main-net=" + g_strMainnetName +
         " --id-s-chain=" + schain_name +
-        " --cid-main-net=" + cid_main_net + // chain IDs
+        " --cid-main-net=" + cid_main_net +
         " --cid-s-chain=" + cid +
         " --abi-skale-manager=" + g_strSkaleManagerAbiJsonPath +
-        " --abi-main-net=" + g_strPathImaAbiMN + // ABIs
+        " --abi-main-net=" + g_strPathImaAbiMN +
         " --abi-s-chain=" + get_ima_abi_schain_path( joNodeDesc.idxChain ) +
         " " + compose_ima_cli_account_options( joNodeDesc.idxChain, joNodeDesc.idxNode ) +
         " --sgx-bls-key-main-net=" + joNodeDesc.nameBlsPrivateKey + // g_arrChains[0].arrNodeDescriptions[0].nameBlsPrivateKey +
@@ -1433,17 +1433,17 @@ function compose_node_runCmd4imaAgent( joNodeDesc ) {
     return "" + joNodeDesc.runCmd4imaAgent;
 }
 
-function generateBlsPrivateKey( schain_id, nodeID, dkgID ) {
+function generateBlsPrivateKey( cid, nodeID, dkgID ) {
     // BLS keys are named BLS_KEY:SCHAIN_ID:N1:NODE_ID:N2:DKG_ID:N3,
     // Where N1 and N3 are 32byte hexadecimal numbers, N2 is a decimal number in range 0 - 65000
-    const s = "BLS_KEY:SCHAIN_ID:" + schain_id + ":NODE_ID:" + nodeID + ":DKG_ID:" + dkgID;
+    const s = "BLS_KEY:SCHAIN_ID:" + cid + ":NODE_ID:" + nodeID + ":DKG_ID:" + dkgID;
     return s;
 }
 
-function generateSgxPolyName( schain_id, nodeID, dkgID ) {
+function generateSgxPolyName( cid, nodeID, dkgID ) {
     // DKG polynomials are named  POLY:SCHAIN_ID:N1:NODE_ID:N2:DKG_ID:N3,
     // Where N1 and N3 are 32byte hexadecimal numbers, N2 is a decimal number in range 0 - 65000
-    const s = "POLY:SCHAIN_ID:" + schain_id + ":NODE_ID:" + nodeID + ":DKG_ID:" + dkgID;
+    const s = "POLY:SCHAIN_ID:" + cid + ":NODE_ID:" + nodeID + ":DKG_ID:" + dkgID;
     return s;
 }
 
@@ -4051,12 +4051,12 @@ async function ima_connect_two_schains( idxChainA, idxChainB, cntAttempts ) {
     if( ! g_arrChains[idxChainB].isStartEnabled )
         return;
     cntAttempts = cntAttempts || 1;
-    const schain_id_A = g_arrChains[idxChainA].cid;
-    const schain_id_B = g_arrChains[idxChainB].cid;
+    const cid_A = g_arrChains[idxChainA].cid;
+    const cid_B = g_arrChains[idxChainB].cid;
     const schain_name_A = g_arrChains[idxChainA].name;
     const schain_name_B = g_arrChains[idxChainB].name;
-    const strDescA = cc.info( schain_name_A ) + cc.debug( "/" ) + cc.sunny( schain_id_A );
-    const strDescB = cc.info( schain_name_B ) + cc.debug( "/" ) + cc.sunny( schain_id_B );
+    const strDescA = cc.info( schain_name_A ) + cc.debug( "/" ) + cc.sunny( cid_A );
+    const strDescB = cc.info( schain_name_B ) + cc.debug( "/" ) + cc.sunny( cid_B );
     if( g_bVerbose )
         log.write( cc.debug( "Connecting S-Chain " ) + strDescA + cc.debug( " to S-Chain " ) + strDescB + cc.debug( "..." ) + "\n" );
     if( g_nTimeToSleepBeforeConnectTwoChains > 0 ) {
@@ -4200,14 +4200,14 @@ async function schain_ima_gas_reimbursement_configure_zero_timeout( idxChain, fn
         "node --no-warnings " +
         g_strFolderImaAgent + "/main.mjs" + g_strImaOutputOpts + g_strImaRuntimeOpts +
         " --reimbursement-range=0" +
-        " --url-main-net=" + g_strMainNetURL + // URLs
+        " --url-main-net=" + g_strMainNetURL +
         " --url-s-chain=" + arrNodeDescriptions[0].url + // first skaled node URL
-        " --id-main-net=" + g_strMainnetName + // chain names
+        " --id-main-net=" + g_strMainnetName +
         " --id-s-chain=" + schain_name +
-        " --cid-main-net=" + cid_main_net + // chain IDs
+        " --cid-main-net=" + cid_main_net +
         " --cid-s-chain=" + cid +
         " --abi-skale-manager=" + g_strSkaleManagerAbiJsonPath +
-        " --abi-main-net=" + g_strPathImaAbiMN + // ABIs
+        " --abi-main-net=" + g_strPathImaAbiMN +
         " --abi-s-chain=" + get_ima_abi_schain_path( idxChain ) +
         // " " + compose_ima_cli_account_options( joNodeDesc.idxChain, nNodeIndex )
         " " + compose_ima_cli_account_options_all_direct( joNodeDesc.idxChain, nNodeIndex )
@@ -4254,7 +4254,7 @@ async function schain_ima_gas_reimbursement_show( idxChain, fnContinue ) {
             cc.bright( "..." ) + "\n\n" );
     }
     const schain_name = g_arrChains[idxChain].name;
-    const schain_id = g_arrChains[idxChain].cid;
+    const cid = g_arrChains[idxChain].cid;
     const arrNodeDescriptions = g_arrChains[idxChain].arrNodeDescriptions;
     const nPreferredNodeIndex = 0;
     const joNodeDesc = arrNodeDescriptions[nPreferredNodeIndex];
@@ -4263,14 +4263,14 @@ async function schain_ima_gas_reimbursement_show( idxChain, fnContinue ) {
         "node --no-warnings " +
         g_strFolderImaAgent + "/main.mjs" + g_strImaOutputOpts + g_strImaRuntimeOpts +
         " --reimbursement-chain=" + schain_name + " --reimbursement-balance" +
-        " --url-main-net=" + g_strMainNetURL + // URLs
+        " --url-main-net=" + g_strMainNetURL +
         " --url-s-chain=" + arrNodeDescriptions[0].url + // first skaled node URL
-        " --id-main-net=" + g_strMainnetName + // chain names
+        " --id-main-net=" + g_strMainnetName +
         " --id-s-chain=" + schain_name +
-        " --cid-main-net=" + cid_main_net + // chain IDs
-        " --cid-s-chain=" + schain_id +
+        " --cid-main-net=" + cid_main_net +
+        " --cid-s-chain=" + cid +
         " --abi-skale-manager=" + g_strSkaleManagerAbiJsonPath +
-        " --abi-main-net=" + g_strPathImaAbiMN + // ABIs
+        " --abi-main-net=" + g_strPathImaAbiMN +
         " --abi-s-chain=" + get_ima_abi_schain_path( idxChain ) +
         // " " + compose_ima_cli_account_options( joNodeDesc.idxChain, nNodeIndex )
         " " + compose_ima_cli_account_options_all_direct( joNodeDesc.idxChain, nNodeIndex )
@@ -4316,7 +4316,7 @@ async function schain_ima_gas_reimbursement_recharge( idxChain, fnContinue ) {
             cc.bright( "..." ) + "\n\n" );
     }
     const schain_name = g_arrChains[idxChain].name;
-    const schain_id = g_arrChains[idxChain].cid;
+    const cid = g_arrChains[idxChain].cid;
     const arrNodeDescriptions = g_arrChains[idxChain].arrNodeDescriptions;
     const nPreferredNodeIndex = 0;
     const joNodeDesc = arrNodeDescriptions[nPreferredNodeIndex];
@@ -4325,14 +4325,14 @@ async function schain_ima_gas_reimbursement_recharge( idxChain, fnContinue ) {
         "node --no-warnings " +
         g_strFolderImaAgent + "/main.mjs" + g_strImaOutputOpts + g_strImaRuntimeOpts +
         " --reimbursement-chain=" + schain_name + " --reimbursement-recharge=1000eth" +
-        " --url-main-net=" + g_strMainNetURL + // URLs
+        " --url-main-net=" + g_strMainNetURL +
         " --url-s-chain=" + arrNodeDescriptions[0].url + // first skaled node URL
-        " --id-main-net=" + g_strMainnetName + // chain names
+        " --id-main-net=" + g_strMainnetName +
         " --id-s-chain=" + schain_name +
-        " --cid-main-net=" + cid_main_net + // chain IDs
-        " --cid-s-chain=" + schain_id +
+        " --cid-main-net=" + cid_main_net +
+        " --cid-s-chain=" + cid +
         " --abi-skale-manager=" + g_strSkaleManagerAbiJsonPath +
-        " --abi-main-net=" + g_strPathImaAbiMN + // ABIs
+        " --abi-main-net=" + g_strPathImaAbiMN +
         " --abi-s-chain=" + get_ima_abi_schain_path( idxChain ) +
         // " " + compose_ima_cli_account_options( joNodeDesc.idxChain, nNodeIndex )
         " " + compose_ima_cli_account_options_all_direct( joNodeDesc.idxChain, nNodeIndex )
@@ -4414,25 +4414,25 @@ async function ima_test_discover_chain_id( idxChain, idxNode ) {
             cc.bright( "..." ) + "\n\n" );
     }
     const schain_name = g_arrChains[joNodeDesc.idxChain].name;
-    const schain_id = g_arrChains[joNodeDesc.idxChain].cid;
+    const cid = g_arrChains[joNodeDesc.idxChain].cid;
     const schain_name_target = g_arrChains[joNodeDescTarget.idxChain].name;
-    const schain_id_target = g_arrChains[joNodeDescTarget.idxChain].cid;
+    const cid_target = g_arrChains[joNodeDescTarget.idxChain].cid;
     const strCommand =
         "node --no-warnings " +
         g_strFolderImaAgent + "/main.mjs" + g_strImaOutputOpts + g_strImaRuntimeOpts +
         " --discover-cid" +
         //
-        " --url-main-net=" + g_strMainNetURL + // URLs
+        " --url-main-net=" + g_strMainNetURL +
         " --url-s-chain=" + joNodeDesc.url +
         " --url-t-chain=" + joNodeDescTarget.url +
-        " --id-main-net=" + g_strMainnetName + // chain names
+        " --id-main-net=" + g_strMainnetName +
         " --id-s-chain=" + schain_name +
         " --id-t-chain=" + schain_name_target +
-        " --cid-main-net=" + cid_main_net + // chain IDs
-        " --cid-s-chain=" + schain_id +
-        " --cid-t-chain=" + schain_id_target +
+        " --cid-main-net=" + cid_main_net +
+        " --cid-s-chain=" + cid +
+        " --cid-t-chain=" + cid_target +
         " --abi-skale-manager=" + g_strSkaleManagerAbiJsonPath +
-        " --abi-main-net=" + g_strPathImaAbiMN + // ABIs
+        " --abi-main-net=" + g_strPathImaAbiMN +
         " --abi-s-chain=" + get_ima_abi_schain_path( joNodeDesc.idxChain ) +
         " " + compose_ima_cli_account_options_force_raw_private_keys( joNodeDesc.idxChain, joNodeDesc.idxNode ) +
         ""
@@ -4493,25 +4493,25 @@ async function ima_test_browse_skale_network( idxChain, idxNode ) {
             cc.bright( "..." ) + "\n\n" );
     }
     const schain_name = g_arrChains[joNodeDesc.idxChain].name;
-    const schain_id = g_arrChains[joNodeDesc.idxChain].cid;
+    const cid = g_arrChains[joNodeDesc.idxChain].cid;
     const schain_name_target = g_arrChains[joNodeDescTarget.idxChain].name;
-    const schain_id_target = g_arrChains[joNodeDescTarget.idxChain].cid;
+    const cid_target = g_arrChains[joNodeDescTarget.idxChain].cid;
     const strCommand =
         "node --no-warnings " +
         g_strFolderImaAgent + "/main.mjs" + g_strImaOutputOpts + g_strImaRuntimeOpts +
         " --browse-skale-network" +
         //
-        " --url-main-net=" + g_strMainNetURL + // URLs
+        " --url-main-net=" + g_strMainNetURL +
         " --url-s-chain=" + joNodeDesc.url +
         " --url-t-chain=" + joNodeDescTarget.url +
-        " --id-main-net=" + g_strMainnetName + // chain names
+        " --id-main-net=" + g_strMainnetName +
         " --id-s-chain=" + schain_name +
         " --id-t-chain=" + schain_name_target +
-        " --cid-main-net=" + cid_main_net + // chain IDs
-        " --cid-s-chain=" + schain_id +
-        " --cid-t-chain=" + schain_id_target +
+        " --cid-main-net=" + cid_main_net +
+        " --cid-s-chain=" + cid +
+        " --cid-t-chain=" + cid_target +
         " --abi-skale-manager=" + g_strSkaleManagerAbiJsonPath +
-        " --abi-main-net=" + g_strPathImaAbiMN + // ABIs
+        " --abi-main-net=" + g_strPathImaAbiMN +
         " --abi-s-chain=" + get_ima_abi_schain_path( joNodeDesc.idxChain ) +
         " " + compose_ima_cli_account_options_force_raw_private_keys( joNodeDesc.idxChain, joNodeDesc.idxNode ) +
         ""
@@ -4572,25 +4572,25 @@ async function ima_test_browse_connected_chain( idxChain, idxNode ) {
             cc.bright( "..." ) + "\n\n" );
     }
     const schain_name = g_arrChains[joNodeDesc.idxChain].name;
-    const schain_id = g_arrChains[joNodeDesc.idxChain].cid;
+    const cid = g_arrChains[joNodeDesc.idxChain].cid;
     const schain_name_target = g_arrChains[joNodeDescTarget.idxChain].name;
-    const schain_id_target = g_arrChains[joNodeDescTarget.idxChain].cid;
+    const cid_target = g_arrChains[joNodeDescTarget.idxChain].cid;
     const strCommand =
         "node --no-warnings " +
         g_strFolderImaAgent + "/main.mjs" + g_strImaOutputOpts + g_strImaRuntimeOpts +
         " --browse-connected-schains" +
         //
-        " --url-main-net=" + g_strMainNetURL + // URLs
+        " --url-main-net=" + g_strMainNetURL +
         " --url-s-chain=" + joNodeDesc.url +
         " --url-t-chain=" + joNodeDescTarget.url +
-        " --id-main-net=" + g_strMainnetName + // chain names
+        " --id-main-net=" + g_strMainnetName +
         " --id-s-chain=" + schain_name +
         " --id-t-chain=" + schain_name_target +
-        " --cid-main-net=" + cid_main_net + // chain IDs
-        " --cid-s-chain=" + schain_id +
-        " --cid-t-chain=" + schain_id_target +
+        " --cid-main-net=" + cid_main_net +
+        " --cid-s-chain=" + cid +
+        " --cid-t-chain=" + cid_target +
         " --abi-skale-manager=" + g_strSkaleManagerAbiJsonPath +
-        " --abi-main-net=" + g_strPathImaAbiMN + // ABIs
+        " --abi-main-net=" + g_strPathImaAbiMN +
         " --abi-s-chain=" + get_ima_abi_schain_path( joNodeDesc.idxChain ) +
         " " + compose_ima_cli_account_options_force_raw_private_keys( joNodeDesc.idxChain, joNodeDesc.idxNode ) +
         ""
@@ -4651,25 +4651,25 @@ async function ima_test_browse_s_chain( idxChain, idxNode ) {
             cc.bright( "..." ) + "\n\n" );
     }
     const schain_name = g_arrChains[joNodeDesc.idxChain].name;
-    const schain_id = g_arrChains[joNodeDesc.idxChain].cid;
+    const cid = g_arrChains[joNodeDesc.idxChain].cid;
     const schain_name_target = g_arrChains[joNodeDescTarget.idxChain].name;
-    const schain_id_target = g_arrChains[joNodeDescTarget.idxChain].cid;
+    const cid_target = g_arrChains[joNodeDescTarget.idxChain].cid;
     const strCommand =
         "node --no-warnings " +
         g_strFolderImaAgent + "/main.mjs" + g_strImaOutputOpts + g_strImaRuntimeOpts +
         " --browse-s-chain" +
         //
-        " --url-main-net=" + g_strMainNetURL + // URLs
+        " --url-main-net=" + g_strMainNetURL +
         " --url-s-chain=" + joNodeDesc.url +
         " --url-t-chain=" + joNodeDescTarget.url +
-        " --id-main-net=" + g_strMainnetName + // chain names
+        " --id-main-net=" + g_strMainnetName +
         " --id-s-chain=" + schain_name +
         " --id-t-chain=" + schain_name_target +
-        " --cid-main-net=" + cid_main_net + // chain IDs
-        " --cid-s-chain=" + schain_id +
-        " --cid-t-chain=" + schain_id_target +
+        " --cid-main-net=" + cid_main_net +
+        " --cid-s-chain=" + cid +
+        " --cid-t-chain=" + cid_target +
         " --abi-skale-manager=" + g_strSkaleManagerAbiJsonPath +
-        " --abi-main-net=" + g_strPathImaAbiMN + // ABIs
+        " --abi-main-net=" + g_strPathImaAbiMN +
         " --abi-s-chain=" + get_ima_abi_schain_path( joNodeDesc.idxChain ) +
         " " + compose_ima_cli_account_options_force_raw_private_keys( joNodeDesc.idxChain, joNodeDesc.idxNode ) +
         ""
@@ -4730,25 +4730,25 @@ async function ima_test_show_balance( idxChain, idxNode ) {
             cc.bright( "..." ) + "\n\n" );
     }
     const schain_name = g_arrChains[joNodeDesc.idxChain].name;
-    const schain_id = g_arrChains[joNodeDesc.idxChain].cid;
+    const cid = g_arrChains[joNodeDesc.idxChain].cid;
     const schain_name_target = g_arrChains[joNodeDescTarget.idxChain].name;
-    const schain_id_target = g_arrChains[joNodeDescTarget.idxChain].cid;
+    const cid_target = g_arrChains[joNodeDescTarget.idxChain].cid;
     const strCommand =
         "node --no-warnings " +
         g_strFolderImaAgent + "/main.mjs" + g_strImaOutputOpts + g_strImaRuntimeOpts +
         " --show-balance" +
         //
-        " --url-main-net=" + g_strMainNetURL + // URLs
+        " --url-main-net=" + g_strMainNetURL +
         " --url-s-chain=" + joNodeDesc.url +
         " --url-t-chain=" + joNodeDescTarget.url +
-        " --id-main-net=" + g_strMainnetName + // chain names
+        " --id-main-net=" + g_strMainnetName +
         " --id-s-chain=" + schain_name +
         " --id-t-chain=" + schain_name_target +
-        " --cid-main-net=" + cid_main_net + // chain IDs
-        " --cid-s-chain=" + schain_id +
-        " --cid-t-chain=" + schain_id_target +
+        " --cid-main-net=" + cid_main_net +
+        " --cid-s-chain=" + cid +
+        " --cid-t-chain=" + cid_target +
         " --abi-skale-manager=" + g_strSkaleManagerAbiJsonPath +
-        " --abi-main-net=" + g_strPathImaAbiMN + // ABIs
+        " --abi-main-net=" + g_strPathImaAbiMN +
         " --abi-s-chain=" + get_ima_abi_schain_path( joNodeDesc.idxChain ) +
         " " + compose_ima_cli_account_options_force_raw_private_keys( joNodeDesc.idxChain, joNodeDesc.idxNode ) +
         ""
@@ -6321,7 +6321,7 @@ function ima_register_schain( idxChain, fnContinue ) {
             cc.bright( "..." ) + "\n\n" );
     }
     const schain_name = g_arrChains[idxChain].name;
-    const schain_id = g_arrChains[idxChain].cid;
+    const cid = g_arrChains[idxChain].cid;
     const arrNodeDescriptions = g_arrChains[idxChain].arrNodeDescriptions;
     const nPreferredNodeIndex = 0;
     const joNodeDesc = arrNodeDescriptions[nPreferredNodeIndex];
@@ -6330,14 +6330,14 @@ function ima_register_schain( idxChain, fnContinue ) {
         "node --no-warnings " +
         g_strFolderImaAgent + "/main.mjs" + g_strImaOutputOpts + g_strImaRuntimeOpts +
         " --register" +
-        " --url-main-net=" + g_strMainNetURL + // URLs
+        " --url-main-net=" + g_strMainNetURL +
         " --url-s-chain=" + arrNodeDescriptions[0].url + // first skaled node URL
-        " --id-main-net=" + g_strMainnetName + // chain names
+        " --id-main-net=" + g_strMainnetName +
         " --id-s-chain=" + schain_name +
-        " --cid-main-net=" + cid_main_net + // chain IDs
-        " --cid-s-chain=" + schain_id +
+        " --cid-main-net=" + cid_main_net +
+        " --cid-s-chain=" + cid +
         " --abi-skale-manager=" + g_strSkaleManagerAbiJsonPath +
-        " --abi-main-net=" + g_strPathImaAbiMN + // ABIs
+        " --abi-main-net=" + g_strPathImaAbiMN +
         " --abi-s-chain=" + get_ima_abi_schain_path( idxChain ) +
         " " + compose_ima_cli_account_options_all_direct( joNodeDesc.idxChain, nNodeIndex ) // + compose_ima_cli_account_options( joNodeDesc.idxChain, nNodeIndex )
         ;
@@ -6382,7 +6382,7 @@ function ima_check_registration_schain( idxChain, fnContinue ) {
             cc.bright( "..." ) + "\n\n" );
     }
     const schain_name = g_arrChains[idxChain].name;
-    const schain_id = g_arrChains[idxChain].cid;
+    const cid = g_arrChains[idxChain].cid;
     const arrNodeDescriptions = g_arrChains[idxChain].arrNodeDescriptions;
     const nPreferredNodeIndex = 0;
     const joNodeDesc = arrNodeDescriptions[nPreferredNodeIndex];
@@ -6391,14 +6391,14 @@ function ima_check_registration_schain( idxChain, fnContinue ) {
         "node --no-warnings " +
         g_strFolderImaAgent + "/main.mjs" + g_strImaOutputOpts + g_strImaRuntimeOpts +
         " --check-registration" +
-        " --url-main-net=" + g_strMainNetURL + // URLs
+        " --url-main-net=" + g_strMainNetURL +
         " --url-s-chain=" + arrNodeDescriptions[0].url + // first skaled node URL
-        " --id-main-net=" + g_strMainnetName + // chain names
+        " --id-main-net=" + g_strMainnetName +
         " --id-s-chain=" + schain_name +
-        " --cid-main-net=" + cid_main_net + // chain IDs
-        " --cid-s-chain=" + schain_id +
+        " --cid-main-net=" + cid_main_net +
+        " --cid-s-chain=" + cid +
         " --abi-skale-manager=" + g_strSkaleManagerAbiJsonPath +
-        " --abi-main-net=" + g_strPathImaAbiMN + // ABIs
+        " --abi-main-net=" + g_strPathImaAbiMN +
         " --abi-s-chain=" + get_ima_abi_schain_path( idxChain ) +
         " " + compose_ima_cli_account_options( joNodeDesc.idxChain, nNodeIndex )
         ;
@@ -6589,7 +6589,7 @@ async function ima_send_eth( idxChain, strPrivateKeyFrom, strPrivateKeyTo, strDi
             );
         }
         const schain_name = g_arrChains[idxChain].name;
-        const schain_id = g_arrChains[idxChain].cid;
+        const cid = g_arrChains[idxChain].cid;
         const nNodeIndex = 0;
         const strCommandPayment =
             "node --no-warnings " +
@@ -6597,14 +6597,14 @@ async function ima_send_eth( idxChain, strPrivateKeyFrom, strPrivateKeyTo, strDi
             " --" + strDirection + "-payment" +
             " --value=" + moneySpec +
             // " --wei=" + parseMoneySpecToWei( g_w3_main_net, moneySpec, true )
-            " --url-main-net=" + joTransferOptions.urlMainNet + // URLs
+            " --url-main-net=" + joTransferOptions.urlMainNet +
             " --url-s-chain=" + joTransferOptions.urlSChain +
-            " --id-main-net=" + g_strMainnetName + // chain names
+            " --id-main-net=" + g_strMainnetName +
             " --id-s-chain=" + schain_name +
-            " --cid-main-net=" + cid_main_net + // chain IDs
-            " --cid-s-chain=" + schain_id +
+            " --cid-main-net=" + cid_main_net +
+            " --cid-s-chain=" + cid +
             " --abi-skale-manager=" + g_strSkaleManagerAbiJsonPath +
-            " --abi-main-net=" + g_strPathImaAbiMN + // ABIs
+            " --abi-main-net=" + g_strPathImaAbiMN +
             " --abi-s-chain=" + get_ima_abi_schain_path( idxChain ) +
             " " + compose_ima_cli_account_options_all_direct( idxChain, nNodeIndex ) // compose_ima_cli_account_options( idxChain, nNodeIndex )
             ;
@@ -6628,14 +6628,14 @@ async function ima_send_eth( idxChain, strPrivateKeyFrom, strPrivateKeyTo, strDi
                     "node --no-warnings " +
                     g_strFolderImaAgent + "/main.mjs" + g_strImaOutputOpts + g_strImaRuntimeOpts +
                     " --s2m-receive" +
-                    " --url-main-net=" + joTransferOptions.urlMainNet + // URLs
+                    " --url-main-net=" + joTransferOptions.urlMainNet +
                     " --url-s-chain=" + joTransferOptions.urlSChain +
-                    " --id-main-net=" + g_strMainnetName + // chain names
+                    " --id-main-net=" + g_strMainnetName +
                     " --id-s-chain=" + schain_name +
-                    " --cid-main-net=" + cid_main_net + // chain IDs
-                    " --cid-s-chain=" + schain_id +
+                    " --cid-main-net=" + cid_main_net +
+                    " --cid-s-chain=" + cid +
                     " --abi-skale-manager=" + g_strSkaleManagerAbiJsonPath +
-                    " --abi-main-net=" + g_strPathImaAbiMN + // ABIs
+                    " --abi-main-net=" + g_strPathImaAbiMN +
                     " --abi-s-chain=" + get_ima_abi_schain_path( idxChain ) +
                     " " + compose_ima_cli_account_options_all_direct( idxChain, nNodeIndex ) // compose_ima_cli_account_options( idxChain, nNodeIndex )
                     ;
@@ -6983,7 +6983,7 @@ async function enableAutomaticDeploy(
         isEnableAutomaticDeploy = isEnableAutomaticDeploy ? true : false;
     const arrNodeDescriptions = g_arrChains[idxChain].arrNodeDescriptions;
     const nPreferredNodeIndex = 0;
-    // const schain_id = g_arrChains[idxChain].cid;
+    // const cid = g_arrChains[idxChain].cid;
     const joNodeDesc = arrNodeDescriptions[nPreferredNodeIndex];
     const w3schain = getWeb3FromURL( joNodeDesc.url );
     //
@@ -7640,7 +7640,7 @@ async function ima_send_erc20_mn2sc( idxChain, strPrivateKeyFrom, strPrivateKeyT
     const amountToSend = ( amount == null || amount == undefined ) ? 100 : parseInt( amount );
     nPreferredNodeIndex = nPreferredNodeIndex || 0;
     const schain_name = g_arrChains[idxChain].name;
-    const schain_id = g_arrChains[idxChain].cid;
+    const cid = g_arrChains[idxChain].cid;
     const joNodeDesc = arrNodeDescriptions[nPreferredNodeIndex];
     const w3schain = getWeb3FromURL( joNodeDesc.url );
     const strAddressFrom = ensure_starts_with_0x( private_key_2_account_address( g_w3_main_net, strPrivateKeyFrom ) );
@@ -7678,16 +7678,16 @@ async function ima_send_erc20_mn2sc( idxChain, strPrivateKeyFrom, strPrivateKeyT
             " --m2s-payment" +
             " --amount=" + amountToSend +
             " --value=60finney" + // additional cost
-            " --url-main-net=" + g_strMainNetURL + // URLs
+            " --url-main-net=" + g_strMainNetURL +
             " --url-s-chain=" + joNodeDesc.url +
-            " --id-main-net=" + g_strMainnetName + // chain names
+            " --id-main-net=" + g_strMainnetName +
             " --id-s-chain=" + schain_name +
-            " --cid-main-net=" + cid_main_net + // chain IDs
-            " --cid-s-chain=" + schain_id +
+            " --cid-main-net=" + cid_main_net +
+            " --cid-s-chain=" + cid +
             " --abi-skale-manager=" + g_strSkaleManagerAbiJsonPath +
-            " --abi-main-net=" + g_strPathImaAbiMN + // ABIs
+            " --abi-main-net=" + g_strPathImaAbiMN +
             " --abi-s-chain=" + get_ima_abi_schain_path( idxChain ) +
-            // " --key-main-net=" + strPrivateKeyMN + // keys
+            // " --key-main-net=" + strPrivateKeyMN +
             // " --key-s-chain=" + strPrivateKeySC +
             " " + compose_ima_cli_account_options_all_direct( idxChain, nNodeIndex ) + // compose_ima_cli_account_options( idxChain, nNodeIndex ) +
             " --erc20-main-net=" + path.join( g_strFolderTestTokensData, "TestToken.ERC20.abi.mn.json" ) +
@@ -7792,7 +7792,7 @@ async function ima_send_erc20_sc2mn( idxChain, strPrivateKeyFrom, strPrivateKeyT
     const amountToSend = ( amount == null || amount == undefined ) ? 100 : parseInt( amount );
     nPreferredNodeIndex = nPreferredNodeIndex || 0;
     const schain_name = g_arrChains[idxChain].name;
-    const schain_id = g_arrChains[idxChain].cid;
+    const cid = g_arrChains[idxChain].cid;
     const joNodeDesc = arrNodeDescriptions[nPreferredNodeIndex];
     const w3schain = getWeb3FromURL( joNodeDesc.url );
     const strAddressFrom = ensure_starts_with_0x( private_key_2_account_address( g_w3_main_net, strPrivateKeyFrom ) );
@@ -7848,16 +7848,16 @@ async function ima_send_erc20_sc2mn( idxChain, strPrivateKeyFrom, strPrivateKeyT
             " --amount=" + amountToSend +
             " --value=60finney" + // additional cost
             " --sleep-between-tx=5000" +
-            " --url-main-net=" + g_strMainNetURL + // URLs
+            " --url-main-net=" + g_strMainNetURL +
             " --url-s-chain=" + joNodeDesc.url +
-            " --id-main-net=" + g_strMainnetName + // chain names
+            " --id-main-net=" + g_strMainnetName +
             " --id-s-chain=" + schain_name +
-            " --cid-main-net=" + cid_main_net + // chain IDs
-            " --cid-s-chain=" + schain_id +
+            " --cid-main-net=" + cid_main_net +
+            " --cid-s-chain=" + cid +
             " --abi-skale-manager=" + g_strSkaleManagerAbiJsonPath +
-            " --abi-main-net=" + g_strPathImaAbiMN + // ABIs
+            " --abi-main-net=" + g_strPathImaAbiMN +
             " --abi-s-chain=" + get_ima_abi_schain_path( idxChain ) +
-            // " --key-main-net=" + strPrivateKeyMN + // keys
+            // " --key-main-net=" + strPrivateKeyMN +
             // " --key-s-chain=" + strPrivateKeySC +
             " " + compose_ima_cli_account_options_all_direct( idxChain, nNodeIndex ) + // compose_ima_cli_account_options( idxChain, nNodeIndex ) +
             " --erc20-main-net=" + path.join( g_strFolderTestTokensData, "TestToken.ERC20.abi.mn.json" ) +
@@ -7954,7 +7954,7 @@ async function ima_send_erc721_mn2sc( idxChain, strPrivateKeyFrom, strPrivateKey
     const tokenIdToSend = ( tokenID == null || tokenID == undefined ) ? 100 : parseInt( tokenID );
     nPreferredNodeIndex = nPreferredNodeIndex || 0;
     const schain_name = g_arrChains[idxChain].name;
-    const schain_id = g_arrChains[idxChain].cid;
+    const cid = g_arrChains[idxChain].cid;
     const joNodeDesc = arrNodeDescriptions[nPreferredNodeIndex];
     const w3schain = getWeb3FromURL( joNodeDesc.url );
     const strAddressFrom = ensure_starts_with_0x( private_key_2_account_address( g_w3_main_net, strPrivateKeyFrom ) );
@@ -8015,16 +8015,16 @@ async function ima_send_erc721_mn2sc( idxChain, strPrivateKeyFrom, strPrivateKey
             " --tid=" + tokenIdToSend +
             ( isWithMetadata721 ? " --with-metadata" : "" ) +
             " --value=60finney" + // additional cost
-            " --url-main-net=" + g_strMainNetURL + // URLs
+            " --url-main-net=" + g_strMainNetURL +
             " --url-s-chain=" + joNodeDesc.url +
-            " --id-main-net=" + g_strMainnetName + // chain names
+            " --id-main-net=" + g_strMainnetName +
             " --id-s-chain=" + schain_name +
-            " --cid-main-net=" + cid_main_net + // chain IDs
-            " --cid-s-chain=" + schain_id +
+            " --cid-main-net=" + cid_main_net +
+            " --cid-s-chain=" + cid +
             " --abi-skale-manager=" + g_strSkaleManagerAbiJsonPath +
-            " --abi-main-net=" + g_strPathImaAbiMN + // ABIs
+            " --abi-main-net=" + g_strPathImaAbiMN +
             " --abi-s-chain=" + get_ima_abi_schain_path( idxChain ) +
-            // " --key-main-net=" + strPrivateKeyMN + // keys
+            // " --key-main-net=" + strPrivateKeyMN +
             // " --key-s-chain=" + strPrivateKeySC +
             " " + compose_ima_cli_account_options_all_direct( idxChain, nNodeIndex ) + // compose_ima_cli_account_options( idxChain, nNodeIndex ) +
             " --erc721-main-net=" + path.join( g_strFolderTestTokensData, isWithMetadata721 ? "TestToken.ERC721_with_metadata.abi.mn.json" : "TestToken.ERC721.abi.mn.json" ) +
@@ -8197,7 +8197,7 @@ async function ima_send_erc721_sc2mn( idxChain, strPrivateKeyFrom, strPrivateKey
     const tokenIdToSend = ( tokenID == null || tokenID == undefined ) ? 100 : parseInt( tokenID );
     nPreferredNodeIndex = nPreferredNodeIndex || 0;
     const schain_name = g_arrChains[idxChain].name;
-    const schain_id = g_arrChains[idxChain].cid;
+    const cid = g_arrChains[idxChain].cid;
     const joNodeDesc = arrNodeDescriptions[nPreferredNodeIndex];
     const w3schain = getWeb3FromURL( joNodeDesc.url );
     const strAddressFrom = ensure_starts_with_0x( private_key_2_account_address( g_w3_main_net, strPrivateKeyFrom ) );
@@ -8285,16 +8285,16 @@ async function ima_send_erc721_sc2mn( idxChain, strPrivateKeyFrom, strPrivateKey
             ( isWithMetadata721 ? " --with-metadata" : "" ) +
             " --value=60finney" + // additional cost
             " --sleep-between-tx=5000" +
-            " --url-main-net=" + g_strMainNetURL + // URLs
+            " --url-main-net=" + g_strMainNetURL +
             " --url-s-chain=" + joNodeDesc.url +
-            " --id-main-net=" + g_strMainnetName + // chain names
+            " --id-main-net=" + g_strMainnetName +
             " --id-s-chain=" + schain_name +
-            " --cid-main-net=" + cid_main_net + // chain IDs
-            " --cid-s-chain=" + schain_id +
+            " --cid-main-net=" + cid_main_net +
+            " --cid-s-chain=" + cid +
             " --abi-skale-manager=" + g_strSkaleManagerAbiJsonPath +
-            " --abi-main-net=" + g_strPathImaAbiMN + // ABIs
+            " --abi-main-net=" + g_strPathImaAbiMN +
             " --abi-s-chain=" + get_ima_abi_schain_path( idxChain ) +
-            // " --key-main-net=" + strPrivateKeyMN + // keys
+            // " --key-main-net=" + strPrivateKeyMN +
             // " --key-s-chain=" + strPrivateKeySC +
             " " + compose_ima_cli_account_options_all_direct( idxChain, nNodeIndex ) + // compose_ima_cli_account_options( idxChain, nNodeIndex ) +
             " --erc721-main-net=" + path.join( g_strFolderTestTokensData, isWithMetadata721 ? "TestToken.ERC721_with_metadata.abi.mn.json" : "TestToken.ERC721.abi.mn.json" ) +
@@ -8425,7 +8425,7 @@ async function ima_send_erc1155_mn2sc( idxChain, strPrivateKeyFrom, strPrivateKe
     const tokenIdToSend = ( tokenID == null || tokenID == undefined ) ? 100 : parseInt( tokenID );
     nPreferredNodeIndex = nPreferredNodeIndex || 0;
     const schain_name = g_arrChains[idxChain].name;
-    const schain_id = g_arrChains[idxChain].cid;
+    const cid = g_arrChains[idxChain].cid;
     const joNodeDesc = arrNodeDescriptions[nPreferredNodeIndex];
     const w3schain = getWeb3FromURL( joNodeDesc.url );
     const strAddressFrom = ensure_starts_with_0x( private_key_2_account_address( g_w3_main_net, strPrivateKeyFrom ) );
@@ -8474,16 +8474,16 @@ async function ima_send_erc1155_mn2sc( idxChain, strPrivateKeyFrom, strPrivateKe
             " --tid=" + tokenIdToSend +
             " --amount=" + nAmount +
             " --value=60finney" + // additional cost
-            " --url-main-net=" + g_strMainNetURL + // URLs
+            " --url-main-net=" + g_strMainNetURL +
             " --url-s-chain=" + joNodeDesc.url +
-            " --id-main-net=" + g_strMainnetName + // chain names
+            " --id-main-net=" + g_strMainnetName +
             " --id-s-chain=" + schain_name +
-            " --cid-main-net=" + cid_main_net + // chain IDs
-            " --cid-s-chain=" + schain_id +
+            " --cid-main-net=" + cid_main_net +
+            " --cid-s-chain=" + cid +
             " --abi-skale-manager=" + g_strSkaleManagerAbiJsonPath +
-            " --abi-main-net=" + g_strPathImaAbiMN + // ABIs
+            " --abi-main-net=" + g_strPathImaAbiMN +
             " --abi-s-chain=" + get_ima_abi_schain_path( idxChain ) +
-            // " --key-main-net=" + strPrivateKeyMN + // keys
+            // " --key-main-net=" + strPrivateKeyMN +
             // " --key-s-chain=" + strPrivateKeySC +
             " " + compose_ima_cli_account_options_all_direct( idxChain, nNodeIndex ) + // compose_ima_cli_account_options( idxChain, nNodeIndex ) +
             " --erc1155-main-net=" + path.join( g_strFolderTestTokensData, "TestToken.ERC1155.abi.mn.json" ) +
@@ -8589,7 +8589,7 @@ async function ima_send_erc1155_sc2mn( idxChain, strPrivateKeyFrom, strPrivateKe
     const tokenIdToSend = ( tokenID == null || tokenID == undefined ) ? 100 : parseInt( tokenID );
     nPreferredNodeIndex = nPreferredNodeIndex || 0;
     const schain_name = g_arrChains[idxChain].name;
-    const schain_id = g_arrChains[idxChain].cid;
+    const cid = g_arrChains[idxChain].cid;
     const joNodeDesc = arrNodeDescriptions[nPreferredNodeIndex];
     const w3schain = getWeb3FromURL( joNodeDesc.url );
     const strAddressFrom = ensure_starts_with_0x( private_key_2_account_address( g_w3_main_net, strPrivateKeyFrom ) );
@@ -8658,16 +8658,16 @@ async function ima_send_erc1155_sc2mn( idxChain, strPrivateKeyFrom, strPrivateKe
             " --amount=" + nAmount +
             " --value=60finney" + // additional cost
             " --sleep-between-tx=5000" +
-            " --url-main-net=" + g_strMainNetURL + // URLs
+            " --url-main-net=" + g_strMainNetURL +
             " --url-s-chain=" + joNodeDesc.url +
-            " --id-main-net=" + g_strMainnetName + // chain names
+            " --id-main-net=" + g_strMainnetName +
             " --id-s-chain=" + schain_name +
-            " --cid-main-net=" + cid_main_net + // chain IDs
-            " --cid-s-chain=" + schain_id +
+            " --cid-main-net=" + cid_main_net +
+            " --cid-s-chain=" + cid +
             " --abi-skale-manager=" + g_strSkaleManagerAbiJsonPath +
-            " --abi-main-net=" + g_strPathImaAbiMN + // ABIs
+            " --abi-main-net=" + g_strPathImaAbiMN +
             " --abi-s-chain=" + get_ima_abi_schain_path( idxChain ) +
-            // " --key-main-net=" + strPrivateKeyMN + // keys
+            // " --key-main-net=" + strPrivateKeyMN +
             // " --key-s-chain=" + strPrivateKeySC +
             " " + compose_ima_cli_account_options_all_direct( idxChain, nNodeIndex ) + // compose_ima_cli_account_options( idxChain, nNodeIndex ) +
             " --erc1155-main-net=" + path.join( g_strFolderTestTokensData, "TestToken.ERC1155.abi.mn.json" ) +
@@ -8771,7 +8771,7 @@ async function ima_batch_send_erc1155_mn2sc( idxChain, strPrivateKeyFrom, strPri
     const cntTokenIDs = arrTokenIDsToSend.length;
     nPreferredNodeIndex = nPreferredNodeIndex || 0;
     const schain_name = g_arrChains[idxChain].name;
-    const schain_id = g_arrChains[idxChain].cid;
+    const cid = g_arrChains[idxChain].cid;
     const joNodeDesc = arrNodeDescriptions[nPreferredNodeIndex];
     const w3schain = getWeb3FromURL( joNodeDesc.url );
     const strAddressFrom = ensure_starts_with_0x( private_key_2_account_address( g_w3_main_net, strPrivateKeyFrom ) );
@@ -8821,16 +8821,16 @@ async function ima_batch_send_erc1155_mn2sc( idxChain, strPrivateKeyFrom, strPri
             " --tids=\"" + replaceAll( JSON.stringify( arrTokenIDsToSend ), " ", "" ) + "\"" +
             " --amounts=\"" + replaceAll( JSON.stringify( arrAmounts ), " ", "" ) + "\"" +
             " --value=60finney" + // additional cost
-            " --url-main-net=" + g_strMainNetURL + // URLs
+            " --url-main-net=" + g_strMainNetURL +
             " --url-s-chain=" + joNodeDesc.url +
-            " --id-main-net=" + g_strMainnetName + // chain names
+            " --id-main-net=" + g_strMainnetName +
             " --id-s-chain=" + schain_name +
-            " --cid-main-net=" + cid_main_net + // chain IDs
-            " --cid-s-chain=" + schain_id +
+            " --cid-main-net=" + cid_main_net +
+            " --cid-s-chain=" + cid +
             " --abi-skale-manager=" + g_strSkaleManagerAbiJsonPath +
-            " --abi-main-net=" + g_strPathImaAbiMN + // ABIs
+            " --abi-main-net=" + g_strPathImaAbiMN +
             " --abi-s-chain=" + get_ima_abi_schain_path( idxChain ) +
-            // " --key-main-net=" + strPrivateKeyMN + // keys
+            // " --key-main-net=" + strPrivateKeyMN +
             // " --key-s-chain=" + strPrivateKeySC +
             " " + compose_ima_cli_account_options_all_direct( idxChain, nNodeIndex ) + // compose_ima_cli_account_options( idxChain, nNodeIndex ) +
             " --erc1155-main-net=" + path.join( g_strFolderTestTokensData, "TestToken.ERC1155.abi.mn.json" ) +
@@ -8936,7 +8936,7 @@ async function ima_batch_send_erc1155_sc2mn( idxChain, strPrivateKeyFrom, strPri
     const cntTokenIDs = arrTokenIDsToSend.length;
     nPreferredNodeIndex = nPreferredNodeIndex || 0;
     const schain_name = g_arrChains[idxChain].name;
-    const schain_id = g_arrChains[idxChain].cid;
+    const cid = g_arrChains[idxChain].cid;
     const joNodeDesc = arrNodeDescriptions[nPreferredNodeIndex];
     const w3schain = getWeb3FromURL( joNodeDesc.url );
     const strAddressFrom = ensure_starts_with_0x( private_key_2_account_address( g_w3_main_net, strPrivateKeyFrom ) );
@@ -9011,16 +9011,16 @@ async function ima_batch_send_erc1155_sc2mn( idxChain, strPrivateKeyFrom, strPri
             " --amounts=\"" + replaceAll( JSON.stringify( arrAmounts ), " ", "" ) + "\"" +
             " --value=60finney" + // additional cost
             " --sleep-between-tx=5000" +
-            " --url-main-net=" + g_strMainNetURL + // URLs
+            " --url-main-net=" + g_strMainNetURL +
             " --url-s-chain=" + joNodeDesc.url +
-            " --id-main-net=" + g_strMainnetName + // chain names
+            " --id-main-net=" + g_strMainnetName +
             " --id-s-chain=" + schain_name +
-            " --cid-main-net=" + cid_main_net + // chain IDs
-            " --cid-s-chain=" + schain_id +
+            " --cid-main-net=" + cid_main_net +
+            " --cid-s-chain=" + cid +
             " --abi-skale-manager=" + g_strSkaleManagerAbiJsonPath +
-            " --abi-main-net=" + g_strPathImaAbiMN + // ABIs
+            " --abi-main-net=" + g_strPathImaAbiMN +
             " --abi-s-chain=" + get_ima_abi_schain_path( idxChain ) +
-            // " --key-main-net=" + strPrivateKeyMN + // keys
+            // " --key-main-net=" + strPrivateKeyMN +
             // " --key-s-chain=" + strPrivateKeySC +
             " " + compose_ima_cli_account_options_all_direct( idxChain, nNodeIndex ) + // compose_ima_cli_account_options( idxChain, nNodeIndex ) +
             " --erc1155-main-net=" + path.join( g_strFolderTestTokensData, "TestToken.ERC1155.abi.mn.json" ) +
@@ -9840,7 +9840,7 @@ async function run_cross_chain_chat_test_m2s( idxChainDst ) {
     const arrNodeDescriptionsDst = g_arrChains[idxChainDst].arrNodeDescriptions;
     const nPreferredNodeIndexDst = 0;
     const schain_name_dst = g_arrChains[idxChainDst].name;
-    const schain_id_dst = g_arrChains[idxChainDst].cid;
+    const cid_dst = g_arrChains[idxChainDst].cid;
     const joNodeDescDst = arrNodeDescriptionsDst[nPreferredNodeIndexDst];
     const w3schain_dst = getWeb3FromURL( joNodeDescDst.url );
     init_account_from_private_key( w3schain_dst, g_strPrivateKeyImaSC );
@@ -9860,7 +9860,7 @@ async function run_cross_chain_chat_test_m2s( idxChainDst ) {
     const dst = {
         isMainNet: false,
         name: "" + schain_name_dst,
-        chainId: parseIntOrHex( schain_id_dst ),
+        chainId: parseIntOrHex( cid_dst ),
         w3: w3schain_dst,
         personName: "Bob",
         strPrivateKey: g_strPrivateKeyImaSC,
@@ -9883,8 +9883,8 @@ async function run_cross_chain_chat_test_s2s( idxChainSrc, idxChainDst, joAbiTes
     const nPreferredNodeIndexDst = 0;
     const schain_name_src = g_arrChains[idxChainSrc].name;
     const schain_name_dst = g_arrChains[idxChainDst].name;
-    const schain_id_src = g_arrChains[idxChainSrc].cid;
-    const schain_id_dst = g_arrChains[idxChainDst].cid;
+    const cid_src = g_arrChains[idxChainSrc].cid;
+    const cid_dst = g_arrChains[idxChainDst].cid;
     const joNodeDescSrc = arrNodeDescriptionsSrc[nPreferredNodeIndexSrc];
     const joNodeDescDst = arrNodeDescriptionsDst[nPreferredNodeIndexDst];
     const w3schain_src = getWeb3FromURL( joNodeDescSrc.url );
@@ -9896,7 +9896,7 @@ async function run_cross_chain_chat_test_s2s( idxChainSrc, idxChainDst, joAbiTes
     const src = {
         isMainNet: false,
         name: "" + schain_name_src,
-        chainId: parseIntOrHex( schain_id_src ),
+        chainId: parseIntOrHex( cid_src ),
         w3: w3schain_src,
         personName: "Olivia",
         strPrivateKey: g_strPrivateKeyImaSC,
@@ -9908,7 +9908,7 @@ async function run_cross_chain_chat_test_s2s( idxChainSrc, idxChainDst, joAbiTes
     const dst = {
         isMainNet: false,
         name: "" + schain_name_dst,
-        chainId: parseIntOrHex( schain_id_dst ),
+        chainId: parseIntOrHex( cid_dst ),
         w3: w3schain_dst,
         personName: "William",
         strPrivateKey: g_strPrivateKeyImaSC,
