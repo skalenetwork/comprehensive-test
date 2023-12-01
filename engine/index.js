@@ -603,6 +603,7 @@ if( strUbuntuVersion ) {
 //     public_key: "1ba2bfbd7f4c9251c4cd88ce31fbef66f0d6855a98fafff8fbfe3b6bcb37d26bdbf31adba8030b56264e4336824023badb4861cd15293b7d124168ddd15763aa"
 // },
 
+/*
 function compute_chain_id_from_schain_name( strName ) {
     let h = global.g_w3mod.utils.soliditySha3( strName );
     h = remove_starting_0x( h ).toLowerCase();
@@ -611,7 +612,6 @@ function compute_chain_id_from_schain_name( strName ) {
     h = h.substr( 0, 14 );
     return "0x" + h;
 }
-
 const g_arrChainNaming = [
     { name: "Bob1000", cid: compute_chain_id_from_schain_name( "Bob1000" ) }, // 0x975a4814cff8b9 / 975a4814cff8b9fd85b48879dade195028650b0a23f339ca81bd3b1231f72974
     { name: "Bob1001", cid: compute_chain_id_from_schain_name( "Bob1001" ) }, // 0xde9b5e1c7bac0a / de9b5e1c7bac0a60f917397dfab6ead3f6441acf0399ec81145568874dd829e9
@@ -622,6 +622,19 @@ const g_arrChainNaming = [
     { name: "Bob1006", cid: compute_chain_id_from_schain_name( "Bob1006" ) }, // 0xebd56b3f563b1e / ebd56b3f563b1e4401c8e39b7e24ece0bfee26066d1279995f21309fea144c29
     { name: "Bob1007", cid: compute_chain_id_from_schain_name( "Bob1007" ) } // 0xbfb3f7408e72d8 / bfb3f7408e72d883f4086cff38989e1868346f1580f966c7f0922b91123da57e
 ];
+*/
+
+const g_arrChainNaming = [
+    { name: "Bob1000", cid: 1000 },
+    { name: "Bob1001", cid: 1001 },
+    { name: "Bob1002", cid: 1002 },
+    { name: "Bob1003", cid: 1003 },
+    { name: "Bob1004", cid: 1004 },
+    { name: "Bob1005", cid: 1005 },
+    { name: "Bob1006", cid: 1006 },
+    { name: "Bob1007", cid: 1007 }
+];
+
 log.write( cc.debug( "Chain naming templates are: " ) + cc.j( g_arrChainNaming ) + "\n" );
 
 const g_cntSyncNodesPerChain = 1;
@@ -1158,8 +1171,7 @@ function prepare_for_ima_docker_mode_global_chains_array() {
 }
 
 function initNodeDescription( strURL, idxChain, idxNode, chainId, nodeID, strName ) {
-    // const schain_id = chainId;
-    const simpleNumber = 1000 + idxChain;
+    const simpleNumber = chainId; // 1000 + idxChain;
     const strFolderNodeSkaled = g_strFolderMultiNodeDeployment + "/chain_" + zeroPad( idxChain, 2 ) + "/node_" + zeroPad( idxNode, 2 );
     const dkgID = randomFixedInteger( 5 ) % 65000; // randomHexString( 32 * 2 );
     const joNodeDesc = {
@@ -1370,7 +1382,7 @@ function compose_node_runCmd4imaAgent( joNodeDesc ) {
         ) +
         //
         " --monitoring-port=" + nMonitoringPort4ImaAgent +
-        get_ima_network_browser_cli_opt( joNodeDesc.idxChain ) + " " +
+        get_ima_network_browser_cli_opt( joNodeDesc.idxChain ) +
         " --s2s-enable" +
         " --url-main-net=" + g_strMainNetURL + // URLs
         " --url-s-chain=" + joNodeDesc.url +
@@ -1922,7 +1934,7 @@ function generateRandomName() {
 //             , transfer_amount
 //             , data
 //         ).send( {
-//             chainId: cid_main_net
+//             chainId: parseIntOrHex( cid_main_net )
 //             , from: addressFrom
 //             , gas: 8000000
 //         } );
@@ -2022,7 +2034,7 @@ async function init_schain_types( w3, privateKey ) {
                 typeOfSChain.partOfNode
                 , typeOfSChain.numberOfNodes
             ).send( {
-                chainId: cid_main_net,
+                chainId: parseIntOrHex( cid_main_net ),
                 from: addressFrom,
                 gas: 8000000
             } );
@@ -2119,7 +2131,7 @@ async function createSChain( w3, lifetime, typeOfSchain, name, privateKey ) {
             , transfer_amount
             , data
         ).send( {
-            chainId: cid_main_net,
+            chainId: parseIntOrHex( cid_main_net ),
             from: addressFrom,
             gas: 8000000
         } );
@@ -2178,7 +2190,7 @@ async function getSChainNodeIndices( w3, strSChainName ) {
 //             , joCommonPublicKeyBLS.commonBLSPublicKey2
 //             , joCommonPublicKeyBLS.commonBLSPublicKey3
 //         ).send( {
-//             chainId: cid_main_net,
+//             chainId: parseIntOrHex( cid_main_net ),
 //             from: addressFrom,
 //             gas: 8000000
 //         } );
@@ -2190,8 +2202,7 @@ async function getSChainNodeIndices( w3, strSChainName ) {
 //////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 
 function init_schain_node_description( w3, joNodeDesc ) {
-    // const schain_id = g_arrChains[joNodeDesc.idxChain].cid;
-    const simpleNumber = 1000 + joNodeDesc.idxChain;
+    const simpleNumber = g_arrChains[joNodeDesc.idxChain].cid; // 1000 + joNodeDesc.idxChain;
     const nDefaultNameLength = 5;
     if( joNodeDesc.nameNode == null || joNodeDesc.nameNode == undefined || typeof joNodeDesc.nameNode != "string" || joNodeDesc.nameNode.length == 0 )
         joNodeDesc.nameNode = randomString( nDefaultNameLength );
@@ -2853,7 +2864,7 @@ async function send_dkg_broadcast( w3, joNodeDesc, privateKey ) {
                 , vvs // vv
                 , skcs // secretKeyContribution
             ).send( {
-                chainId: cid_main_net,
+                chainId: parseIntOrHex( cid_main_net ),
                 from: joNodeDesc.nodeAddress, // addressFrom
                 gas: 8000000
             } );
@@ -2955,7 +2966,7 @@ async function send_dkg_alright( idxChain, w3, nodeSerialIndex, nodeIndexAssigne
                 groupIndex
                 , joNodeDesc.idxSerialGlobal // nNodeIndex
             ).send( {
-                chainId: cid_main_net,
+                chainId: parseIntOrHex( cid_main_net ),
                 from: joNodeDesc.nodeAddress, // addressFrom
                 gas: 8000000
             } );
@@ -3859,7 +3870,7 @@ function get_ima_network_browser_data_json_path( idxChain ) {
 function get_ima_network_browser_cli_opt( idxChain ) {
     if( ! detect_ima_network_browser_path() )
         return "";
-    return "--network-browser-path=" + get_ima_network_browser_data_json_path( idxChain );
+    return " --network-browser-path=" + get_ima_network_browser_data_json_path( idxChain );
 }
 
 async function all_ima_network_browsers_start() {
@@ -4058,13 +4069,13 @@ async function ima_connect_two_schains( idxChainA, idxChainB, cntAttempts ) {
     const joNodeDesc = arrNodeDescriptions[nPreferredNodeIndex];
     const w3schain = getWeb3FromURL( joNodeDesc.url );
     const addressFrom = private_key_2_account_address( w3schain, g_strPrivateKeyImaSC );
-    const schain_id = g_arrChains[idxChainB].cid;
+    const cid = parseIntOrHex( g_arrChains[idxChainB].cid );
     let bSuccess = false;
     for( let idxAttempt = 0; idxAttempt < cntAttempts; ++ idxAttempt ) {
         try {
             if( g_bVerbose ) {
                 log.write( cc.debug( "Performing attempt " ) + cc.info( idxAttempt + 1 ) + cc.debug( " of " ) + cc.info( cntAttempts ) + cc.debug( "..." ) + "\n" );
-                log.write( strDescB + cc.debug( " chain ID is " ) + cc.info( schain_id ) + "\n" );
+                log.write( strDescB + cc.debug( " chain ID is " ) + cc.info( cid ) + "\n" );
                 log.write( cc.debug( "Private key is " ) + cc.info( g_strPrivateKeyImaSC ) + "\n" );
                 log.write( cc.debug( "Address is " ) + cc.info( addressFrom ) + "\n" );
             }
@@ -4073,7 +4084,7 @@ async function ima_connect_two_schains( idxChainA, idxChainB, cntAttempts ) {
             const jo_message_proxy_s_chain = new w3schain.eth.Contract( joImaAbiSC.message_proxy_chain_abi, joImaAbiSC.message_proxy_chain_address );
             // await role_check_and_grant( // CHAIN_CONNECTOR_ROLE
             //     w3schain,
-            //     schain_id,
+            //     cid,
             //     g_strPrivateKeyImaSC,
             //     jo_message_proxy_s_chain,
             //     "CHAIN_CONNECTOR_ROLE",
@@ -4082,7 +4093,7 @@ async function ima_connect_two_schains( idxChainA, idxChainB, cntAttempts ) {
             // const res = await jo_message_proxy_s_chain.methods.addConnectedChain(
             //     schain_name_A
             // ).send( {
-            //     chainId: schain_id,
+            //     chainId: parseIntOrHex( cid ),
             //     from: addressFrom,
             //     gas: 8000000
             // } );
@@ -4097,7 +4108,7 @@ async function ima_connect_two_schains( idxChainA, idxChainB, cntAttempts ) {
             );
             await role_check_and_grant( // REGISTRAR_ROLE
                 w3schain,
-                schain_id,
+                cid,
                 g_strPrivateKeyImaSC,
                 jo_token_manager_linker,
                 "REGISTRAR_ROLE",
@@ -4106,7 +4117,7 @@ async function ima_connect_two_schains( idxChainA, idxChainB, cntAttempts ) {
             const res = await jo_token_manager_linker.methods.connectSchain(
                 schain_name_A
             ).send( {
-                chainId: schain_id,
+                chainId: parseIntOrHex( cid ),
                 from: addressFrom,
                 gas: 8000000
             } );
@@ -5012,7 +5023,7 @@ async function sm_pre_configure( w3, fnContinue ) {
             jo_constants_holder.methods.setMSR( // MSR - Minimum Staking Requirement
                 nMSR
             ).send( {
-                chainId: cid_main_net,
+                chainId: parseIntOrHex( cid_main_net ),
                 from: validator,
                 gas: 8000000
             } );
@@ -5079,7 +5090,7 @@ async function sm_init_validator( w3, fnContinue ) {
                         , 0 + nValidatorFeeRate
                         , 0 + nValidatorMinimumDelegationAmount
                     ).send( {
-                        chainId: cid_main_net,
+                        chainId: parseIntOrHex( cid_main_net ),
                         from: validator,
                         gas: 8000000,
                         gasLimit: 8000000,
@@ -5126,7 +5137,7 @@ async function sm_init_validator( w3, fnContinue ) {
                 validator
                 , valueAmount
             ).send( {
-                chainId: cid_main_net,
+                chainId: parseIntOrHex( cid_main_net ),
                 from: owner,
                 gas: 8000000
             } );
@@ -5146,7 +5157,7 @@ async function sm_init_validator( w3, fnContinue ) {
             await jo_validator_service.methods.enableValidator(
                 g_validatorID
             ).send( {
-                chainId: cid_main_net,
+                chainId: parseIntOrHex( cid_main_net ),
                 from: owner,
                 gas: 8000000
             } );
@@ -5172,12 +5183,12 @@ async function sm_init_validator( w3, fnContinue ) {
 //             cc.debug( "..." ) + "\n" );
 //     }
 //     const role = await jo_contract.methods[strRoleName]().call( {
-//         chainId: cid,
+//         chainId: parseIntOrHex( cid ),
 //         from: addressOwner,
 //         gas: 8000000
 //     } );
 //     const has_role = await jo_contract.methods.hasRole( role, addressTo ).call( {
-//         chainId: cid,
+//         chainId: parseIntOrHex( cid ),
 //         from: addressOwner,
 //         gas: 8000000
 //     } );
@@ -5209,7 +5220,7 @@ async function payed_invoke_method(
     const tcnt = await w3.eth.getTransactionCount( strAddressFrom, null );
     log.write( cc.debug( "Got " ) + cc.info( tcnt ) + cc.debug( " as current transaction count" ) + "\n" );
     const rawTx = {
-        chainId: cid,
+        chainId: parseIntOrHex( cid ),
         nonce: tcnt,
         gasPrice: gasPrice,
         gasLimit: gas,
@@ -5239,7 +5250,7 @@ async function role_check_and_grant( w3, cid, strPrivateKeyFrom, jo_contract, st
             cc.debug( "..." ) + "\n" );
     }
     const role = await jo_contract.methods[strRoleName]().call( {
-        chainId: cid,
+        chainId: parseIntOrHex( cid ),
         from: addressSendTxFrom,
         gas: 8000000
     } );
@@ -5249,7 +5260,7 @@ async function role_check_and_grant( w3, cid, strPrivateKeyFrom, jo_contract, st
             cc.debug( "..." ) + "\n" );
     }
     let has_role = await jo_contract.methods.hasRole( role, addressTo ).call( {
-        chainId: cid,
+        chainId: parseIntOrHex( cid ),
         from: addressSendTxFrom,
         gas: 8000000
     } );
@@ -5273,7 +5284,7 @@ async function role_check_and_grant( w3, cid, strPrivateKeyFrom, jo_contract, st
         }
 
         // await jo_contract.methods.grantRole( role, addressTo ).send( {
-        //     chainId: cid,
+        //     chainId: parseIntOrHex( cid ),
         //     from: addressSendTxFrom,
         //     gas: 8000000
         // } );
@@ -5289,7 +5300,7 @@ async function role_check_and_grant( w3, cid, strPrivateKeyFrom, jo_contract, st
         );
 
         has_role = await jo_contract.methods.hasRole( role, addressTo ).call( {
-            chainId: cid,
+            chainId: parseIntOrHex( cid ),
             from: addressSendTxFrom,
             gas: 8000000
         } );
@@ -5358,7 +5369,7 @@ async function sm_init_node_address( idxChain, w3, idxNode ) {
                 nodeAddress,
                 signature
             ).send( {
-                chainId: cid_main_net,
+                chainId: parseIntOrHex( cid_main_net ),
                 from: validator,
                 gas: 8000000
             } );
@@ -5552,7 +5563,7 @@ async function sm_createNode( w3, joNodeDesc ) {
                 nodeName, // string calldata name
                 "test.domain.name.here" // string calldata domainName
             ).send( {
-                chainId: cid_main_net,
+                chainId: parseIntOrHex( cid_main_net ),
                 from: nodeAddress, // validator // nodeAddress
                 gas: 8000000
             } );
@@ -5672,7 +5683,7 @@ async function node_set_maintenance( joNodeDesc, isOn, countOfAttempts ) {
             await met(
                 joNodeDesc.idxSerialGlobal
             ).send( {
-                chainId: cid_main_net,
+                chainId: parseIntOrHex( cid_main_net ),
                 from: addressFrom,
                 gas: 8000000
             } );
@@ -5816,7 +5827,7 @@ async function init_sgx_sm_dkg_schain( idxChain, fnContinue ) {
     await jo_wallets.methods.rechargeSchainWallet(
         g_w3_main_net.utils.soliditySha3( g_arrChains[idxChain].name )
     ).send( {
-        chainId: cid_main_net,
+        chainId: parseIntOrHex( cid_main_net ),
         from: addressFrom,
         gas: 8000000,
         value: "0x" + g_w3_main_net.utils.toBN( valueToSend ).toString( 16 )
@@ -6998,9 +7009,9 @@ async function enableAutomaticDeploy(
     log.write( cc.debug( "Using " ) + cc.info( "address" ) + " " + cc.warn( strAddressFrom ) + "\n" );
     const tcnt = await w3schain.eth.getTransactionCount( strAddressFrom, null );
     log.write( cc.debug( "Got " ) + cc.info( tcnt ) + cc.debug( " as current transaction count" ) + "\n" );
-    const schain_id = g_arrChains[idxChain].cid;
+    const cid = g_arrChains[idxChain].cid;
     const rawTx = {
-        chainId: schain_id,
+        chainId: parseIntOrHex( cid ),
         nonce: tcnt,
         gasPrice: gasPrice,
         gasLimit: 3000000,
@@ -7060,7 +7071,7 @@ async function enableWhitelist(
     const tcnt = await g_w3_main_net.eth.getTransactionCount( strAddressFrom, null );
     log.write( cc.debug( "Got " ) + cc.info( tcnt ) + cc.debug( " as current transaction count" ) + "\n" );
     const rawTx = {
-        chainId: cid_main_net,
+        chainId: parseIntOrHex( cid_main_net ),
         nonce: tcnt,
         gasPrice: gasPrice,
         gasLimit: 3000000,
@@ -7103,7 +7114,7 @@ async function doAddERC20TokenByOwnerMN( strPrivateKeyFrom, strSChainName, strCo
     const tcnt = await g_w3_main_net.eth.getTransactionCount( strAddressFrom, null );
     log.write( cc.debug( "Got " ) + cc.info( tcnt ) + cc.debug( " as current transaction count" ) + "\n" );
     const rawTx = {
-        chainId: cid_main_net,
+        chainId: parseIntOrHex( cid_main_net ),
         nonce: tcnt,
         gasPrice: gasPrice,
         gasLimit: 3000000,
@@ -7149,7 +7160,7 @@ async function doAddERC721TokenByOwnerMN( strPrivateKeyFrom, strSChainName, strC
     const tcnt = await g_w3_main_net.eth.getTransactionCount( strAddressFrom, null );
     log.write( cc.debug( "Got " ) + cc.info( tcnt ) + cc.debug( " as current transaction count" ) + "\n" );
     const rawTx = {
-        chainId: cid_main_net,
+        chainId: parseIntOrHex( cid_main_net ),
         nonce: tcnt,
         gasPrice: gasPrice,
         gasLimit: 3000000,
@@ -7191,7 +7202,7 @@ async function doAddERC1155TokenByOwnerMN( strPrivateKeyFrom, strSChainName, str
     const tcnt = await g_w3_main_net.eth.getTransactionCount( strAddressFrom, null );
     log.write( cc.debug( "Got " ) + cc.info( tcnt ) + cc.debug( " as current transaction count" ) + "\n" );
     const rawTx = {
-        chainId: cid_main_net,
+        chainId: parseIntOrHex( cid_main_net ),
         nonce: tcnt,
         gasPrice: gasPrice,
         gasLimit: 3000000,
@@ -7238,9 +7249,9 @@ async function doAddERC20TokenByOwnerSC( idxChain, strPrivateKeyFrom, strOpposit
     log.write( cc.debug( "Using " ) + cc.info( "address" ) + " " + cc.warn( strAddressFrom ) + "\n" );
     const tcnt = await w3schain.eth.getTransactionCount( strAddressFrom, null );
     log.write( cc.debug( "Got " ) + cc.info( tcnt ) + cc.debug( " as current transaction count" ) + "\n" );
-    const schain_id = g_arrChains[idxChain].cid;
+    const cid = g_arrChains[idxChain].cid;
     const rawTx = {
-        chainId: schain_id,
+        chainId: parseIntOrHex( cid ),
         nonce: tcnt,
         gasPrice: gasPrice,
         gasLimit: 3000000,
@@ -7292,9 +7303,9 @@ async function doAddERC721TokenByOwnerSC( idxChain, strPrivateKeyFrom, strOpposi
     log.write( cc.debug( "Using " ) + cc.info( "address" ) + " " + cc.warn( strAddressFrom ) + "\n" );
     const tcnt = await w3schain.eth.getTransactionCount( strAddressFrom, null );
     log.write( cc.debug( "Got " ) + cc.info( tcnt ) + cc.debug( " as current transaction count" ) + "\n" );
-    const schain_id = g_arrChains[idxChain].cid;
+    const cid = g_arrChains[idxChain].cid;
     const rawTx = {
-        chainId: schain_id,
+        chainId: parseIntOrHex( cid ),
         nonce: tcnt,
         gasPrice: gasPrice,
         gasLimit: 3000000,
@@ -7342,9 +7353,9 @@ async function doAddERC1155TokenByOwnerSC( idxChain, strPrivateKeyFrom, strOppos
     log.write( cc.debug( "Using " ) + cc.info( "address" ) + " " + cc.warn( strAddressFrom ) + "\n" );
     const tcnt = await w3schain.eth.getTransactionCount( strAddressFrom, null );
     log.write( cc.debug( "Got " ) + cc.info( tcnt ) + cc.debug( " as current transaction count" ) + "\n" );
-    const schain_id = g_arrChains[idxChain].cid;
+    const cid = g_arrChains[idxChain].cid;
     const rawTx = {
-        chainId: schain_id,
+        chainId: parseIntOrHex( cid ),
         nonce: tcnt,
         gasPrice: gasPrice,
         gasLimit: 3000000,
@@ -7382,7 +7393,7 @@ async function mintERC20( w3, cid, chainName, contractERC20, strPrivateKeyFrom, 
     const tcnt = await w3.eth.getTransactionCount( strAddressFrom, null );
     log.write( cc.debug( "Got " ) + cc.info( tcnt ) + cc.debug( " as current transaction count" ) + "\n" );
     const rawTx = {
-        chainId: cid,
+        chainId: parseIntOrHex( cid ),
         nonce: tcnt,
         gasPrice: gasPrice,
         gasLimit: 3000000,
@@ -7418,7 +7429,7 @@ async function mintERC721( w3, cid, chainName, contractERC721, strPrivateKeyFrom
     let tcnt = await w3.eth.getTransactionCount( strAddressFrom, null );
     log.write( cc.debug( "Got " ) + cc.info( tcnt ) + cc.debug( " as current transaction count" ) + "\n" );
     let rawTx = {
-        chainId: cid,
+        chainId: parseIntOrHex( cid ),
         nonce: tcnt,
         gasPrice: gasPrice,
         gasLimit: 3000000,
@@ -7457,7 +7468,7 @@ async function mintERC721( w3, cid, chainName, contractERC721, strPrivateKeyFrom
     tcnt = await w3.eth.getTransactionCount( strAddressFrom, null );
     log.write( cc.debug( "Got " ) + cc.info( tcnt ) + cc.debug( " as current transaction count" ) + "\n" );
     rawTx = {
-        chainId: cid,
+        chainId: parseIntOrHex( cid ),
         nonce: tcnt,
         gasPrice: gasPrice,
         gasLimit: 3000000,
@@ -7499,7 +7510,7 @@ async function mintERC1155( w3, cid, chainName, contractERC1155, strPrivateKeyFr
     const tcnt = await w3.eth.getTransactionCount( strAddressFrom, null );
     log.write( cc.debug( "Got " ) + cc.info( tcnt ) + cc.debug( " as current transaction count" ) + "\n" );
     const rawTx = {
-        chainId: cid,
+        chainId: parseIntOrHex( cid ),
         nonce: tcnt,
         gasPrice: gasPrice,
         gasLimit: 3000000,
@@ -9208,7 +9219,7 @@ async function s2s_prepare_chains_for_token_transfers( idxChainSrc, idxChainDst,
 //         const methodWithArguments_connect = jo_token_manager_linker_B.methods.connectSchain( chainName_A );
 //         const dataTx = methodWithArguments_connect.encodeABI();
 //         const rawTx = {
-//             chainId: chainID_B,
+//             chainId: parseIntOrHex( chainID_B ),
 //             from: addr,
 //             nonce: "0x" + tcnt.toString( 16 ),
 //             data: dataTx,
@@ -9793,7 +9804,7 @@ async function execute_send_on_method_with_arguments( w3, cid, privateKey, metho
             const strAddressFrom = private_key_2_account_address( w3, privateKey );
             const tcnt = await get_web3_transactionCount( 10, w3, strAddressFrom, null );
             const rawTx = {
-                chainId: cid,
+                chainId: parseIntOrHex( cid ),
                 nonce: tcnt,
                 gasPrice: gasPrice || 10000000000,
                 gasLimit: gasLimit || 8000000,
@@ -9837,7 +9848,7 @@ async function run_cross_chain_chat_test_m2s( idxChainDst ) {
     const src = {
         isMainNet: true,
         name: "" + g_strMainnetName,
-        chainId: cid_main_net,
+        chainId: parseIntOrHex( cid_main_net ),
         w3: g_w3_main_net,
         personName: "Alice",
         strPrivateKey: g_strPrivateKeyImaMN,
@@ -9849,7 +9860,7 @@ async function run_cross_chain_chat_test_m2s( idxChainDst ) {
     const dst = {
         isMainNet: false,
         name: "" + schain_name_dst,
-        chainId: schain_id_dst,
+        chainId: parseIntOrHex( schain_id_dst ),
         w3: w3schain_dst,
         personName: "Bob",
         strPrivateKey: g_strPrivateKeyImaSC,
@@ -9885,7 +9896,7 @@ async function run_cross_chain_chat_test_s2s( idxChainSrc, idxChainDst, joAbiTes
     const src = {
         isMainNet: false,
         name: "" + schain_name_src,
-        chainId: schain_id_src,
+        chainId: parseIntOrHex( schain_id_src ),
         w3: w3schain_src,
         personName: "Olivia",
         strPrivateKey: g_strPrivateKeyImaSC,
@@ -9897,7 +9908,7 @@ async function run_cross_chain_chat_test_s2s( idxChainSrc, idxChainDst, joAbiTes
     const dst = {
         isMainNet: false,
         name: "" + schain_name_dst,
-        chainId: schain_id_dst,
+        chainId: parseIntOrHex( schain_id_dst ),
         w3: w3schain_dst,
         personName: "William",
         strPrivateKey: g_strPrivateKeyImaSC,
