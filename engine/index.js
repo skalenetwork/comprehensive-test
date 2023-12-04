@@ -3607,6 +3607,8 @@ function ima_prepare_docker_shares_node( idxChain, idxNode ) {
         "SGX_SSL_KEY_PATH=/tmp/k.key" + "\n" +
         "SGX_SSL_CERT_PATH=/tmp/client.crt" + "\n" +
         "NODE_ADDRESS=" + joNodeDesc.nodeAddress + "\n" + // + joNodeDesc.checkedNodeAddress + "\n" +
+        "IMA_NETWORK_BROWSER_DATA_PATH=/tmp/network-browser.json" + "\n" + 
+        "MULTICALL=false" + "\n" + 
         "\n";
     const strPathOfEnvFile = strImaDockerDataFolder + "/env.file";
     if( g_bVerbose ) {
