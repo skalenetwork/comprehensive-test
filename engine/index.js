@@ -546,7 +546,17 @@ if( g_bVerbose ) {
     log.write( cc.normal( "Assuming " ) + cc.sunny( "IMA Contracts" ) + cc.normal( " repo is " ) + cc.info( g_strFolderRepoImaContracts ) + "\n" );
 }
 const g_strFolderImaProxy = "" + g_strFolderRepoImaContracts + "/proxy";
-const g_strFolderImaAgent = "" + g_strFolderRepoImaAgent + ( g_bSeparatedImaAgentMode ? "/src" : "/agent" );
+let g_strFolderImaAgent = "" + g_strFolderRepoImaAgent + ( g_bSeparatedImaAgentMode ? "/src" : "/agent" );
+let g_strImaJsExt = ".mjs";
+let g_isImaAgentTypeScriptBased = false;
+if( dirExists( g_strFolderImaAgent + "/build" ) ) {
+    g_isImaAgentTypeScriptBased = true;
+    g_strFolderImaAgent += "/build";
+    g_strImaJsExt = ".js";
+}
+if( g_bVerbose ) {
+    log.write( cc.normal( "Assuming " ) + cc.sunny( "IMA Agent" ) + cc.normal( " is based on " ) + cc.info( g_isImaAgentTypeScriptBased ? "TypeScript" : "JavaScript" ) + "\n" );
+}
 // IMA ABI files
 const g_strPathImaAbiMN = g_strFolderImaProxy + "/data/proxyMainnet.json";
 
@@ -1373,7 +1383,7 @@ function compose_node_runCmd4imaAgent( joNodeDesc ) {
     //
     joNodeDesc.runCmd4imaAgent =
         "node --no-warnings " +
-        g_strFolderImaAgent + "/main.mjs" + g_strImaOutputOpts + g_strImaRuntimeOpts +
+        g_strFolderImaAgent + "/main" + g_strImaJsExt + g_strImaOutputOpts + g_strImaRuntimeOpts +
         " --loop" + // " " + ( g_isCloudMode ? "--simple-loop" : "--loop" ) +
         //
         ( g_bDisableNewCrossImaRPC
@@ -4200,7 +4210,7 @@ async function schain_ima_gas_reimbursement_configure_zero_timeout( idxChain, fn
     const nNodeIndex = 0;
     const strCommand =
         "node --no-warnings " +
-        g_strFolderImaAgent + "/main.mjs" + g_strImaOutputOpts + g_strImaRuntimeOpts +
+        g_strFolderImaAgent + "/main" + g_strImaJsExt + g_strImaOutputOpts + g_strImaRuntimeOpts +
         " --reimbursement-range=0" +
         " --url-main-net=" + g_strMainNetURL +
         " --url-s-chain=" + arrNodeDescriptions[0].url + // first skaled node URL
@@ -4263,7 +4273,7 @@ async function schain_ima_gas_reimbursement_show( idxChain, fnContinue ) {
     const nNodeIndex = 0;
     const strCommand =
         "node --no-warnings " +
-        g_strFolderImaAgent + "/main.mjs" + g_strImaOutputOpts + g_strImaRuntimeOpts +
+        g_strFolderImaAgent + "/main" + g_strImaJsExt + g_strImaOutputOpts + g_strImaRuntimeOpts +
         " --reimbursement-chain=" + schain_name + " --reimbursement-balance" +
         " --url-main-net=" + g_strMainNetURL +
         " --url-s-chain=" + arrNodeDescriptions[0].url + // first skaled node URL
@@ -4325,7 +4335,7 @@ async function schain_ima_gas_reimbursement_recharge( idxChain, fnContinue ) {
     const nNodeIndex = 0;
     const strCommand =
         "node --no-warnings " +
-        g_strFolderImaAgent + "/main.mjs" + g_strImaOutputOpts + g_strImaRuntimeOpts +
+        g_strFolderImaAgent + "/main" + g_strImaJsExt + g_strImaOutputOpts + g_strImaRuntimeOpts +
         " --reimbursement-chain=" + schain_name + " --reimbursement-recharge=1000eth" +
         " --url-main-net=" + g_strMainNetURL +
         " --url-s-chain=" + arrNodeDescriptions[0].url + // first skaled node URL
@@ -4421,7 +4431,7 @@ async function ima_test_browse_skale_network( idxChain, idxNode ) {
     const cid_target = g_arrChains[joNodeDescTarget.idxChain].cid;
     const strCommand =
         "node --no-warnings " +
-        g_strFolderImaAgent + "/main.mjs" + g_strImaOutputOpts + g_strImaRuntimeOpts +
+        g_strFolderImaAgent + "/main" + g_strImaJsExt + g_strImaOutputOpts + g_strImaRuntimeOpts +
         " --browse-skale-network" +
         //
         " --url-main-net=" + g_strMainNetURL +
@@ -4500,7 +4510,7 @@ async function ima_test_browse_connected_chain( idxChain, idxNode ) {
     const cid_target = g_arrChains[joNodeDescTarget.idxChain].cid;
     const strCommand =
         "node --no-warnings " +
-        g_strFolderImaAgent + "/main.mjs" + g_strImaOutputOpts + g_strImaRuntimeOpts +
+        g_strFolderImaAgent + "/main" + g_strImaJsExt + g_strImaOutputOpts + g_strImaRuntimeOpts +
         " --browse-connected-schains" +
         //
         " --url-main-net=" + g_strMainNetURL +
@@ -4579,7 +4589,7 @@ async function ima_test_browse_s_chain( idxChain, idxNode ) {
     const cid_target = g_arrChains[joNodeDescTarget.idxChain].cid;
     const strCommand =
         "node --no-warnings " +
-        g_strFolderImaAgent + "/main.mjs" + g_strImaOutputOpts + g_strImaRuntimeOpts +
+        g_strFolderImaAgent + "/main" + g_strImaJsExt + g_strImaOutputOpts + g_strImaRuntimeOpts +
         " --browse-s-chain" +
         //
         " --url-main-net=" + g_strMainNetURL +
@@ -4658,7 +4668,7 @@ async function ima_test_show_balance( idxChain, idxNode ) {
     const cid_target = g_arrChains[joNodeDescTarget.idxChain].cid;
     const strCommand =
         "node --no-warnings " +
-        g_strFolderImaAgent + "/main.mjs" + g_strImaOutputOpts + g_strImaRuntimeOpts +
+        g_strFolderImaAgent + "/main" + g_strImaJsExt + g_strImaOutputOpts + g_strImaRuntimeOpts +
         " --show-balance" +
         //
         " --url-main-net=" + g_strMainNetURL +
@@ -6024,12 +6034,12 @@ async function redeploy_ima_to_schain_one( idxChain, fnContinue ) {
     //
     // const arrCommands_check_IMA_alive = [
     //     "node --no-warnings " +
-    //     g_strFolderImaAgent + "/main.mjs" + g_strImaOutputOpts + g_strImaRuntimeOpts +
+    //     g_strFolderImaAgent + "/main" + g_strImaJsExt + g_strImaOutputOpts + g_strImaRuntimeOpts +
     //     " --browse-s-chain" +
     //     " --url-s-chain=" + arrNodeDescriptions[0].url // skaled node URL for node 00
     //     ,
     //     "node --no-warnings " +
-    //     g_strFolderImaAgent + "/main.mjs" + g_strImaOutputOpts + g_strImaRuntimeOpts +
+    //     g_strFolderImaAgent + "/main" + g_strImaJsExt + g_strImaOutputOpts + g_strImaRuntimeOpts +
     //     " --browse-s-chain" +
     //     " --url-s-chain=" + arrNodeDescriptions[1].url // skaled node URL for node 01
     // ];
@@ -6251,7 +6261,7 @@ function ima_register_schain( idxChain, fnContinue ) {
     const nNodeIndex = 0;
     const strCommand =
         "node --no-warnings " +
-        g_strFolderImaAgent + "/main.mjs" + g_strImaOutputOpts + g_strImaRuntimeOpts +
+        g_strFolderImaAgent + "/main" + g_strImaJsExt + g_strImaOutputOpts + g_strImaRuntimeOpts +
         " --register" +
         " --url-main-net=" + g_strMainNetURL +
         " --url-s-chain=" + arrNodeDescriptions[0].url + // first skaled node URL
@@ -6312,7 +6322,7 @@ function ima_check_registration_schain( idxChain, fnContinue ) {
     const nNodeIndex = 0;
     const strCommand =
         "node --no-warnings " +
-        g_strFolderImaAgent + "/main.mjs" + g_strImaOutputOpts + g_strImaRuntimeOpts +
+        g_strFolderImaAgent + "/main" + g_strImaJsExt + g_strImaOutputOpts + g_strImaRuntimeOpts +
         " --check-registration" +
         " --url-main-net=" + g_strMainNetURL +
         " --url-s-chain=" + arrNodeDescriptions[0].url + // first skaled node URL
@@ -6516,7 +6526,7 @@ async function ima_send_eth( idxChain, strPrivateKeyFrom, strPrivateKeyTo, strDi
         const nNodeIndex = 0;
         const strCommandPayment =
             "node --no-warnings " +
-            g_strFolderImaAgent + "/main.mjs" + g_strImaOutputOpts + g_strImaRuntimeOpts +
+            g_strFolderImaAgent + "/main" + g_strImaJsExt + g_strImaOutputOpts + g_strImaRuntimeOpts +
             " --" + strDirection + "-payment" +
             " --value=" + moneySpec +
             // " --wei=" + parseMoneySpecToWei( g_w3_main_net, moneySpec, true )
@@ -6549,7 +6559,7 @@ async function ima_send_eth( idxChain, strPrivateKeyFrom, strPrivateKeyTo, strDi
                 const nNodeIndex = 0;
                 const strCommandReceive =
                     "node --no-warnings " +
-                    g_strFolderImaAgent + "/main.mjs" + g_strImaOutputOpts + g_strImaRuntimeOpts +
+                    g_strFolderImaAgent + "/main" + g_strImaJsExt + g_strImaOutputOpts + g_strImaRuntimeOpts +
                     " --s2m-receive" +
                     " --url-main-net=" + joTransferOptions.urlMainNet +
                     " --url-s-chain=" + joTransferOptions.urlSChain +
@@ -7597,7 +7607,7 @@ async function ima_send_erc20_mn2sc( idxChain, strPrivateKeyFrom, strPrivateKeyT
         const nNodeIndex = 0;
         await exec_array_of_commands_safe( [
             "node --no-warnings " +
-            g_strFolderImaAgent + "/main.mjs" + g_strImaOutputOpts + g_strImaRuntimeOpts +
+            g_strFolderImaAgent + "/main" + g_strImaJsExt + g_strImaOutputOpts + g_strImaRuntimeOpts +
             " --m2s-payment" +
             " --amount=" + amountToSend +
             " --value=60finney" + // additional cost
@@ -7766,7 +7776,7 @@ async function ima_send_erc20_sc2mn( idxChain, strPrivateKeyFrom, strPrivateKeyT
         const nNodeIndex = 0;
         await exec_array_of_commands_safe( [
             "node --no-warnings " +
-            g_strFolderImaAgent + "/main.mjs" + g_strImaOutputOpts + g_strImaRuntimeOpts +
+            g_strFolderImaAgent + "/main" + g_strImaJsExt + g_strImaOutputOpts + g_strImaRuntimeOpts +
             " --s2m-payment" +
             " --amount=" + amountToSend +
             " --value=60finney" + // additional cost
@@ -7933,7 +7943,7 @@ async function ima_send_erc721_mn2sc( idxChain, strPrivateKeyFrom, strPrivateKey
         const nNodeIndex = 0;
         await exec_array_of_commands_safe( [
             "node --no-warnings " +
-            g_strFolderImaAgent + "/main.mjs" + g_strImaOutputOpts + g_strImaRuntimeOpts +
+            g_strFolderImaAgent + "/main" + g_strImaJsExt + g_strImaOutputOpts + g_strImaRuntimeOpts +
             " --m2s-payment" +
             " --tid=" + tokenIdToSend +
             ( isWithMetadata721 ? " --with-metadata" : "" ) +
@@ -8202,7 +8212,7 @@ async function ima_send_erc721_sc2mn( idxChain, strPrivateKeyFrom, strPrivateKey
         const nNodeIndex = 0;
         await exec_array_of_commands_safe( [
             "node --no-warnings " +
-            g_strFolderImaAgent + "/main.mjs" + g_strImaOutputOpts + g_strImaRuntimeOpts +
+            g_strFolderImaAgent + "/main" + g_strImaJsExt + g_strImaOutputOpts + g_strImaRuntimeOpts +
             " --s2m-payment" +
             " --tid=" + tokenIdToSend +
             ( isWithMetadata721 ? " --with-metadata" : "" ) +
@@ -8392,7 +8402,7 @@ async function ima_send_erc1155_mn2sc( idxChain, strPrivateKeyFrom, strPrivateKe
         const nNodeIndex = 0;
         await exec_array_of_commands_safe( [
             "node --no-warnings " +
-            g_strFolderImaAgent + "/main.mjs" + g_strImaOutputOpts + g_strImaRuntimeOpts +
+            g_strFolderImaAgent + "/main" + g_strImaJsExt + g_strImaOutputOpts + g_strImaRuntimeOpts +
             " --m2s-payment" +
             " --tid=" + tokenIdToSend +
             " --amount=" + nAmount +
@@ -8575,7 +8585,7 @@ async function ima_send_erc1155_sc2mn( idxChain, strPrivateKeyFrom, strPrivateKe
         const nNodeIndex = 0;
         await exec_array_of_commands_safe( [
             "node --no-warnings " +
-            g_strFolderImaAgent + "/main.mjs" + g_strImaOutputOpts + g_strImaRuntimeOpts +
+            g_strFolderImaAgent + "/main" + g_strImaJsExt + g_strImaOutputOpts + g_strImaRuntimeOpts +
             " --s2m-payment" +
             " --tid=" + tokenIdToSend +
             " --amount=" + nAmount +
@@ -8739,7 +8749,7 @@ async function ima_batch_send_erc1155_mn2sc( idxChain, strPrivateKeyFrom, strPri
         const nNodeIndex = 0;
         await exec_array_of_commands_safe( [
             "node --no-warnings " +
-            g_strFolderImaAgent + "/main.mjs" + g_strImaOutputOpts + g_strImaRuntimeOpts +
+            g_strFolderImaAgent + "/main" + g_strImaJsExt + g_strImaOutputOpts + g_strImaRuntimeOpts +
             " --m2s-payment" +
             " --tids=\"" + replaceAll( JSON.stringify( arrTokenIDsToSend ), " ", "" ) + "\"" +
             " --amounts=\"" + replaceAll( JSON.stringify( arrAmounts ), " ", "" ) + "\"" +
@@ -8928,7 +8938,7 @@ async function ima_batch_send_erc1155_sc2mn( idxChain, strPrivateKeyFrom, strPri
         const nNodeIndex = 0;
         await exec_array_of_commands_safe( [
             "node --no-warnings " +
-            g_strFolderImaAgent + "/main.mjs" + g_strImaOutputOpts + g_strImaRuntimeOpts +
+            g_strFolderImaAgent + "/main" + g_strImaJsExt + g_strImaOutputOpts + g_strImaRuntimeOpts +
             " --s2m-payment" +
             " --tids=\"" + replaceAll( JSON.stringify( arrTokenIDsToSend ), " ", "" ) + "\"" +
             " --amounts=\"" + replaceAll( JSON.stringify( arrAmounts ), " ", "" ) + "\"" +
@@ -9447,7 +9457,7 @@ async function s2s_transfer(
             contractERC20_dst, contractERC721_dst, contractERC721_with_metadata_dst, contractERC1155_dst, addressDst );
         let strTransferCommand =
             "node --no-warnings " +
-            g_strFolderImaAgent + "/main.mjs" + g_strImaOutputOpts + g_strImaRuntimeOpts +
+            g_strFolderImaAgent + "/main" + g_strImaJsExt + g_strImaOutputOpts + g_strImaRuntimeOpts +
             " --s2s-payment " + ( isForward ? "--s2s-forward" : "--s2s-reverse" ) +
             " --value=60finney" +
             " --url-s-chain=" + joNodeDescSrc.url +
