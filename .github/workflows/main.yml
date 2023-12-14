@@ -334,7 +334,7 @@ jobs:
     - name: INIT - build IMA
       run: |
         cd ima-agent
-        if [ ! -f ./src/main.ts ]; then echo "Detected TypeScript version of IMA Agent, will build it now..." && yarn rebuild; else echo "Detected JavaScript version of IMA Agent"; fi
+        if [ -f ./src/main.ts ]; then echo "Detected TypeScript version of IMA Agent, will build it now..." && yarn rebuild; else echo "Detected JavaScript version of IMA Agent"; fi
         cd ..
 
     - name: SELF-TEST A - use IMA to browse S-Chain via node 00-00 and test last is alive
