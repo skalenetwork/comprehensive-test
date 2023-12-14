@@ -546,7 +546,8 @@ if( g_bVerbose ) {
     log.write( cc.normal( "Assuming " ) + cc.sunny( "IMA Contracts" ) + cc.normal( " repo is " ) + cc.info( g_strFolderRepoImaContracts ) + "\n" );
 }
 const g_strFolderImaProxy = "" + g_strFolderRepoImaContracts + "/proxy";
-let g_strFolderImaAgent = "" + g_strFolderRepoImaAgent + ( g_bSeparatedImaAgentMode ? "/src" : "/agent" );
+let g_strFolderImaAgentBase = "" + g_strFolderRepoImaAgent + ( g_bSeparatedImaAgentMode ? "/src" : "/agent" );
+let g_strFolderImaAgent = "" + g_strFolderImaAgentBase;
 let g_strImaJsExt = ".mjs";
 let g_isImaAgentTypeScriptBased = false;
 if( dirExists( g_strFolderImaAgent + "/build" ) ) {
@@ -5947,6 +5948,16 @@ async function ima_register_sgx_keys() {
     }
 }
 
+async function rebuild_ima() {
+    if( ! g_isImaAgentTypeScriptBased )
+        return;
+    const joEnv = { };
+    const arrCommands = [
+        "yarn rebuild"
+    ];
+    await exec_array_of_commands_safe( arrCommands, g_strFolderImaAgentBase, joEnv );
+}
+
 let g_joImaAbiMN = null;
 
 async function redeploy_ima_to_main_net( fnContinue ) {
@@ -10067,6 +10078,7 @@ async function run() {
     await sm_init_validator( g_w3_main_net );
     await sm_init_node_addresses_all( g_w3_main_net );
     await init_sgx_sm_dkg_all();
+    await rebuild_ima();
     await redeploy_ima_to_main_net();
     await reload_ima_abi_for_main_net();
     await generate_predeployed_artifacts_all();
