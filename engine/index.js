@@ -2874,6 +2874,7 @@ async function send_dkg_broadcast( w3, joNodeDesc, privateKey ) {
                 , nodeIndexAssigned
                 , vvs // vv
                 , skcs // secretKeyContribution
+                , 0 // rotationCounter
             ).send( {
                 chainId: parseIntOrHex( cid_main_net ),
                 from: joNodeDesc.nodeAddress, // addressFrom
