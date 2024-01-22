@@ -60,7 +60,7 @@ const ethereumjs_wallet = require( "ethereumjs-wallet" );
 const ethereumjs_util = require( "ethereumjs-util" );
 
 process.env.NODE_TLS_REJECT_UNAUTHORIZED = 0; // allow self-signed wss and https
-const g_strRecommendedShellPATH = process.env.PATH;
+const g_strRecommendedShellPATH = process.env.PATH + ":/usr/local/bin/:/bin/:/usr/sbin:/usr/bin:/sbin"; // "$PATH:/bin/:/usr/bin/:/usr/local/bin/"
 
 const g_bVerbose = true;
 
