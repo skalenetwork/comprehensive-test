@@ -3338,6 +3338,7 @@ async function all_skaled_nodes_prepare() {
     if( g_bExternalSC )
         return;
     const joEnv = {
+        "PATH": g_strRecommendedShellPATH,
         "GEN_CNT_CHAINS": g_arrChains.length,
         "GEN_CNT_NODES": g_arrChains[0].arrNodeDescriptions.length,
         "GEN_CNT_SYNC_NODES": g_cntSyncNodesPerChain
