@@ -479,6 +479,7 @@ jobs:
       run: |
         cd engine
         export ALL_SKALE_TEST_CLOUD_RUN=1
+        export DISABLE_S2S_TESTS=0
         export SEPARATED_IMA_AGENT_MODE=1
         node ./index.js
         cd ..
