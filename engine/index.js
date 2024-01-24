@@ -186,10 +186,10 @@ const g_nTimeToSleepAfterChartParticipantsInitializedMilliseconds = 45000;
 const g_nTimeToSleepBeforeWaitChatMessageArrivedMilliseconds = 10000;
 const g_nChatMessageDeliveryWaitSteps = 0 + g_nCntAttempts;
 
-const g_bIsTestChatM2S = true;
-const g_bIsTestChatS2S = g_isCloudMode ? false : true;
+const g_bIsTestS2S = process.env.DISABLE_S2S_TESTS ? true : false;
 
-const g_bIsTestS2S = g_isCloudMode ? false : true; // all S2S tests
+const g_bIsTestChatM2S = true;
+const g_bIsTestChatS2S = g_bIsTestS2S ? false : true;
 
 let g_w3_main_net = null;
 
