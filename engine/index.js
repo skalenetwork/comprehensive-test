@@ -3429,9 +3429,16 @@ async function all_skaled_nodes_stop() {
 async function schain_skaled_nodes_init_BTRFS_if_needed( idxChain ) {
     if( ! g_bSkaledWithBTRFS )
         return;
+    let nCountStartSkipped = 0;
     const arrNodeDescriptions = g_arrChains[idxChain].arrNodeDescriptions;
     for( let i = 0; i < arrNodeDescriptions.length; ++i ) {
         const joNodeDesc = arrNodeDescriptions[i];
+        if( g_nCountOfSkaledInstancesToSkipStart > 0 && i >= 1 && nCountStartSkipped < g_nCountOfSkaledInstancesToSkipStart ) {
+            ++ nCountStartSkipped;
+            if( g_bVerbose )
+                log.write( cc.warning( "Skipping BTRFS init of " ) + cc.attention( "SKALED" ) + cc.warning( " node " ) + cc.sunny( joNodeDesc.nodeID ) + "\n" );
+            continue;
+        }
         if( g_bVerbose )
             log.write( cc.normal( "Initializing " ) + cc.success( "BTRFS" ) + cc.normal( " on chain " ) + cc.sunny( idxChain ) + cc.normal( " node " ) + cc.sunny( joNodeDesc.nodeID ) + "\n" );
         const joEnv = {
@@ -3522,9 +3529,16 @@ async function schain_skaled_nodes_stop( idxChain ) {
     }
     if( g_bVerbose )
         log.write( cc.normal( "Stopping " ) + cc.success( "S-CHAIN" ) + cc.normal( "..." ) + "\n" );
+    let nCountStartSkipped = 0;
     const arrNodeDescriptions = g_arrChains[idxChain].arrNodeDescriptions;
     for( let i = 0; i < arrNodeDescriptions.length; ++i ) {
         const joNodeDesc = arrNodeDescriptions[i];
+        if( g_nCountOfSkaledInstancesToSkipStart > 0 && i >= 1 && nCountStartSkipped < g_nCountOfSkaledInstancesToSkipStart ) {
+            ++ nCountStartSkipped;
+            if( g_bVerbose )
+                log.write( cc.warning( "Skipping stop of " ) + cc.attention( "SKALED" ) + cc.warning( " node " ) + cc.sunny( joNodeDesc.nodeID ) + "\n" );
+            continue;
+        }
         if( g_bVerbose )
             log.write( cc.normal( "Stopping " ) + cc.success( "SKALED" ) + cc.normal( " node " ) + cc.sunny( joNodeDesc.nodeID ) + "\n" );
         if( joNodeDesc.proc4scaled ) {
@@ -3872,6 +3886,7 @@ async function schain_ima_agents_start( idxChain ) {
 async function schain_ima_agents_stop( idxChain ) {
     if( ! g_arrChains[idxChain].isStartEnabled )
         return;
+    let nCountStartSkipped = 0;
     const arrNodeDescriptions = g_arrChains[idxChain].arrNodeDescriptions;
     if( g_bDockerIMA ) {
         if( g_bVerbose )
@@ -3879,6 +3894,12 @@ async function schain_ima_agents_stop( idxChain ) {
         for( let i = 0; i < arrNodeDescriptions.length; ++i ) {
             const idxNode = 0 + i;
             const joNodeDesc = arrNodeDescriptions[idxNode];
+            if( g_nCountOfImaAgentInstancesToSkipStart > 0 && i >= 1 && nCountStartSkipped < g_nCountOfImaAgentInstancesToSkipStart ) {
+                ++ nCountStartSkipped;
+                if( g_bVerbose )
+                    log.write( cc.warning( "Skipping(1) stop of " ) + cc.success( "IMA Agent" ) + cc.warning( " for node " ) + cc.sunny( joNodeDesc.nodeID ) + "\n" );
+                continue;
+            }
             if( g_bVerbose )
                 log.write( cc.normal( "Stopping " ) + cc.success( "IMA Agent" ) + cc.normal( " for node " ) + cc.sunny( joNodeDesc.nodeID ) + "\n" );
             const cwd = schain_ima_agent_get_docker_cwd( idxChain, idxNode );
@@ -3912,8 +3933,15 @@ async function schain_ima_agents_stop( idxChain ) {
     }
     if( g_bVerbose )
         log.write( cc.normal( "Stopping " ) + cc.success( "IMA" ) + cc.normal( " agents as node processes..." ) + "\n" );
+    nCountStartSkipped = 0;
     for( let i = 0; i < arrNodeDescriptions.length; ++i ) {
         const joNodeDesc = arrNodeDescriptions[i];
+        if( g_nCountOfImaAgentInstancesToSkipStart > 0 && i >= 1 && nCountStartSkipped < g_nCountOfImaAgentInstancesToSkipStart ) {
+            ++ nCountStartSkipped;
+            if( g_bVerbose )
+                log.write( cc.warning( "Skipping(1) stop of " ) + cc.success( "IMA Agent" ) + cc.warning( " for node " ) + cc.sunny( joNodeDesc.nodeID ) + "\n" );
+            continue;
+        }
         if( g_bVerbose )
             log.write( cc.normal( "Stopping " ) + cc.success( "IMA Agent" ) + cc.normal( " for node " ) + cc.sunny( joNodeDesc.nodeID ) + "\n" );
         if( joNodeDesc.proc4imaAgent ) {
