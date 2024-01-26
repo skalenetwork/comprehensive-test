@@ -195,6 +195,8 @@ log.write( cc.info( "Custom chat S2S test" ) + cc.debug( " is " ) + ( g_bIsTestC
 
 const g_nCountOfSkaledInstancesToSkipStart = s2n( process.env.COUNT_OF_SKALED_INSTANCES_TO_SKIP_START );
 log.write( cc.warning( "PLEASE NOTICE:" ) + cc.debug( " will skip starting of " ) + cc.info( g_nCountOfSkaledInstancesToSkipStart ) + cc.debug( " SKALED instances in each S-Chain" ) + "\n" );
+const g_nCountOfImaAgentInstancesToSkipStart = s2n( process.env.COUNT_OF_IMA_AGENT_INSTANCES_TO_SKIP_START );
+log.write( cc.warning( "PLEASE NOTICE:" ) + cc.debug( " will skip starting of " ) + cc.info( g_nCountOfImaInstancesToSkipStart ) + cc.debug( " IMA Agent instances in each S-Chain" ) + "\n" );
 
 let g_w3_main_net = null;
 
@@ -3738,6 +3740,7 @@ async function all_ima_agents_stop() {
 async function schain_ima_agents_start( idxChain ) {
     if( ! g_arrChains[idxChain].isStartEnabled )
         return;
+    let nCountStartSkipped = 0;
     const arrNodeDescriptions = g_arrChains[idxChain].arrNodeDescriptions;
     if( g_bDockerIMA ) {
         if( g_bVerbose )
@@ -3745,6 +3748,12 @@ async function schain_ima_agents_start( idxChain ) {
         for( let i = 0; i < arrNodeDescriptions.length; ++i ) {
             const idxNode = 0 + i;
             const joNodeDesc = arrNodeDescriptions[idxNode];
+            if( g_nCountOfImaAgentInstancesToSkipStart > 0 && i >= 1 && nCountStartSkipped < g_nCountOfImaAgentInstancesToSkipStart ) {
+                ++ nCountStartSkipped;
+                if( g_bVerbose )
+                    log.write( cc.warning( "Skipping(1) startup of " ) + cc.success( "IMA Agent" ) + cc.warning( " for node " ) + cc.sunny( joNodeDesc.nodeID ) + "\n" );
+                continue;
+            }
             if( g_bVerbose )
                 log.write( cc.normal( "Pre-cleaning " ) + cc.success( "IMA Agent" ) + cc.normal( " for node " ) + cc.sunny( joNodeDesc.nodeID ) + "\n" );
             const cname = schain_ima_agent_get_docker_container_name( idxChain, idxNode );
@@ -3781,8 +3790,16 @@ async function schain_ima_agents_start( idxChain ) {
             quick_spawn_async( run_cmd, cwd, env );
         }
         await sleep( 10 * 1000 );
+        nCountStartSkipped = 0;
         for( let idxChain = 0; idxChain < g_arrChains.length; ++ idxChain ) {
             for( let idxNode = 0; idxNode < g_arrChains[idxChain].arrNodeDescriptions.length; ++ idxNode ) {
+                const joNodeDesc = arrNodeDescriptions[i];
+                if( g_nCountOfImaAgentInstancesToSkipStart > 0 && i >= 1 && nCountStartSkipped < g_nCountOfImaAgentInstancesToSkipStart ) {
+                    ++ nCountStartSkipped;
+                    if( g_bVerbose )
+                        log.write( cc.warning( "Skipping(2) startup of " ) + cc.success( "IMA Agent" ) + cc.warning( " for node " ) + cc.sunny( joNodeDesc.nodeID ) + "\n" );
+                    continue;
+                }
                 if( g_bDockerIMA ) {
                     const cname = schain_ima_agent_get_docker_container_name( idxChain, idxNode );
                     print_empty_space_before_log();
@@ -3817,10 +3834,17 @@ async function schain_ima_agents_start( idxChain ) {
         }
         return;
     }
+    nCountStartSkipped = 0;
     if( g_bVerbose )
         log.write( cc.normal( "Starting " ) + cc.notice( "IMA" ) + cc.normal( " agents as node processes..." ) + "\n" );
     for( let i = 0; i < arrNodeDescriptions.length; ++i ) {
         const joNodeDesc = arrNodeDescriptions[i];
+        if( g_nCountOfImaAgentInstancesToSkipStart > 0 && i >= 1 && nCountStartSkipped < g_nCountOfImaAgentInstancesToSkipStart ) {
+            ++ nCountStartSkipped;
+            if( g_bVerbose )
+                log.write( cc.warning( "Skipping(3) startup of " ) + cc.success( "IMA Agent" ) + cc.warning( " for node " ) + cc.sunny( joNodeDesc.nodeID ) + "\n" );
+            continue;
+        }
         if( g_bVerbose )
             log.write( cc.normal( "Starting " ) + cc.success( "IMA Agent" ) + cc.normal( " for node " ) + cc.sunny( joNodeDesc.nodeID ) + "\n" );
         if( ! joNodeDesc.proc4imaAgent ) {
