@@ -3807,8 +3807,8 @@ async function schain_ima_agents_start( idxChain ) {
         nCountStartSkipped = 0;
         for( let idxChain = 0; idxChain < g_arrChains.length; ++ idxChain ) {
             for( let idxNode = 0; idxNode < g_arrChains[idxChain].arrNodeDescriptions.length; ++ idxNode ) {
-                const joNodeDesc = arrNodeDescriptions[i];
-                if( g_nCountOfImaAgentInstancesToSkipStart > 0 && i >= 1 && nCountStartSkipped < g_nCountOfImaAgentInstancesToSkipStart ) {
+                const joNodeDesc = arrNodeDescriptions[idxNode];
+                if( g_nCountOfImaAgentInstancesToSkipStart > 0 && idxNode >= 1 && nCountStartSkipped < g_nCountOfImaAgentInstancesToSkipStart ) {
                     ++ nCountStartSkipped;
                     if( g_bVerbose )
                         log.write( cc.warning( "Skipping(2) startup of " ) + cc.success( "IMA Agent" ) + cc.warning( " for node " ) + cc.sunny( joNodeDesc.nodeID ) + "\n" );
@@ -3894,7 +3894,7 @@ async function schain_ima_agents_stop( idxChain ) {
         for( let i = 0; i < arrNodeDescriptions.length; ++i ) {
             const idxNode = 0 + i;
             const joNodeDesc = arrNodeDescriptions[idxNode];
-            if( g_nCountOfImaAgentInstancesToSkipStart > 0 && i >= 1 && nCountStartSkipped < g_nCountOfImaAgentInstancesToSkipStart ) {
+            if( g_nCountOfImaAgentInstancesToSkipStart > 0 && idxNode >= 1 && nCountStartSkipped < g_nCountOfImaAgentInstancesToSkipStart ) {
                 ++ nCountStartSkipped;
                 if( g_bVerbose )
                     log.write( cc.warning( "Skipping(1) stop of " ) + cc.success( "IMA Agent" ) + cc.warning( " for node " ) + cc.sunny( joNodeDesc.nodeID ) + "\n" );
