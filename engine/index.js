@@ -193,6 +193,9 @@ const g_bIsTestChatM2S = true;
 const g_bIsTestChatS2S = g_bIsTestS2S ? false : true;
 log.write( cc.info( "Custom chat S2S test" ) + cc.debug( " is " ) + ( g_bIsTestChatS2S ? cc.success( "enabled" ) : cc.error( "disabled" ) ) + "\n" );
 
+const g_nCountOfSkaledInstancesToSkipStart = s2n( process.env.COUNT_OF_SKALED_INSTANCES_TO_SKIP_START );
+log.write( cc.warning( "PLEASE NOTICE:" ) + cc.debug( " will skip starting of " ) + cc.info( g_nCountOfSkaledInstancesToSkipStart ) + cc.debug( " SKALED instances in each S-Chain" ) + "\n" );
+
 let g_w3_main_net = null;
 
 //////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
@@ -434,6 +437,15 @@ function isNumericString( s ) {
         return false; // s is not string
     return (!isNaN(s)) && // use type coercion to parse the _entirety_ of the string (`parseFloat` alone does not do this)...
            (!isNaN(parseFloat(s))); // ...and ensure strings of whitespace fail
+}
+
+function s2n( s, nDefault ) {
+    nDefault = nDefault || 0;
+    if( ! s )
+        return nDefault;
+    if( typeof s != "string" )
+        return nDefault;
+    return parseIntOrHex( s );
 }
 
 function s2b( s ) {
@@ -3454,9 +3466,16 @@ async function schain_skaled_nodes_start( idxChain ) {
     }
     if( g_bVerbose )
         log.write( cc.normal( "Starting " ) + cc.success( "S-CHAIN" ) + cc.normal( "..." ) + "\n" );
+    let nCountStartSkipped = 0;
     const arrNodeDescriptions = g_arrChains[idxChain].arrNodeDescriptions;
     for( let i = 0; i < arrNodeDescriptions.length; ++i ) {
         const joNodeDesc = arrNodeDescriptions[i];
+        if( g_nCountOfSkaledInstancesToSkipStart > 0 && i >= 1 && nCountStartSkipped < g_nCountOfSkaledInstancesToSkipStart ) {
+            ++ nCountStartSkipped;
+            if( g_bVerbose )
+                log.write( cc.warning( "Skipping start of " ) + cc.attention( "SKALED" ) + cc.warning( " node " ) + cc.sunny( joNodeDesc.nodeID ) + "\n" );
+            continue;
+        }
         if( g_bVerbose )
             log.write( cc.normal( "Starting " ) + cc.success( "SKALED" ) + cc.normal( " node " ) + cc.sunny( joNodeDesc.nodeID ) + "\n" );
         if( ! joNodeDesc.proc4scaled ) {
