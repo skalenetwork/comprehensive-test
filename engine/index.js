@@ -196,7 +196,7 @@ log.write( cc.info( "Custom chat S2S test" ) + cc.debug( " is " ) + ( g_bIsTestC
 const g_nCountOfSkaledInstancesToSkipStart = s2n( process.env.COUNT_OF_SKALED_INSTANCES_TO_SKIP_START );
 log.write( cc.warning( "PLEASE NOTICE:" ) + cc.debug( " will skip starting of " ) + cc.info( g_nCountOfSkaledInstancesToSkipStart ) + cc.debug( " SKALED instances in each S-Chain" ) + "\n" );
 const g_nCountOfImaAgentInstancesToSkipStart = s2n( process.env.COUNT_OF_IMA_AGENT_INSTANCES_TO_SKIP_START );
-log.write( cc.warning( "PLEASE NOTICE:" ) + cc.debug( " will skip starting of " ) + cc.info( g_nCountOfImaInstancesToSkipStart ) + cc.debug( " IMA Agent instances in each S-Chain" ) + "\n" );
+log.write( cc.warning( "PLEASE NOTICE:" ) + cc.debug( " will skip starting of " ) + cc.info( g_nCountOfImaAgentInstancesToSkipStart ) + cc.debug( " IMA Agent instances in each S-Chain" ) + "\n" );
 
 let g_w3_main_net = null;
 
