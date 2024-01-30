@@ -197,6 +197,16 @@ const g_nCountOfSkaledInstancesToSkipStart = s2n( process.env.COUNT_OF_SKALED_IN
 log.write( cc.warning( "PLEASE NOTICE:" ) + cc.debug( " will skip starting of " ) + cc.info( g_nCountOfSkaledInstancesToSkipStart ) + cc.debug( " SKALED instances in each S-Chain" ) + "\n" );
 const g_nCountOfImaAgentInstancesToSkipStart = s2n( process.env.COUNT_OF_IMA_AGENT_INSTANCES_TO_SKIP_START );
 log.write( cc.warning( "PLEASE NOTICE:" ) + cc.debug( " will skip starting of " ) + cc.info( g_nCountOfImaAgentInstancesToSkipStart ) + cc.debug( " IMA Agent instances in each S-Chain" ) + "\n" );
+const g_bEnabledImaMainNetTunnelling = s2b( process.env.ENABLED_IMA_MAIN_NET_TUNNELLING ) ? true : false;
+log.write( cc.warning( "PLEASE NOTICE:" ) + " " + cc.info( "IMA to Main Net tunnelling" ) + cc.debug( " is " ) + ( g_bEnabledImaMainNetTunnelling ? cc.success( "enabled" ) : cc.error( "disabled" ) ) + "\n" );
+
+const g_nTimeFrameSecondsIMA = 120;
+const g_nTimeGapSecondsIMA = 10;
+const g_nScanMessagePeriodSecondsIMA = 10;
+const g_nPendingWorkAnalysisTimeoutSecondsIMA = 90;
+
+const g_bImaMainNetConnectionProblemEmulationMode = s2b( process.env.ENABLED_IMA_MAIN_NET_CONNECTION_PROBLEMS ) ? true : false;
+log.write( cc.warning( "PLEASE NOTICE:" ) + " " + cc.info( "IMA to Main Net connection problem emulation mode" ) + cc.debug( " is " ) + cc.yn( g_bImaMainNetConnectionProblemEmulationMode ) + "\n" );
 
 let g_w3_main_net = null;
 
@@ -276,7 +286,7 @@ async function end_of_test( nExitCode ) {
     };
     // if( g_bAtExitStopIMA && ( !g_bDockerIMA ) )
     if( g_bAtExitStopIMA ) {
-        await fnProtected( async function() { await all_ima_agents_stop(); } );
+        await fnProtected( async function() { await all_ima_agents_stop(); await all_tunnels_stop(); } );
         await fnProtected( async function() { await all_ima_network_browsers_stop(); } );
     }
     if( g_bAtExitStopSC )
@@ -287,7 +297,7 @@ async function end_of_test( nExitCode ) {
     if( nExitCode != 0 )
         print_logs_at_exit(); // print all the logs on error only
     // if( g_bAtExitStopIMA && g_bDockerIMA ) {
-    //     await fnProtected( async function() { await all_ima_agents_stop(); } );
+    //     await fnProtected( async function() { await all_ima_agents_stop(); await all_tunnels_stop(); } );
     //     await fnProtected( async function() { await all_ima_network_browsers_stop(); } );
     // }
     log.write( cc.normal( "Exiting test with code " ) + cc.info( nExitCode ) + cc.normal( "..." ) + "\n" );
@@ -352,6 +362,15 @@ function print_logs_at_exit() {
                 print_log_at_exit( path.join( __dirname, "imaAgent_" + zeroPad( idxChain, 2 ) + "_" + zeroPad( idxNode, 2 ) + ".log" ) );
 
             print_log_at_exit( path.join( __dirname, "imaNetworkBrowser_" + zeroPad( idxChain, 2 ) + ".log" ) );
+        }
+    }
+    if( g_bEnabledImaMainNetTunnelling ) {
+        for( let idxChain = 0; idxChain < g_arrChains.length; ++ idxChain ) {
+            if( ! g_arrChains[idxChain].isStartEnabled )
+                continue;
+            for( let idxNode = 0; idxNode < g_arrChains[idxChain].arrNodeDescriptions.length; ++ idxNode ) {
+                print_log_at_exit( path.join( __dirname, "imaMainNetTunnel_" + zeroPad( idxChain, 2 ) + "_" + zeroPad( idxNode, 2 ) + ".log" ) );
+            }
         }
     }
     print_log_at_exit( path.join( __dirname, "tm.log" ) );
@@ -1253,6 +1272,9 @@ function initNodeDescription( strURL, idxChain, idxNode, chainId, nodeID, strNam
         runCmd4imaAgent: "", // initialized later by the compose_node_runCmd4imaAgent() function
         logPath4imaAgent: normalizePath( path.join( __dirname, "imaAgent_" + zeroPad( idxChain, 2 ) + "_" + zeroPad( idxNode, 2 ) + ".log" ) ),
         proc4imaAgent: null,
+        logPath4tunnel: normalizePath( path.join( __dirname, "imaMainNetTunnel_" + zeroPad( idxChain, 2 ) + "_" + zeroPad( idxNode, 2 ) + ".log" ) ),
+        proc4tunnel: null,
+        port4tunnel: 14000 + idxChain * 100 + idxNode,
         //
         nJsonRpcPort4ImaAgent: 0 // basePort + 10 // will be reset in reset_port_numbers_in_global_chains_array()
     };
@@ -1425,7 +1447,7 @@ function compose_node_runCmd4imaAgent( joNodeDesc ) {
         " --monitoring-port=" + nMonitoringPort4ImaAgent +
         get_ima_network_browser_cli_opt( joNodeDesc.idxChain ) +
         " --s2s-enable" +
-        " --url-main-net=" + g_strMainNetURL +
+        " --url-main-net=" + get_main_net_url_4_ima( joNodeDesc.idxChain, joNodeDesc.idxNode ) + // g_strMainNetURL +
         " --url-s-chain=" + joNodeDesc.url +
         " --id-main-net=" + g_strMainnetName +
         " --id-s-chain=" + schain_name +
@@ -1459,13 +1481,13 @@ function compose_node_runCmd4imaAgent( joNodeDesc ) {
         " --s2m-await-time=" + 0 + // .................Minimal age of transaction message in seconds before it will be transferred from S-chain to Main-net (0 is no wait)
         " --s2s-await-time=" + 0 + // .................Minimal age of transaction message in seconds before it will be transferred from S-chain to S-Chain (0 is no wait)
         // time framing for transfer loop
-        " --period=" + 10 + // ........................Transfer loop period(seconds)
+        " --period=" + g_nScanMessagePeriodSecondsIMA + // ........................Transfer loop period(seconds)
         " --node-number=" + joNodeDesc.idxNode + // ....................S-Chain node number(zero based)
         " --nodes-count=" + g_arrChains[joNodeDesc.idxChain].arrNodeDescriptions.length + // ....................S-Chain nodes count
-        " --time-framing=" + 120 + // ..................Specifies period(in seconds) for time framing. Zero means disable time framing
-        " --time-gap=" + 10 + // ......................Specifies gap(in seconds) before next time frame
-        " --pwa --no-expose-pwa --pwa-timeout=" + 90 +
-        // " --pwa --expose-pwa --pwa-timeout=" + 90 +
+        " --time-framing=" + g_nTimeFrameSecondsIMA + // ..................Specifies period(in seconds) for time framing. Zero means disable time framing
+        " --time-gap=" + g_nTimeGapSecondsIMA + // ......................Specifies gap(in seconds) before next time frame
+        " --pwa --no-expose-pwa --pwa-timeout=" + g_nPendingWorkAnalysisTimeoutSecondsIMA +
+        // " --pwa --expose-pwa --pwa-timeout=" + g_nPendingWorkAnalysisTimeoutSecondsIMA +
         // " --no-pwa --no-expose-pwa" +
         // " --enable-oracle" +
         " --disable-oracle" +
@@ -3140,7 +3162,7 @@ function perform_multi_node_deployment( idxChain ) {
         }
         joNodeDesc.joConfig = jsonFileLoad( strConfigPath, null, g_bVerbose );
         //
-        // // // joNodeDesc.joConfig.skaleConfig.nodeInfo.imaMainNet = g_strMainNetURL;
+        // // // joNodeDesc.joConfig.skaleConfig.nodeInfo.imaMainNet = g_strMainNetURL; // ... or ... + get_main_net_url_4_ima( joNodeDesc.idxChain, joNodeDesc.idxNode )
         // joNodeDesc.joConfig.skaleConfig.nodeInfo.imaMessageProxySChain
         // joNodeDesc.joConfig.skaleConfig.nodeInfo.imaMessageProxyMainNet
         joNodeDesc.joConfig.skaleConfig.nodeInfo.imaCallerAddressSChain = process.env.ACCOUNT_FOR_SCHAIN || "0x66c5a87f4a49DD75e970055A265E8dd5C3F8f852";
@@ -3659,7 +3681,7 @@ function ima_prepare_docker_shares_node( idxChain, idxNode ) {
         "CID_MAIN_NET=" + cid_main_net + "\n" +
         "CID_SCHAIN=" + g_arrChains[idxChain].cid + "\n" +
         "SCHAIN_RPC_URL=" + arrNodeDescriptions[idxNode].url + "\n" +
-        "MAINNET_RPC_URL=" + g_strMainNetURL + "\n" +
+        "MAINNET_RPC_URL=" + get_main_net_url_4_ima( joNodeDesc.idxChain, joNodeDesc.idxNode ) + "\n" + // g_strMainNetURL + "\n" +
         "NODE_NUMBER=" + idxNode + "\n" +
         "NODES_COUNT=" + arrNodeDescriptions.length + "\n" +
         "RPC_PORT=" + nJsonRpcPort4ImaAgent + "\n" +
@@ -3952,6 +3974,128 @@ async function schain_ima_agents_stop( idxChain ) {
     if( g_bVerbose )
         log.write( cc.success( "Done, stopped " ) + cc.notice( "IMA" ) + cc.success( " agents as node processes" ) + "\n" );
 }
+
+//////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
+//////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
+
+async function all_tunnels_start() {
+    if( ! g_bEnabledImaMainNetTunnelling )
+        return;
+    for( let idxChain = 0; idxChain < g_arrChains.length; ++ idxChain ) {
+        if( ! g_arrChains[idxChain].isStartEnabled )
+            continue;
+        await schain_tunnels_start( idxChain );
+    }
+}
+
+async function all_tunnels_stop() {
+    if( ! g_bEnabledImaMainNetTunnelling )
+        return;
+    for( let idxChain = 0; idxChain < g_arrChains.length; ++ idxChain ) {
+        if( ! g_arrChains[idxChain].isStartEnabled )
+            continue;
+        await schain_tunnels_stop( idxChain );
+    }
+}
+
+async function schain_tunnels_start( idxChain ) {
+    if( ! g_bEnabledImaMainNetTunnelling )
+        return;
+    if( ! g_arrChains[idxChain].isStartEnabled )
+        return;
+    let nCountStartSkipped = 0;
+    const arrNodeDescriptions = g_arrChains[idxChain].arrNodeDescriptions;
+    nCountStartSkipped = 0;
+    if( g_bVerbose )
+        log.write( cc.normal( "Starting " ) + cc.notice( "Main Net tunnel" ) + cc.normal( " as node processes..." ) + "\n" );
+    for( let i = 0; i < arrNodeDescriptions.length; ++i ) {
+        const joNodeDesc = arrNodeDescriptions[i];
+        if( g_nCountOfImaAgentInstancesToSkipStart > 0 && i >= 1 && nCountStartSkipped < g_nCountOfImaAgentInstancesToSkipStart ) {
+            ++ nCountStartSkipped;
+            if( g_bVerbose )
+                log.write( cc.warning( "Skipping(3) startup of " ) + cc.success( "Main Net tunnel" ) + cc.warning( " for node " ) + cc.sunny( joNodeDesc.nodeID ) + "\n" );
+            continue;
+        }
+        const env = {
+            "PATH": g_strRecommendedShellPATH + ":" + normalizePath( "~/.bun/bin" ),
+            "PORT_LISTEN": "" + joNodeDesc.port4tunnel,
+            "IP_REMOTE": "127.0.0.1",
+            "PORT_REMOTE": "8545",
+            "IDX_CHAIN": "" + idxChain,
+            "IDX_NODE": "" + i,
+            "CNT_NODES": "" + arrNodeDescriptions.length,
+            "IMA_TIME_FRAME": "" + g_nTimeFrameSecondsIMA,
+            "IMA_TIME_GAP": "" + g_nTimeGapSecondsIMA,
+            "IMA_SCAN_MESSAGES_PERIOD": "" + g_nScanMessagePeriodSecondsIMA,
+            "IMA_MAIN_NET_CONNECTION_PROBLEM_EMULATION": g_bImaMainNetConnectionProblemEmulationMode ? 1 : 0 // must be passed as number
+        };
+        const cmd4tunnel = "node --no-warnings " + path.join( __dirname, "tunnel.js" );
+        if( g_bVerbose )
+            log.write( cc.normal( "Starting " ) + cc.success( "Main Net tunnel" ) + cc.normal( " for node " ) + cc.sunny( joNodeDesc.nodeID ) +
+            cc.normal( " with command line " ) + cc.attention( cmd4tunnel ) + 
+            cc.normal( " and environment " ) + cc.j( env ) + "\n" );
+        if( ! joNodeDesc.proc4tunnel ) {
+            joNodeDesc.proc4tunnel = new ProcessController(
+                cmd4tunnel,
+                [],
+                joNodeDesc.logPath4tunnel, // "detached"
+                undefined, // joNodeDesc.port4tunnel, // undefined, // port
+                joNodeDesc.agentFolder,
+                env
+            );
+            if( g_bVerbose ) {
+                log.write( cc.normal( "Notice, " ) + cc.bright( "Main Net tunnel" ) + cc.normal( " for node " ) + cc.sunny( joNodeDesc.nodeID ) +
+                cc.normal( " log output is " ) + cc.info( joNodeDesc.logPath4tunnel ) +
+                "\n" );
+            }
+        }
+        joNodeDesc.proc4tunnel.run();
+        //joNodeDesc.proc4tunnel.continueDetached();
+        await sleep( 3 * 1000 );
+    }
+    if( g_bVerbose )
+        log.write( cc.success( "Done, started " ) + cc.notice( "Main Net tunnel" ) + cc.success( " as node processes" ) + "\n" );
+}
+async function schain_tunnels_stop( idxChain ) {
+    if( ! g_bEnabledImaMainNetTunnelling )
+        return;
+    if( ! g_arrChains[idxChain].isStartEnabled )
+        return;
+    let nCountStartSkipped = 0;
+    const arrNodeDescriptions = g_arrChains[idxChain].arrNodeDescriptions;
+    if( g_bVerbose )
+        log.write( cc.normal( "Stopping " ) + cc.success( "Main Net tunnel" ) + cc.normal( " as node processes..." ) + "\n" );
+    nCountStartSkipped = 0;
+    for( let i = 0; i < arrNodeDescriptions.length; ++i ) {
+        const joNodeDesc = arrNodeDescriptions[i];
+        if( g_nCountOfImaAgentInstancesToSkipStart > 0 && i >= 1 && nCountStartSkipped < g_nCountOfImaAgentInstancesToSkipStart ) {
+            ++ nCountStartSkipped;
+            if( g_bVerbose )
+                log.write( cc.warning( "Skipping(1) stop of " ) + cc.success( "Main Net tunnel" ) + cc.warning( " for node " ) + cc.sunny( joNodeDesc.nodeID ) + "\n" );
+            continue;
+        }
+        if( g_bVerbose )
+            log.write( cc.normal( "Stopping " ) + cc.success( "Main Net tunnel" ) + cc.normal( " for node " ) + cc.sunny( joNodeDesc.nodeID ) + "\n" );
+        if( joNodeDesc.proc4tunnel ) {
+            await joNodeDesc.proc4tunnel.stop();
+            joNodeDesc.proc4tunnel = null;
+        }
+    }
+    if( g_bVerbose )
+        log.write( cc.success( "Done, stopped " ) + cc.notice( "Main Net tunnel" ) + cc.success( " as node processes" ) + "\n" );
+}
+
+function get_main_net_url_4_ima( idxChain, idxNode ) {
+    if( ! g_bEnabledImaMainNetTunnelling )
+        return "" + g_strMainNetURL;
+    if( ! g_arrChains[idxChain].isStartEnabled )
+        return "" + g_strMainNetURL;
+    const arrNodeDescriptions = g_arrChains[idxChain].arrNodeDescriptions;
+    const joNodeDesc = arrNodeDescriptions[idxNode];
+    const strURL = "http://127.0.0.1:" + joNodeDesc.port4tunnel;
+    return strURL;
+}
+
 
 //////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 //////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
@@ -10201,6 +10345,7 @@ async function run() {
     ima_check_registration_all();
     await ima_get_docker_image();
     ima_prepare_docker_shares_all();
+    await all_tunnels_start();
     await all_ima_agents_start();
     await all_ima_network_browsers_start();
     //
@@ -10220,6 +10365,7 @@ async function run() {
         await ima_connect_all_schains_together_each_other( 10 );
         // NOTICE: IMA agents here restarted to re-load connected S-Chains info
         await all_ima_agents_stop();
+        await all_tunnels_stop();
         await all_ima_network_browsers_stop();
         //
         // log.write(
@@ -10229,6 +10375,7 @@ async function run() {
         // wait_ENTER_key_press_on_console();
         // log.write( cc.normal( "Resuming test..." ) + "\n" );
         //
+        await all_tunnels_start();
         await all_ima_agents_start();
         await all_ima_network_browsers_start();
         //
