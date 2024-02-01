@@ -10420,10 +10420,12 @@ async function run() {
     if( g_bVerbose )
         log.write( "\n\n" + cc.sunny( "Basic " ) + cc.attention( "M<->S" ) + " " + cc.sunny( "ETH transfer tests start here" ) + "\n\n" );
 
+    /*** /
     await ima_send_eth( g_idxMostOftenUsedSChain, g_strPrivateKeyImaMN, g_strPrivateKeyImaSC, "m2s", "2kether", nPreferredNodeIndex );
     await ima_send_eth( g_idxMostOftenUsedSChain, g_strPrivateKeyImaSC, g_strPrivateKeyImaMN, "s2m", "1ether", nPreferredNodeIndex );
+    / ***/
 
-    /***/
+    /*** /
     // // // // await ima_send_eth( g_idxMostOftenUsedSChain, g_strPrivateKeyImaMN, g_strPrivateKeyImaSC, "m2s", "1ether" );
     // // // // await ima_send_eth( g_idxMostOftenUsedSChain, g_strPrivateKeyImaSC, g_strPrivateKeyImaMN, "s2m", "1ether" );
     //
@@ -10476,9 +10478,9 @@ async function run() {
     await ima_send_erc1155_sc2mn( g_idxMostOftenUsedSChain, g_strPrivateKeyImaSC, g_strPrivateKeyImaMN, 1, 1000000, nPreferredNodeIndex );
     await ima_batch_send_erc1155_mn2sc( g_idxMostOftenUsedSChain, g_strPrivateKeyImaMN, g_strPrivateKeyImaSC, arrTokenIDs1155, arrAmounts1155, nPreferredNodeIndex );
     await ima_batch_send_erc1155_sc2mn( g_idxMostOftenUsedSChain, g_strPrivateKeyImaSC, g_strPrivateKeyImaMN, arrTokenIDs1155, arrAmounts1155, nPreferredNodeIndex );
-    /***/
+    / ***/
     if( g_arrChains.length >= 2 && g_bIsTestS2S ) {
-        /***/
+        /*** /
         if( g_bVerbose )
             log.write( "\n\n" + cc.sunny( "Basic " ) + cc.attention( "S<->S" ) + " " + cc.sunny( " chat start here" ) + "\n\n" );
         // S2S chat
@@ -10990,7 +10992,63 @@ async function run() {
             g_strPrivateKeyImaSC,
             g_strPrivateKeyImaSC
         );
-        /***/
+        / ***/
+
+        // Finally, do the PoW test
+        log.write( "\n\n" + cc.bright( "Will do PoW testing by draining wallet on S-chain..." ) + "\n\n" );
+        // first, drain skale-eth on S-chain
+        const w3schain = getWeb3FromURL( g_arrChains[g_idxMostOftenUsedSChain].arrNodeDescriptions[0].url );
+        const pk_drain = g_strPrivateKeyImaSC;
+        const addr_drain = private_key_2_account_address( g_w3mod, pk_drain );
+        init_account_from_private_key( w3schain, pk_drain );
+        const maxAwailableOnSChain = await impl_get_ballance_eth( w3schain, addr_drain, "S-chain" );
+        const maxAwailableOnSChainHex = g_w3mod.utils.toHex( maxAwailableOnSChain );
+        log.write( cc.debug( "Max available value to drain " ) + cc.info( addr_drain ) + cc.debug(" is " ) + cc.j( maxAwailableOnSChain ) + cc.debug( "=" ) + cc.j( maxAwailableOnSChainHex ) + "\n" );
+        const nGas = 5000000000;
+        log.write( cc.debug( "Account draining will use gas " ) + cc.j( nGas ) + "\n" );
+        let nValueDrain = ensure_starts_with_0x( w3schain.utils.toBN( maxAwailableOnSChainHex.toString() ).sub( w3schain.utils.toBN(nGas) ).toString(16) );
+        const nEstimated = await w3schain.eth.estimateGas( {
+            from: addr_drain,
+            to: "0xca8489dB50A548eC85eBD4A0E11a9D61cB508540",
+            gas: nGas,
+            value: "0x01" // nValueDrain
+        } ); 
+        log.write( cc.debug( "Estimated draining gas is " ) + cc.j( nEstimated ) + "\n" );
+        for( let idxAttempt = 0; idxAttempt < 20; ++ idxAttempt ) {
+            try {
+                log.write( cc.debug( "Account draining at attempt " ) + cc.info( idxAttempt + 1 ) + cc.debug( " will use value " ) + cc.j( nValueDrain ) + "\n" );
+                const rv = await w3schain.eth.sendTransaction( {
+                    from: addr_drain,
+                    to: "0xca8489dB50A548eC85eBD4A0E11a9D61cB508540",
+                    gas: nGas,
+                    value: nValueDrain
+                } );
+                log.write( cc.debug( "Account drain is complete with result " ) + cc.j( rv ) + "\n" );
+                break;
+            } catch( err ) {
+            }
+            nValueDrain = ensure_starts_with_0x( w3schain.utils.toBN( nValueDrain.toString() ).sub( w3schain.utils.toBN(nGas) ).toString(16) );
+        }
+        const afterDrain = await impl_get_ballance_eth( w3schain, addr_drain, "S-chain" );
+        log.write( cc.debug( "Value available after drain is " ) + cc.j( afterDrain ) + "\n" );
+        let nValueSend = ensure_starts_with_0x( w3schain.utils.toBN( afterDrain.toString() ).sub( w3schain.utils.toBN(21000) ).toString(16) );
+        log.write( cc.debug( "Value to send is " ) + cc.j( nValueSend ) + "\n" );
+        // second, deliver to S-chain where we have no money
+        try {
+            await ima_send_eth( g_idxMostOftenUsedSChain, g_strPrivateKeyImaMN, g_strPrivateKeyImaSC, "m2s", nValueSend, nPreferredNodeIndex );
+        } catch( err ) {
+            log.write( cc.fatal( "M2S(1) PoW error:" ) + " " + cc.j( err ) + "\n" );
+        }
+        try {
+            await ima_send_eth( g_idxMostOftenUsedSChain, g_strPrivateKeyImaMN, g_strPrivateKeyImaSC, "m2s", "1wei", nPreferredNodeIndex );
+        } catch( err ) {
+            log.write( cc.fatal( "M2S(2) PoW error:" ) + " " + cc.j( err ) + "\n" );
+        }
+        try {
+            await ima_send_eth( g_idxMostOftenUsedSChain, g_strPrivateKeyImaSC, g_strPrivateKeyImaMN, "s2m", nValueSend, nPreferredNodeIndex );
+        } catch( err ) {
+            log.write( cc.fatal( "S2M PoW error:" ) + cc.j( err ) + "\n" );
+        }
     } else { // if( g_arrChains.length >= 2 && g_bIsTestS2S )
         if( g_bVerbose )
             log.write( "\n\n" + cc.warning( "Skipped all " ) + cc.attention( "S<->S" ) + " " + cc.sunny( " transfer" ) + "\n\n" );
