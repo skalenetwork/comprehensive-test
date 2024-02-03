@@ -171,3 +171,5 @@ s_chain_gen/btrfs-clean.sh
 s_chain_gen/clean.sh
 s_chain_gen/run.sh
 s_chain_gen/shutdown.sh
+s_chain_gen/ipcx/
+s_chain_gen/log/
