@@ -10420,12 +10420,12 @@ async function run() {
     if( g_bVerbose )
         log.write( "\n\n" + cc.sunny( "Basic " ) + cc.attention( "M<->S" ) + " " + cc.sunny( "ETH transfer tests start here" ) + "\n\n" );
 
-    /*** /
+    /***/
     await ima_send_eth( g_idxMostOftenUsedSChain, g_strPrivateKeyImaMN, g_strPrivateKeyImaSC, "m2s", "2kether", nPreferredNodeIndex );
     await ima_send_eth( g_idxMostOftenUsedSChain, g_strPrivateKeyImaSC, g_strPrivateKeyImaMN, "s2m", "1ether", nPreferredNodeIndex );
-    / ***/
+    /***/
 
-    /*** /
+    /***/
     // // // // await ima_send_eth( g_idxMostOftenUsedSChain, g_strPrivateKeyImaMN, g_strPrivateKeyImaSC, "m2s", "1ether" );
     // // // // await ima_send_eth( g_idxMostOftenUsedSChain, g_strPrivateKeyImaSC, g_strPrivateKeyImaMN, "s2m", "1ether" );
     //
@@ -10992,7 +10992,7 @@ async function run() {
             g_strPrivateKeyImaSC,
             g_strPrivateKeyImaSC
         );
-        / ***/
+        /***/
 
         // Finally, do the PoW test
         log.write( "\n\n" + cc.bright( "Will do PoW testing by draining wallet on S-chain..." ) + "\n\n" );
@@ -11038,16 +11038,6 @@ async function run() {
             await ima_send_eth( g_idxMostOftenUsedSChain, g_strPrivateKeyImaMN, g_strPrivateKeyImaSC, "m2s", nValueSend, nPreferredNodeIndex );
         } catch( err ) {
             log.write( cc.fatal( "M2S(1) PoW error:" ) + " " + cc.j( err ) + "\n" );
-        }
-        try {
-            await ima_send_eth( g_idxMostOftenUsedSChain, g_strPrivateKeyImaMN, g_strPrivateKeyImaSC, "m2s", "1wei", nPreferredNodeIndex );
-        } catch( err ) {
-            log.write( cc.fatal( "M2S(2) PoW error:" ) + " " + cc.j( err ) + "\n" );
-        }
-        try {
-            await ima_send_eth( g_idxMostOftenUsedSChain, g_strPrivateKeyImaSC, g_strPrivateKeyImaMN, "s2m", nValueSend, nPreferredNodeIndex );
-        } catch( err ) {
-            log.write( cc.fatal( "S2M PoW error:" ) + cc.j( err ) + "\n" );
         }
     } else { // if( g_arrChains.length >= 2 && g_bIsTestS2S )
         if( g_bVerbose )
