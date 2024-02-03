@@ -6700,9 +6700,10 @@ async function impl_get_ballance_erc20( w3, strAddress, strNetworkName, joABI, s
     return await impl_get_ballance_erc20_from_instance_of_contract( w3, strAddress, strNetworkName, contract );
 }
 
-async function ima_send_eth( idxChain, strPrivateKeyFrom, strPrivateKeyTo, strDirection, moneySpec, nPreferredNodeIndex ) {
+async function ima_send_eth( idxChain, strPrivateKeyFrom, strPrivateKeyTo, strDirection, moneySpec, nPreferredNodeIndex, isWaitBallanceChanged ) {
     if( ! g_arrChains[idxChain].isStartEnabled )
         return;
+    isWaitBallanceChanged = ( isWaitBallanceChanged === undefined || isWaitBallanceChanged === null ) ? true : ( !isWaitBallanceChanged );
     try {
         if( g_bVerbose ) {
             log.write( "\n\n" +
@@ -6788,78 +6789,41 @@ async function ima_send_eth( idxChain, strPrivateKeyFrom, strPrivateKeyTo, strDi
         const cntAttempts = 0 + g_nCntAttempts;
         const joEnv = { };
         await exec_array_of_commands_safe( [ strCommandPayment ], g_strFolderImaAgent, joEnv, 3 );
-        let isMoneyReceived = false;
-        if( strDirection === "s2m" ) { // receive payment after delay
-            if( g_nTimeToSleepBeforeS2mReceiveMilliseconds > 0 ) {
-                log.write( cc.debug( ".......Sleeping " ) + cc.info( g_nTimeToSleepBeforeS2mReceiveMilliseconds ) + cc.debug( " milliseconds..." ) + "\n" );
-                await sleep( g_nTimeToSleepBeforeS2mReceiveMilliseconds );
-                log.write( cc.debug( ".......Done, was slept " ) + cc.info( g_nTimeToSleepBeforeS2mReceiveMilliseconds ) + cc.debug( " milliseconds." ) + "\n" );
-            }
-            // NOTICE: S2M will run its own preliminary state analysis lo
-            for( let idxAttempt = 0; idxAttempt < cntAttempts; ++ idxAttempt ) {
-                log.write( cc.normal( "Receive " ) + cc.sunny( strDirection ) + cc.normal( " ETH payment attempt " ) + cc.info( idxAttempt ) + cc.normal( "..." ) + "\n" );
-                if( g_bVerbose )
-                    log.write( cc.normal( "Waiting before receive " ) + cc.sunny( strDirection ) + cc.success( " ETH payment" ) + "\n" );
-                const nNodeIndex = 0;
-                const strCommandReceive =
-                    "node --no-warnings " +
-                    g_strFolderImaAgent + "/main" + g_strImaJsExt + g_strImaOutputOpts + g_strImaRuntimeOpts +
-                    " --s2m-receive" +
-                    " --url-main-net=" + joTransferOptions.urlMainNet +
-                    " --url-s-chain=" + joTransferOptions.urlSChain +
-                    " --id-main-net=" + g_strMainnetName +
-                    " --id-s-chain=" + schain_name +
-                    " --cid-main-net=" + cid_main_net +
-                    " --cid-s-chain=" + cid +
-                    " --abi-skale-manager=" + g_strSkaleManagerAbiJsonPath +
-                    " --abi-main-net=" + g_strPathImaAbiMN +
-                    " --abi-s-chain=" + get_ima_abi_schain_path( idxChain ) +
-                    " " + compose_ima_cli_account_options_all_direct( idxChain, nNodeIndex ) // compose_ima_cli_account_options( idxChain, nNodeIndex )
-                    ;
-                await exec_array_of_commands_safe( [ strCommandReceive ], g_strFolderImaAgent, joEnv, 3 );
-                const currentBalanceFrom = await fnGetBallanceFrom();
-                const currentBalanceTo = await fnGetBallanceTo();
-                const isChangedFrom = ( initialBalanceFrom == currentBalanceFrom ) ? false : true;
-                const isChangedTo = ( initialBalanceTo == currentBalanceTo ) ? false : true;
-                log.write(
-                    cc.debug( "...." ) + cc.info( "Initial balance From" ) + cc.debug( " is........." ) + cc.attention( initialBalanceFrom ) + "\n" +
-                    cc.debug( "...." ) + cc.info( "Current balance From" ) + cc.debug( " is........." ) + cc.attention( currentBalanceFrom ) + "\n" +
-                    cc.debug( "...." ) + cc.info( "Changed balance From" ) + cc.debug( " is........." ) + cc.yn( isChangedFrom ) + "\n" +
-                    cc.debug( "...." ) + cc.info( "Initial balance To" ) + cc.debug( " is..........." ) + cc.attention( initialBalanceTo ) + "\n" +
-                    cc.debug( "...." ) + cc.info( "Current balance To" ) + cc.debug( " is..........." ) + cc.attention( currentBalanceTo ) + "\n" +
-                    cc.debug( "...." ) + cc.info( "Changed balance To" ) + cc.debug( " is..........." ) + cc.yn( isChangedTo ) + "\n"
-                );
-                if( isChangedTo ) {
-                    isMoneyReceived = true;
-                    log.write( cc.success( "Money received." ) + "\n" );
-                    break;
+        if( isWaitBallanceChanged ) {
+            let isMoneyReceived = false;
+            if( strDirection === "s2m" ) { // receive payment after delay
+                if( g_nTimeToSleepBeforeS2mReceiveMilliseconds > 0 ) {
+                    log.write( cc.debug( ".......Sleeping " ) + cc.info( g_nTimeToSleepBeforeS2mReceiveMilliseconds ) + cc.debug( " milliseconds..." ) + "\n" );
+                    await sleep( g_nTimeToSleepBeforeS2mReceiveMilliseconds );
+                    log.write( cc.debug( ".......Done, was slept " ) + cc.info( g_nTimeToSleepBeforeS2mReceiveMilliseconds ) + cc.debug( " milliseconds." ) + "\n" );
                 }
-                if( isMoneyReceived )
-                    break;
-                await sleep( 1000 );
-            } // for( let idxAttempt = 0; idxAttempt < cntAttempts; ++ idxAttempt )
-        } // receive payment after delay
-        if( ! isMoneyReceived ) {
-            for( let idxAttempt = 0; idxAttempt < cntAttempts; ++ idxAttempt ) { // loop to wait ballance changed
-                const currentBalanceFrom = await fnGetBallanceFrom();
-                const currentBalanceTo = await fnGetBallanceTo();
-                const isChangedFrom = ( initialBalanceFrom == currentBalanceFrom ) ? false : true;
-                const isChangedTo = ( initialBalanceTo == currentBalanceTo ) ? false : true;
-                if( g_bVerbose ) {
-                    const joImaAbiSC = g_arrChains[g_idxMostOftenUsedSChain].joImaAbiSC;
-                    log.write( "\n" +
-                        cc.debug( "...." ) + cc.info( "Direction" ) + cc.debug( " is...................." ) + cc.sunny( strDirection ) + "\n" +
-                        cc.debug( "...." ) + cc.info( "Network From" ) + cc.debug( " is................." ) + cc.bright( joTransferOptions.nameSrc ) + "\n" +
-                        cc.debug( "...." ) + cc.info( "Network To" ) + cc.debug( " is..................." ) + cc.bright( joTransferOptions.nameDst ) + "\n" +
-                        cc.debug( "...." ) + cc.info( "Web3 URL From" ) + cc.debug( " is................" ) + cc.u( joTransferOptions.urlSrc ) + "\n" +
-                        cc.debug( "...." ) + cc.info( "Web3 URL To" ) + cc.debug( " is.................." ) + cc.u( joTransferOptions.urlDst ) + "\n" +
-                        cc.debug( "...." ) + cc.info( "S-Chain node index" ) + cc.debug( " is..........." ) + cc.notice( joTransferOptions.schainNodeIndex ) + "\n" +
-                        cc.debug( "...." ) + cc.info( "ERC20 token on S-Chain" ) + cc.debug( " is......." ) + cc.sunny( joImaAbiSC.eth_erc20_address ) + "\n" +
-                        cc.debug( "...." ) + cc.info( "Private Key From" ) + cc.debug( " is............." ) + cc.warning( strPrivateKeyFrom ) + "\n" +
-                        cc.debug( "...." ) + cc.info( "Private Key To" ) + cc.debug( " is..............." ) + cc.warning( strPrivateKeyTo ) + "\n" +
-                        cc.debug( "...." ) + cc.info( "Address From" ) + cc.debug( " is................." ) + cc.normal( strAddressFrom ) + "\n" +
-                        cc.debug( "...." ) + cc.info( "Address To" ) + cc.debug( " is..................." ) + cc.normal( strAddressTo ) + "\n" +
-                        cc.debug( "...." ) + cc.info( "Amount to transfer" ) + cc.debug( " is..........." ) + cc.bright( moneySpec ) + "\n" +
+                // NOTICE: S2M will run its own preliminary state analysis lo
+                for( let idxAttempt = 0; idxAttempt < cntAttempts; ++ idxAttempt ) {
+                    log.write( cc.normal( "Receive " ) + cc.sunny( strDirection ) + cc.normal( " ETH payment attempt " ) + cc.info( idxAttempt ) + cc.normal( "..." ) + "\n" );
+                    if( g_bVerbose )
+                        log.write( cc.normal( "Waiting before receive " ) + cc.sunny( strDirection ) + cc.success( " ETH payment" ) + "\n" );
+                    const nNodeIndex = 0;
+                    const strCommandReceive =
+                        "node --no-warnings " +
+                        g_strFolderImaAgent + "/main" + g_strImaJsExt + g_strImaOutputOpts + g_strImaRuntimeOpts +
+                        " --s2m-receive" +
+                        " --url-main-net=" + joTransferOptions.urlMainNet +
+                        " --url-s-chain=" + joTransferOptions.urlSChain +
+                        " --id-main-net=" + g_strMainnetName +
+                        " --id-s-chain=" + schain_name +
+                        " --cid-main-net=" + cid_main_net +
+                        " --cid-s-chain=" + cid +
+                        " --abi-skale-manager=" + g_strSkaleManagerAbiJsonPath +
+                        " --abi-main-net=" + g_strPathImaAbiMN +
+                        " --abi-s-chain=" + get_ima_abi_schain_path( idxChain ) +
+                        " " + compose_ima_cli_account_options_all_direct( idxChain, nNodeIndex ) // compose_ima_cli_account_options( idxChain, nNodeIndex )
+                        ;
+                    await exec_array_of_commands_safe( [ strCommandReceive ], g_strFolderImaAgent, joEnv, 3 );
+                    const currentBalanceFrom = await fnGetBallanceFrom();
+                    const currentBalanceTo = await fnGetBallanceTo();
+                    const isChangedFrom = ( initialBalanceFrom == currentBalanceFrom ) ? false : true;
+                    const isChangedTo = ( initialBalanceTo == currentBalanceTo ) ? false : true;
+                    log.write(
                         cc.debug( "...." ) + cc.info( "Initial balance From" ) + cc.debug( " is........." ) + cc.attention( initialBalanceFrom ) + "\n" +
                         cc.debug( "...." ) + cc.info( "Current balance From" ) + cc.debug( " is........." ) + cc.attention( currentBalanceFrom ) + "\n" +
                         cc.debug( "...." ) + cc.info( "Changed balance From" ) + cc.debug( " is........." ) + cc.yn( isChangedFrom ) + "\n" +
@@ -6867,17 +6831,56 @@ async function ima_send_eth( idxChain, strPrivateKeyFrom, strPrivateKeyTo, strDi
                         cc.debug( "...." ) + cc.info( "Current balance To" ) + cc.debug( " is..........." ) + cc.attention( currentBalanceTo ) + "\n" +
                         cc.debug( "...." ) + cc.info( "Changed balance To" ) + cc.debug( " is..........." ) + cc.yn( isChangedTo ) + "\n"
                     );
-                }
-                if( isChangedTo ) {
-                    isMoneyReceived = true;
-                    log.write( cc.success( "Money received." ) + "\n" );
-                    break;
-                }
-                await sleep( 1000 );
-            } // loop to wait ballance changed
-        } // if( ! isMoneyReceived )
-        if( ! isMoneyReceived )
-            throw new Error( "IMA transfer done, but money receive was not confirmed due to wait timeout" );
+                    if( isChangedTo ) {
+                        isMoneyReceived = true;
+                        log.write( cc.success( "Money received." ) + "\n" );
+                        break;
+                    }
+                    if( isMoneyReceived )
+                        break;
+                    await sleep( 1000 );
+                } // for( let idxAttempt = 0; idxAttempt < cntAttempts; ++ idxAttempt )
+            } // receive payment after delay
+            if( ! isMoneyReceived ) {
+                for( let idxAttempt = 0; idxAttempt < cntAttempts; ++ idxAttempt ) { // loop to wait ballance changed
+                    const currentBalanceFrom = await fnGetBallanceFrom();
+                    const currentBalanceTo = await fnGetBallanceTo();
+                    const isChangedFrom = ( initialBalanceFrom == currentBalanceFrom ) ? false : true;
+                    const isChangedTo = ( initialBalanceTo == currentBalanceTo ) ? false : true;
+                    if( g_bVerbose ) {
+                        const joImaAbiSC = g_arrChains[g_idxMostOftenUsedSChain].joImaAbiSC;
+                        log.write( "\n" +
+                            cc.debug( "...." ) + cc.info( "Direction" ) + cc.debug( " is...................." ) + cc.sunny( strDirection ) + "\n" +
+                            cc.debug( "...." ) + cc.info( "Network From" ) + cc.debug( " is................." ) + cc.bright( joTransferOptions.nameSrc ) + "\n" +
+                            cc.debug( "...." ) + cc.info( "Network To" ) + cc.debug( " is..................." ) + cc.bright( joTransferOptions.nameDst ) + "\n" +
+                            cc.debug( "...." ) + cc.info( "Web3 URL From" ) + cc.debug( " is................" ) + cc.u( joTransferOptions.urlSrc ) + "\n" +
+                            cc.debug( "...." ) + cc.info( "Web3 URL To" ) + cc.debug( " is.................." ) + cc.u( joTransferOptions.urlDst ) + "\n" +
+                            cc.debug( "...." ) + cc.info( "S-Chain node index" ) + cc.debug( " is..........." ) + cc.notice( joTransferOptions.schainNodeIndex ) + "\n" +
+                            cc.debug( "...." ) + cc.info( "ERC20 token on S-Chain" ) + cc.debug( " is......." ) + cc.sunny( joImaAbiSC.eth_erc20_address ) + "\n" +
+                            cc.debug( "...." ) + cc.info( "Private Key From" ) + cc.debug( " is............." ) + cc.warning( strPrivateKeyFrom ) + "\n" +
+                            cc.debug( "...." ) + cc.info( "Private Key To" ) + cc.debug( " is..............." ) + cc.warning( strPrivateKeyTo ) + "\n" +
+                            cc.debug( "...." ) + cc.info( "Address From" ) + cc.debug( " is................." ) + cc.normal( strAddressFrom ) + "\n" +
+                            cc.debug( "...." ) + cc.info( "Address To" ) + cc.debug( " is..................." ) + cc.normal( strAddressTo ) + "\n" +
+                            cc.debug( "...." ) + cc.info( "Amount to transfer" ) + cc.debug( " is..........." ) + cc.bright( moneySpec ) + "\n" +
+                            cc.debug( "...." ) + cc.info( "Initial balance From" ) + cc.debug( " is........." ) + cc.attention( initialBalanceFrom ) + "\n" +
+                            cc.debug( "...." ) + cc.info( "Current balance From" ) + cc.debug( " is........." ) + cc.attention( currentBalanceFrom ) + "\n" +
+                            cc.debug( "...." ) + cc.info( "Changed balance From" ) + cc.debug( " is........." ) + cc.yn( isChangedFrom ) + "\n" +
+                            cc.debug( "...." ) + cc.info( "Initial balance To" ) + cc.debug( " is..........." ) + cc.attention( initialBalanceTo ) + "\n" +
+                            cc.debug( "...." ) + cc.info( "Current balance To" ) + cc.debug( " is..........." ) + cc.attention( currentBalanceTo ) + "\n" +
+                            cc.debug( "...." ) + cc.info( "Changed balance To" ) + cc.debug( " is..........." ) + cc.yn( isChangedTo ) + "\n"
+                        );
+                    }
+                    if( isChangedTo ) {
+                        isMoneyReceived = true;
+                        log.write( cc.success( "Money received." ) + "\n" );
+                        break;
+                    }
+                    await sleep( 1000 );
+                } // loop to wait ballance changed
+            } // if( ! isMoneyReceived )
+            if( ! isMoneyReceived )
+                throw new Error( "IMA transfer done, but money receive was not confirmed due to wait timeout" );
+        } // if( isWaitBallanceChanged )
         if( g_bVerbose )
             log.write( cc.success( "Successful " ) + cc.sunny( strDirection ) + cc.success( " ETH transfer" ) + "\n" );
     } catch ( err ) {
@@ -11045,7 +11048,9 @@ async function run() {
         log.write( cc.debug( "Value to send is " ) + cc.j( nValueSend ) + "\n" );
         // second, deliver to S-chain where we have no money
         try {
-            await ima_send_eth( g_idxMostOftenUsedSChain, g_strPrivateKeyImaMN, g_strPrivateKeyImaSC, "m2s", nValueSend, nPreferredNodeIndex );
+            await ima_send_eth( g_idxMostOftenUsedSChain, g_strPrivateKeyImaMN, g_strPrivateKeyImaSC, "m2s", nValueSend, nPreferredNodeIndex, false );
+            await ima_send_eth( g_idxMostOftenUsedSChain, g_strPrivateKeyImaMN, g_strPrivateKeyImaSC, "m2s", "1wei", nPreferredNodeIndex, false );
+            await ima_send_eth( g_idxMostOftenUsedSChain, g_strPrivateKeyImaMN, g_strPrivateKeyImaSC, "m2s", "1wei", nPreferredNodeIndex, false );
         } catch ( err ) {
             log.write( cc.fatal( "M2S(1) PoW error:" ) + " " + cc.j( err ) + "\n" );
         }
