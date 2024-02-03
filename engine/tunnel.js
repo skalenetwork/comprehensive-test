@@ -1,4 +1,4 @@
-var net = require( "net" );
+const net = require( "net" );
 
 const cc = require( "../s_chain_gen/cc.js" );
 cc.enable( true );
@@ -41,27 +41,27 @@ const nPortListenOn = process.env.PORT_LISTEN ? parseIntOrHex( process.env.PORT_
 const strRemoteIP = process.env.IP_REMOTE || "127.0.0.1";
 const nRemotePort = process.env.PORT_REMOTE ? parseIntOrHex( process.env.PORT_REMOTE ) : 8545;
 console.log( generateTimestampPrefix() + cc.debug( "Proxy will listen on port " ) + cc.info( nPortListenOn ) +
-    cc.debug( " and connect to " ) + cc.notice( strRemoteIP ) + cc.debug( ":") + cc.info( nRemotePort ) );
+    cc.debug( " and connect to " ) + cc.notice( strRemoteIP ) + cc.debug( ":" ) + cc.info( nRemotePort ) );
 const nIdxChain = process.env.IDX_CHAIN ? parseIntOrHex( process.env.IDX_CHAIN ) : 0;
 const nIdxNode = process.env.IDX_NODE ? parseIntOrHex( process.env.IDX_NODE ) : 0;
 const nCntNodes = process.env.IDX_CHAIN ? parseIntOrHex( process.env.CNT_NODES ) : 0;
-console.log( generateTimestampPrefix() + cc.debug( "Chain index is ") + cc.info( nIdxChain ) );
-console.log( generateTimestampPrefix() + cc.debug( "Node index is ") + cc.info( nIdxNode ) );
-console.log( generateTimestampPrefix() + cc.debug( "Count of nodes in chain is ") + cc.info( nCntNodes ) );
+console.log( generateTimestampPrefix() + cc.debug( "Chain index is " ) + cc.info( nIdxChain ) );
+console.log( generateTimestampPrefix() + cc.debug( "Node index is " ) + cc.info( nIdxNode ) );
+console.log( generateTimestampPrefix() + cc.debug( "Count of nodes in chain is " ) + cc.info( nCntNodes ) );
 const nTimeFrameSecondsIMA = process.env.IMA_TIME_FRAME ? parseIntOrHex( process.env.IMA_TIME_FRAME ) : 0;
 const nTimeGapSecondsIMA = process.env.IMA_TIME_GAP ? parseIntOrHex( process.env.IMA_TIME_GAP ) : 0;
 const nScanMessagePeriodSecondsIMA = process.env.IMA_SCAN_MESSAGES_PERIOD ? parseIntOrHex( process.env.IMA_SCAN_MESSAGES_PERIOD ) : 0;
-console.log( generateTimestampPrefix() + cc.debug( "IMA time frame(in seconds) is ") + cc.info( nTimeFrameSecondsIMA ) );
-console.log( generateTimestampPrefix() + cc.debug( "IMA time gap(in seconds) is ") + cc.info( nTimeGapSecondsIMA ) );
-console.log( generateTimestampPrefix() + cc.debug( "IMA messages scan period(in seconds) is ") + cc.info( nScanMessagePeriodSecondsIMA ) );
-let bImaMainNetConnectionProblemEmulationMode = (!! ( process.env.IMA_MAIN_NET_CONNECTION_PROBLEM_EMULATION ? parseIntOrHex( process.env.IMA_MAIN_NET_CONNECTION_PROBLEM_EMULATION ) : 0 ) );
-console.log( generateTimestampPrefix() + cc.debug( "IMA to Main Net connection problem emulation mode(initially specified) is ") + cc.yn( bImaMainNetConnectionProblemEmulationMode ) );
-if( nTimeFrameSecondsIMA <= 0
-    || nIdxNode < 0
-    || nCntNodes <= 0
-    )
+console.log( generateTimestampPrefix() + cc.debug( "IMA time frame(in seconds) is " ) + cc.info( nTimeFrameSecondsIMA ) );
+console.log( generateTimestampPrefix() + cc.debug( "IMA time gap(in seconds) is " ) + cc.info( nTimeGapSecondsIMA ) );
+console.log( generateTimestampPrefix() + cc.debug( "IMA messages scan period(in seconds) is " ) + cc.info( nScanMessagePeriodSecondsIMA ) );
+let bImaMainNetConnectionProblemEmulationMode = ( !! ( process.env.IMA_MAIN_NET_CONNECTION_PROBLEM_EMULATION ? parseIntOrHex( process.env.IMA_MAIN_NET_CONNECTION_PROBLEM_EMULATION ) : 0 ) );
+console.log( generateTimestampPrefix() + cc.debug( "IMA to Main Net connection problem emulation mode(initially specified) is " ) + cc.yn( bImaMainNetConnectionProblemEmulationMode ) );
+if( nTimeFrameSecondsIMA <= 0 ||
+    nIdxNode < 0 ||
+    nCntNodes <= 0
+)
     bImaMainNetConnectionProblemEmulationMode = false;
-console.log( generateTimestampPrefix() + cc.debug( "IMA to Main Net connection problem emulation mode(finally, effective) is ") + cc.yn( bImaMainNetConnectionProblemEmulationMode ) );
+console.log( generateTimestampPrefix() + cc.debug( "IMA to Main Net connection problem emulation mode(finally, effective) is " ) + cc.yn( bImaMainNetConnectionProblemEmulationMode ) );
 
 function checkTimeFraming( aDateTime ) {
     try {
@@ -80,7 +80,7 @@ function checkTimeFraming( aDateTime ) {
             nActiveNodeFrameIndex %= nCntNodes; // for safety only
         }
         let bSkip = ( nActiveNodeFrameIndex != nIdxNode );
-        let bInsideGap = false;
+        //let bInsideGap = false;
 
         const nRangeStart =
             nUtcUnixTimeStamp -
@@ -88,10 +88,10 @@ function checkTimeFraming( aDateTime ) {
         const nFrameStart = nRangeStart + nIdxNode * nTimeFrameSecondsIMA;
         const nGapStart = nFrameStart + nTimeFrameSecondsIMA - nTimeGapSecondsIMA;
         if( !bSkip ) {
-            if( nUtcUnixTimeStamp >= nGapStart ) {
+            if( nUtcUnixTimeStamp >= nGapStart )
                 bSkip = true;
-                bInsideGap = true;
-            }
+                //bInsideGap = true;
+
         }
         if( bSkip )
             return false;
@@ -107,7 +107,7 @@ function createServer() {
         socket.on( "end", function() {
             console.log( generateTimestampPrefix() + cc.error( "-" ) + " " + cc.debug( "Disconnected " ) + cc.j( socket.address() ) );
         } );
-        let upstream = net.connect( nRemotePort, strRemoteIP );
+        const upstream = net.connect( nRemotePort, strRemoteIP );
         socket.pipe( upstream ).pipe( socket );
     } ).listen( nPortListenOn );
     return server;
@@ -116,7 +116,7 @@ function createServer() {
 let server = createServer();
 if( bImaMainNetConnectionProblemEmulationMode ) {
     setInterval( function() {
-        let isNeedStart = false, isNeedStop = false;;
+        let isNeedStart = false, isNeedStop = false; ;
         if( nIdxNode != 0 && checkTimeFraming() ) {
             const aDateTime = new Date();
             const nUtcUnixTimeStamp = Math.floor( ( aDateTime ).getTime() / 1000 );
@@ -139,8 +139,8 @@ if( bImaMainNetConnectionProblemEmulationMode ) {
         }
         if( isNeedStop ) {
             console.log( generateTimestampPrefix() + cc.notice( "Server will be closed..." ) );
-            server.close()
+            server.close();
             server = null;
-    }
-    }, 20*1000 );
+        }
+    }, 20 * 1000 );
 }

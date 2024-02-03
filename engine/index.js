@@ -368,9 +368,9 @@ function print_logs_at_exit() {
         for( let idxChain = 0; idxChain < g_arrChains.length; ++ idxChain ) {
             if( ! g_arrChains[idxChain].isStartEnabled )
                 continue;
-            for( let idxNode = 0; idxNode < g_arrChains[idxChain].arrNodeDescriptions.length; ++ idxNode ) {
+            for( let idxNode = 0; idxNode < g_arrChains[idxChain].arrNodeDescriptions.length; ++ idxNode )
                 print_log_at_exit( path.join( __dirname, "imaMainNetTunnel_" + zeroPad( idxChain, 2 ) + "_" + zeroPad( idxNode, 2 ) + ".log" ) );
-            }
+
         }
     }
     print_log_at_exit( path.join( __dirname, "tm.log" ) );
@@ -456,8 +456,8 @@ function parseIntOrHex( s ) {
 function isNumericString( s ) {
     if( typeof s != "string" )
         return false; // s is not string
-    return (!isNaN(s)) && // use type coercion to parse the _entirety_ of the string (`parseFloat` alone does not do this)...
-           (!isNaN(parseFloat(s))); // ...and ensure strings of whitespace fail
+    return ( !isNaN( s ) ) && // use type coercion to parse the _entirety_ of the string (`parseFloat` alone does not do this)...
+           ( !isNaN( parseFloat( s ) ) ); // ...and ensure strings of whitespace fail
 }
 
 function s2n( s, nDefault ) {
@@ -483,7 +483,7 @@ function s2b( s ) {
         return true;
     if( s == "off" )
         return false;
-    if( isNumericString(s ) )
+    if( isNumericString( s ) )
         return parseIntOrHex( s ) ? true : false;
     return Boolean( s );
 }
@@ -574,7 +574,7 @@ if( g_bVerbose ) {
     log.write( cc.normal( "Assuming " ) + cc.sunny( "IMA Contracts" ) + cc.normal( " repo is " ) + cc.info( g_strFolderRepoImaContracts ) + "\n" );
 }
 const g_strFolderImaProxy = "" + g_strFolderRepoImaContracts + "/proxy";
-let g_strFolderImaAgentBase = "" + g_strFolderRepoImaAgent + ( g_bSeparatedImaAgentMode ? "/src" : "/agent" );
+const g_strFolderImaAgentBase = "" + g_strFolderRepoImaAgent + ( g_bSeparatedImaAgentMode ? "/src" : "/agent" );
 let g_strFolderImaAgent = "" + g_strFolderImaAgentBase;
 let g_strImaJsExt = ".mjs";
 let g_isImaAgentTypeScriptBased = false;
@@ -583,9 +583,9 @@ if( dirExists( g_strFolderImaAgent + "/build" ) ) {
     g_strFolderImaAgent += "/build";
     g_strImaJsExt = ".js";
 }
-if( g_bVerbose ) {
+if( g_bVerbose )
     log.write( cc.normal( "Assuming " ) + cc.sunny( "IMA Agent" ) + cc.normal( " is based on " ) + cc.info( g_isImaAgentTypeScriptBased ? "TypeScript" : "JavaScript" ) + "\n" );
-}
+
 // IMA ABI files
 const g_strPathImaAbiMN = g_strFolderImaProxy + "/data/proxyMainnet.json";
 
@@ -692,8 +692,8 @@ const g_arrChains = [
         arrNodeDescriptions: [
             initNodeDescription( process.env.URL_W3_NODE_00 || "http://127.0.0.1:2164", 0, 0, g_arrChainNaming[0].cid, 1112, "Aldo" ),
             initNodeDescription( process.env.URL_W3_NODE_01 || "http://127.0.0.2:2264", 0, 1, g_arrChainNaming[0].cid, 1113, "Bear" ),
-            initNodeDescription( process.env.URL_W3_NODE_02 || "http://127.0.0.3:2364",  0,  2, g_arrChainNaming[0].cid, 1114, "John" ),
-            initNodeDescription( process.env.URL_W3_NODE_03 || "http://127.0.0.4:2464",  0,  3, g_arrChainNaming[0].cid, 1115, "Seed" )
+            initNodeDescription( process.env.URL_W3_NODE_02 || "http://127.0.0.3:2364", 0, 2, g_arrChainNaming[0].cid, 1114, "John" ),
+            initNodeDescription( process.env.URL_W3_NODE_03 || "http://127.0.0.4:2464", 0, 3, g_arrChainNaming[0].cid, 1115, "Seed" )
             // initNodeDescription( process.env.URL_W3_NODE_04 || "http://127.0.0.5:2564",  0,  4, g_arrChainNaming[0].cid, 1116, "Tron" ),
             // initNodeDescription( process.env.URL_W3_NODE_05 || "http://127.0.0.6:2664",  0,  5, g_arrChainNaming[0].cid, 1117, "Neon" ),
             // initNodeDescription( process.env.URL_W3_NODE_06 || "http://127.0.0.7:2764",  0,  6, g_arrChainNaming[0].cid, 1118, "Lion" ),
@@ -710,7 +710,7 @@ const g_arrChains = [
         arrSyncNodeDescriptions: [
             // initNodeDescription( process.env.URL_W3_NODE_02 || "http://127.0.0.3:2364", 0, 2, g_arrChainNaming[0].cid, 1114, "John" )
             //
-            initNodeDescription( process.env.URL_W3_NODE_04 || "http://127.0.0.5:2564",  0,  4, g_arrChainNaming[0].cid, 1116, "Tron" )
+            initNodeDescription( process.env.URL_W3_NODE_04 || "http://127.0.0.5:2564", 0, 4, g_arrChainNaming[0].cid, 1116, "Tron" )
             // initNodeDescription( process.env.URL_W3_NODE_17 || "http://127.0.0.16:3764", 0, 15, g_arrChainNaming[0].cid, 1127, "Barbie" )
         ],
         arrAssignedNodeIndices: []
@@ -725,15 +725,15 @@ const g_arrChains = [
             // initNodeDescription( process.env.URL_W3_NODE_03 || "http://127.0.0.4:2464", 1, 0, g_arrChainNaming[1].cid, 1115, "Seed" ),
             // initNodeDescription( process.env.URL_W3_NODE_04 || "http://127.0.0.5:2564", 1, 1, g_arrChainNaming[1].cid, 1116, "Tron" )
             //
-            initNodeDescription( process.env.URL_W3_NODE_05 || "http://127.0.0.6:2664",  1,  0, g_arrChainNaming[0].cid, 1117, "Neon" ),
-            initNodeDescription( process.env.URL_W3_NODE_06 || "http://127.0.0.7:2764",  1,  1, g_arrChainNaming[0].cid, 1118, "Lion" ),
-            initNodeDescription( process.env.URL_W3_NODE_07 || "http://127.0.0.8:2864",  1,  2, g_arrChainNaming[0].cid, 1119, "Bonk" ),
-            initNodeDescription( process.env.URL_W3_NODE_08 || "http://127.0.0.9:2964",  1,  3, g_arrChainNaming[0].cid, 1120, "Gold" )
+            initNodeDescription( process.env.URL_W3_NODE_05 || "http://127.0.0.6:2664", 1, 0, g_arrChainNaming[0].cid, 1117, "Neon" ),
+            initNodeDescription( process.env.URL_W3_NODE_06 || "http://127.0.0.7:2764", 1, 1, g_arrChainNaming[0].cid, 1118, "Lion" ),
+            initNodeDescription( process.env.URL_W3_NODE_07 || "http://127.0.0.8:2864", 1, 2, g_arrChainNaming[0].cid, 1119, "Bonk" ),
+            initNodeDescription( process.env.URL_W3_NODE_08 || "http://127.0.0.9:2964", 1, 3, g_arrChainNaming[0].cid, 1120, "Gold" )
         ],
         arrSyncNodeDescriptions: [
             // initNodeDescription( process.env.URL_W3_NODE_05 || "http://127.0.0.6:2664", 1, 2, g_arrChainNaming[1].cid, 1117, "Neon" )
             //
-            initNodeDescription( process.env.URL_W3_NODE_09 || "http://127.0.0.10:3064", 1,  4, g_arrChainNaming[0].cid, 1121, "Iron" )
+            initNodeDescription( process.env.URL_W3_NODE_09 || "http://127.0.0.10:3064", 1, 4, g_arrChainNaming[0].cid, 1121, "Iron" )
         ],
         arrAssignedNodeIndices: []
     },
@@ -4030,10 +4030,11 @@ async function schain_tunnels_start( idxChain ) {
             "IMA_MAIN_NET_CONNECTION_PROBLEM_EMULATION": g_bImaMainNetConnectionProblemEmulationMode ? 1 : 0 // must be passed as number
         };
         const cmd4tunnel = "node --no-warnings " + path.join( __dirname, "tunnel.js" );
-        if( g_bVerbose )
+        if( g_bVerbose ) {
             log.write( cc.normal( "Starting " ) + cc.success( "Main Net tunnel" ) + cc.normal( " for node " ) + cc.sunny( joNodeDesc.nodeID ) +
-            cc.normal( " with command line " ) + cc.attention( cmd4tunnel ) + 
+            cc.normal( " with command line " ) + cc.attention( cmd4tunnel ) +
             cc.normal( " and environment " ) + cc.j( env ) + "\n" );
+        }
         if( ! joNodeDesc.proc4tunnel ) {
             joNodeDesc.proc4tunnel = new ProcessController(
                 cmd4tunnel,
@@ -4095,7 +4096,6 @@ function get_main_net_url_4_ima( idxChain, idxNode ) {
     const strURL = "http://127.0.0.1:" + joNodeDesc.port4tunnel;
     return strURL;
 }
-
 
 //////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 //////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
@@ -10994,7 +10994,12 @@ async function run() {
         );
         /***/
 
-        // Finally, do the PoW test
+    } else { // if( g_arrChains.length >= 2 && g_bIsTestS2S )
+        if( g_bVerbose )
+            log.write( "\n\n" + cc.warning( "Skipped all " ) + cc.attention( "S<->S" ) + " " + cc.sunny( " transfer" ) + "\n\n" );
+    }
+
+    { // BLOCK: Finally, do the PoW test
         log.write( "\n\n" + cc.bright( "Will do PoW testing by draining wallet on S-chain..." ) + "\n\n" );
         // first, drain skale-eth on S-chain
         const w3schain = getWeb3FromURL( g_arrChains[g_idxMostOftenUsedSChain].arrNodeDescriptions[0].url );
@@ -11003,18 +11008,21 @@ async function run() {
         init_account_from_private_key( w3schain, pk_drain );
         const maxAwailableOnSChain = await impl_get_ballance_eth( w3schain, addr_drain, "S-chain" );
         const maxAwailableOnSChainHex = g_w3mod.utils.toHex( maxAwailableOnSChain );
-        log.write( cc.debug( "Max available value to drain " ) + cc.info( addr_drain ) + cc.debug(" is " ) + cc.j( maxAwailableOnSChain ) + cc.debug( "=" ) + cc.j( maxAwailableOnSChainHex ) + "\n" );
+        log.write( cc.debug( "Max available value to drain " ) + cc.info( addr_drain ) + cc.debug( " is " ) + cc.j( maxAwailableOnSChain ) + cc.debug( "=" ) + cc.j( maxAwailableOnSChainHex ) + "\n" );
         const nGas = 5000000000;
         log.write( cc.debug( "Account draining will use gas " ) + cc.j( nGas ) + "\n" );
-        let nValueDrain = ensure_starts_with_0x( w3schain.utils.toBN( maxAwailableOnSChainHex.toString() ).sub( w3schain.utils.toBN(nGas) ).toString(16) );
+        let nValueDrain = maxAwailableOnSChainHex.toString();
+        nValueDrain = ensure_starts_with_0x( w3schain.utils.toBN( nValueDrain ).sub( w3schain.utils.toBN( nGas ) ).toString( 16 ) );
+        nValueDrain = ensure_starts_with_0x( w3schain.utils.toBN( nValueDrain ).sub( w3schain.utils.toBN( nGas ) ).toString( 16 ) );
         const nEstimated = await w3schain.eth.estimateGas( {
             from: addr_drain,
             to: "0xca8489dB50A548eC85eBD4A0E11a9D61cB508540",
             gas: nGas,
             value: "0x01" // nValueDrain
-        } ); 
+        } );
         log.write( cc.debug( "Estimated draining gas is " ) + cc.j( nEstimated ) + "\n" );
-        for( let idxAttempt = 0; idxAttempt < 20; ++ idxAttempt ) {
+        const cntAttempts = 1;
+        for( let idxAttempt = 0; idxAttempt < cntAttempts; ++ idxAttempt ) {
             try {
                 log.write( cc.debug( "Account draining at attempt " ) + cc.info( idxAttempt + 1 ) + cc.debug( " will use value " ) + cc.j( nValueDrain ) + "\n" );
                 const rv = await w3schain.eth.sendTransaction( {
@@ -11025,24 +11033,23 @@ async function run() {
                 } );
                 log.write( cc.debug( "Account drain is complete with result " ) + cc.j( rv ) + "\n" );
                 break;
-            } catch( err ) {
+            } catch ( err ) {
             }
-            nValueDrain = ensure_starts_with_0x( w3schain.utils.toBN( nValueDrain.toString() ).sub( w3schain.utils.toBN(nGas) ).toString(16) );
+            nValueDrain = ensure_starts_with_0x( w3schain.utils.toBN( nValueDrain.toString() ).sub( w3schain.utils.toBN( nGas ) ).toString( 16 ) );
         }
         const afterDrain = await impl_get_ballance_eth( w3schain, addr_drain, "S-chain" );
         log.write( cc.debug( "Value available after drain is " ) + cc.j( afterDrain ) + "\n" );
-        let nValueSend = ensure_starts_with_0x( w3schain.utils.toBN( afterDrain.toString() ).sub( w3schain.utils.toBN(21000) ).toString(16) );
+        let nValueSend = afterDrain.toString();
+        nValueSend = ensure_starts_with_0x( w3schain.utils.toBN( nValueSend ).sub( w3schain.utils.toBN( nGas ) ).toString( 16 ) );
+        nValueSend = ensure_starts_with_0x( w3schain.utils.toBN( nValueSend ).sub( w3schain.utils.toBN( nGas ) ).toString( 16 ) );
         log.write( cc.debug( "Value to send is " ) + cc.j( nValueSend ) + "\n" );
         // second, deliver to S-chain where we have no money
         try {
             await ima_send_eth( g_idxMostOftenUsedSChain, g_strPrivateKeyImaMN, g_strPrivateKeyImaSC, "m2s", nValueSend, nPreferredNodeIndex );
-        } catch( err ) {
+        } catch ( err ) {
             log.write( cc.fatal( "M2S(1) PoW error:" ) + " " + cc.j( err ) + "\n" );
         }
-    } else { // if( g_arrChains.length >= 2 && g_bIsTestS2S )
-        if( g_bVerbose )
-            log.write( "\n\n" + cc.warning( "Skipped all " ) + cc.attention( "S<->S" ) + " " + cc.sunny( " transfer" ) + "\n\n" );
-    }
+    } // BLOCK: Finally, do the PoW test
 
     await end_of_test( 0 ); // SUCCESS
 }
