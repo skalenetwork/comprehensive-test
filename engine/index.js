@@ -11020,7 +11020,7 @@ async function run() {
             const maxAwailableOnSChain = await impl_get_ballance_eth( w3schain, addr_drain, "S-chain" );
             const maxAwailableOnSChainHex = g_w3mod.utils.toHex( maxAwailableOnSChain );
             log.write( cc.debug( "Max available value to drain " ) + cc.info( addr_drain ) + cc.debug( " is " ) + cc.j( maxAwailableOnSChain ) + cc.debug( "=" ) + cc.j( maxAwailableOnSChainHex ) + "\n" );
-            const nGas = 5000000000;
+            const nGas = 21000; // 5000000000;
             log.write( cc.debug( "Account draining will use gas " ) + cc.j( nGas ) + "\n" );
             let nValueDrain = maxAwailableOnSChainHex.toString();
             nValueDrain = ensure_starts_with_0x( w3schain.utils.toBN( nValueDrain ).sub( w3schain.utils.toBN( nGas ) ).toString( 16 ) );
