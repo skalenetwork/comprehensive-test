@@ -11032,7 +11032,7 @@ async function run() {
                 value: "0x01" // nValueDrain
             } );
             log.write( cc.debug( "Estimated draining gas is " ) + cc.j( nEstimated ) + "\n" );
-            const cntAttempts = 10;
+            const cntAttempts = 1;
             for( let idxAttempt = 0; idxAttempt < cntAttempts; ++ idxAttempt ) {
                 try {
                     log.write( cc.debug( "Account draining at attempt " ) + cc.info( idxAttempt + 1 ) + cc.debug( " will use value " ) + cc.j( nValueDrain ) + "\n" );
