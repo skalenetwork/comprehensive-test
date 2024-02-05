@@ -11053,9 +11053,10 @@ async function run() {
         }
         // second, deliver to S-chain where we have no money
         try {
-            await ima_send_eth( g_idxMostOftenUsedSChain, g_strPrivateKeyImaMN, g_strPrivateKeyImaSC, "m2s", "1wei", nPreferredNodeIndex, false );
-            await ima_send_eth( g_idxMostOftenUsedSChain, g_strPrivateKeyImaMN, g_strPrivateKeyImaSC, "m2s", "1wei", nPreferredNodeIndex, false );
-            await ima_send_eth( g_idxMostOftenUsedSChain, g_strPrivateKeyImaMN, g_strPrivateKeyImaSC, "m2s", "1wei", nPreferredNodeIndex, false );
+            const isWaitBallanceChanged = true;
+            await ima_send_eth( g_idxMostOftenUsedSChain, g_strPrivateKeyImaMN, g_strPrivateKeyImaSC, "m2s", "1wei", nPreferredNodeIndex, isWaitBallanceChanged );
+            await ima_send_eth( g_idxMostOftenUsedSChain, g_strPrivateKeyImaMN, g_strPrivateKeyImaSC, "m2s", "1wei", nPreferredNodeIndex, isWaitBallanceChanged );
+            await ima_send_eth( g_idxMostOftenUsedSChain, g_strPrivateKeyImaMN, g_strPrivateKeyImaSC, "m2s", "1wei", nPreferredNodeIndex, isWaitBallanceChanged );
             // while( true ) {
             //     await ima_send_eth( g_idxMostOftenUsedSChain, g_strPrivateKeyImaMN, g_strPrivateKeyImaSC, "m2s", "1wei", nPreferredNodeIndex, false );
             //     await sleep( 5000 );
