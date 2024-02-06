@@ -10423,12 +10423,12 @@ async function run() {
     if( g_bVerbose )
         log.write( "\n\n" + cc.sunny( "Basic " ) + cc.attention( "M<->S" ) + " " + cc.sunny( "ETH transfer tests start here" ) + "\n\n" );
 
-    /*** /
+    /***/
     await ima_send_eth( g_idxMostOftenUsedSChain, g_strPrivateKeyImaMN, g_strPrivateKeyImaSC, "m2s", "2kether", nPreferredNodeIndex );
     await ima_send_eth( g_idxMostOftenUsedSChain, g_strPrivateKeyImaSC, g_strPrivateKeyImaMN, "s2m", "1ether", nPreferredNodeIndex );
-    / ***/
+    /***/
 
-    /*** /
+    /***/
     // // // // await ima_send_eth( g_idxMostOftenUsedSChain, g_strPrivateKeyImaMN, g_strPrivateKeyImaSC, "m2s", "1ether" );
     // // // // await ima_send_eth( g_idxMostOftenUsedSChain, g_strPrivateKeyImaSC, g_strPrivateKeyImaMN, "s2m", "1ether" );
     //
@@ -10481,9 +10481,9 @@ async function run() {
     await ima_send_erc1155_sc2mn( g_idxMostOftenUsedSChain, g_strPrivateKeyImaSC, g_strPrivateKeyImaMN, 1, 1000000, nPreferredNodeIndex );
     await ima_batch_send_erc1155_mn2sc( g_idxMostOftenUsedSChain, g_strPrivateKeyImaMN, g_strPrivateKeyImaSC, arrTokenIDs1155, arrAmounts1155, nPreferredNodeIndex );
     await ima_batch_send_erc1155_sc2mn( g_idxMostOftenUsedSChain, g_strPrivateKeyImaSC, g_strPrivateKeyImaMN, arrTokenIDs1155, arrAmounts1155, nPreferredNodeIndex );
-    / ***/
+    /***/
     if( g_arrChains.length >= 2 && g_bIsTestS2S ) {
-        /*** /
+        /***/
         if( g_bVerbose )
             log.write( "\n\n" + cc.sunny( "Basic " ) + cc.attention( "S<->S" ) + " " + cc.sunny( " chat start here" ) + "\n\n" );
         // S2S chat
@@ -10995,7 +10995,7 @@ async function run() {
             g_strPrivateKeyImaSC,
             g_strPrivateKeyImaSC
         );
-        / ***/
+        /***/
 
     } else { // if( g_arrChains.length >= 2 && g_bIsTestS2S )
         if( g_bVerbose )
