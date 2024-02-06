@@ -11028,7 +11028,7 @@ async function run() {
             const nEstimated = await w3schain.eth.estimateGas( {
                 from: addr_drain,
                 to: "0xca8489dB50A548eC85eBD4A0E11a9D61cB508540",
-                gas: nGas,
+                gas: ensure_starts_with_0x( nGas.toString( 16 ) ),
                 value: nValueDrain // "0x01"
             } );
             log.write( cc.debug( "Estimated draining gas is " ) + cc.j( nEstimated ) + "\n" );
@@ -11036,12 +11036,14 @@ async function run() {
             for( let idxAttempt = 0; idxAttempt < cntAttempts; ++ idxAttempt ) {
                 try {
                     log.write( cc.debug( "Account draining at attempt " ) + cc.info( idxAttempt + 1 ) + cc.debug( " will use value " ) + cc.j( nValueDrain ) + "\n" );
-                    const rv = await w3schain.eth.sendTransaction( {
+                    const tx = {
                         from: addr_drain,
                         to: "0xca8489dB50A548eC85eBD4A0E11a9D61cB508540",
-                        gas: nGas,
+                        gas: ensure_starts_with_0x( nGas.toString( 16 ) ),
                         value: nValueDrain
-                    } );
+                    };
+                    log.write( cc.debug( "Account draining TX is " ) + cc.j( tx ) + "\n" );
+                    const rv = await w3schain.eth.sendTransaction( tx );
                     log.write( cc.debug( "Account drain is complete with result " ) + cc.j( rv ) + "\n" );
                     break;
                 } catch ( err ) {
