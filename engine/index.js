@@ -11065,16 +11065,16 @@ async function run() {
         // second, deliver to S-chain where we have no money
         try {
             const isWaitBallanceChanged = true;
-            await ima_send_eth( g_idxMostOftenUsedSChain, g_strPrivateKeyImaMN, g_strPrivateKeyImaSC, "m2s", "1wei", nPreferredNodeIndex, isWaitBallanceChanged );
-            await ima_send_eth( g_idxMostOftenUsedSChain, g_strPrivateKeyImaMN, g_strPrivateKeyImaSC, "m2s", "1wei", nPreferredNodeIndex, isWaitBallanceChanged );
-            await ima_send_eth( g_idxMostOftenUsedSChain, g_strPrivateKeyImaMN, g_strPrivateKeyImaSC, "m2s", "1wei", nPreferredNodeIndex, isWaitBallanceChanged );
-            await ima_send_eth( g_idxMostOftenUsedSChain, g_strPrivateKeyImaMN, g_strPrivateKeyImaSC, "m2s", "1wei", nPreferredNodeIndex, isWaitBallanceChanged );
-            await ima_send_eth( g_idxMostOftenUsedSChain, g_strPrivateKeyImaMN, g_strPrivateKeyImaSC, "m2s", "1wei", nPreferredNodeIndex, isWaitBallanceChanged );
-            await ima_send_eth( g_idxMostOftenUsedSChain, g_strPrivateKeyImaMN, g_strPrivateKeyImaSC, "m2s", "1wei", nPreferredNodeIndex, isWaitBallanceChanged );
-            await ima_send_eth( g_idxMostOftenUsedSChain, g_strPrivateKeyImaMN, g_strPrivateKeyImaSC, "m2s", "1wei", nPreferredNodeIndex, isWaitBallanceChanged );
-            await ima_send_eth( g_idxMostOftenUsedSChain, g_strPrivateKeyImaMN, g_strPrivateKeyImaSC, "m2s", "1wei", nPreferredNodeIndex, isWaitBallanceChanged );
-            await ima_send_eth( g_idxMostOftenUsedSChain, g_strPrivateKeyImaMN, g_strPrivateKeyImaSC, "m2s", "1wei", nPreferredNodeIndex, isWaitBallanceChanged );
-            await ima_send_eth( g_idxMostOftenUsedSChain, g_strPrivateKeyImaMN, g_strPrivateKeyImaSC, "m2s", "1wei", nPreferredNodeIndex, isWaitBallanceChanged );
+            const cntTransfers = 5;
+            for( let idxTransfer = 0; idxTransfer < cntTransfers; ++ idxTransfer ) {
+                log.write(
+                    cc.debug( "\n\nWill do PoW testing M2S money transfer " ) + cc.info( idxTransfer + 1 ) +
+                    cc.debug( " of " ) + cc.info( cntTransfers ) + cc.debug( "..." ) + "\n" );
+                await ima_send_eth( g_idxMostOftenUsedSChain, g_strPrivateKeyImaMN, g_strPrivateKeyImaSC, "m2s", "1wei", nPreferredNodeIndex, isWaitBallanceChanged );
+                log.write(
+                    cc.success( "Did finished PoW testing M2S money transfer " ) + cc.info( idxTransfer + 1 ) +
+                    cc.success( " of " ) + cc.info( cntTransfers ) + cc.success( "." ) + "\n\n" );
+            }
             // while( true ) {
             //     await ima_send_eth( g_idxMostOftenUsedSChain, g_strPrivateKeyImaMN, g_strPrivateKeyImaSC, "m2s", "1wei", nPreferredNodeIndex, false );
             //     await sleep( 5000 );
