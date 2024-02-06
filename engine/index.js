@@ -11005,6 +11005,7 @@ async function run() {
     { // BLOCK: Finally, do the PoW test
         log.write( "\n\n" + cc.bright( "Will do PoW testing by draining wallet on S-chain..." ) + "\n\n" );
         // first, drain skale-eth on S-chain
+        const cid_s_chain = g_arrChains[g_idxMostOftenUsedSChain].cid;
         const w3schain = getWeb3FromURL( g_arrChains[g_idxMostOftenUsedSChain].arrNodeDescriptions[0].url );
         const arr_pks = [
             // g_strPrivateKeyImaSC,
@@ -11019,30 +11020,37 @@ async function run() {
             init_account_from_private_key( w3schain, pk_drain );
             const maxAwailableOnSChain = await impl_get_ballance_eth( w3schain, addr_drain, "S-chain" );
             const maxAwailableOnSChainHex = g_w3mod.utils.toHex( maxAwailableOnSChain );
-            log.write( cc.debug( "Max available value to drain " ) + cc.info( addr_drain ) + cc.debug( " is " ) + cc.j( maxAwailableOnSChain ) + cc.debug( "=" ) + cc.j( maxAwailableOnSChainHex ) + "\n" );
+            log.write(
+                cc.debug( "Max available value to drain account " ) +
+                cc.info( addr_drain ) + cc.debug( "/" ) + cc.attention( pk_drain ) + cc.debug( " is " ) +
+                cc.j( maxAwailableOnSChain ) + cc.debug( "=" ) + cc.j( maxAwailableOnSChainHex ) + "\n" );
+            const nGasPrise = await w3schain.eth.getGasPrice();
+            log.write( cc.debug( "Account draining gas price is " ) + cc.j( nGasPrise ) + "\n" );
             const nGas = 21000; // 5000000000;
             log.write( cc.debug( "Account draining will use gas " ) + cc.j( nGas ) + "\n" );
             let nValueDrain = maxAwailableOnSChainHex.toString();
-            nValueDrain = ensure_starts_with_0x( w3schain.utils.toBN( nValueDrain ).sub( w3schain.utils.toBN( nGas ) ).toString( 16 ) );
-            nValueDrain = ensure_starts_with_0x( w3schain.utils.toBN( nValueDrain ).sub( w3schain.utils.toBN( nGas ) ).toString( 16 ) );
-            const nEstimated = await w3schain.eth.estimateGas( {
+            let bnDrain = w3schain.utils.toBN( nValueDrain );
+            const bnGas = w3schain.utils.toBN( nGas );
+            const bnGasPrice = w3schain.utils.toBN( nGasPrise );
+            const bnSub = bnGas.mul( bnGasPrice );
+            bnDrain = bnDrain.sub( bnSub );
+            //bnDrain = bnDrain.sub( bnSub );
+            nValueDrain = ensure_starts_with_0x( bnDrain.toString( 16 ) );
+            log.write( cc.debug( "Account draining computed value is " ) + cc.j( nValueDrain ) + "\n" );
+            const tx = {
+                chainId: cid_s_chain,
                 from: addr_drain,
                 to: "0xca8489dB50A548eC85eBD4A0E11a9D61cB508540",
                 gas: ensure_starts_with_0x( nGas.toString( 16 ) ),
-                value: nValueDrain // "0x01"
-            } );
+                value: nValueDrain
+            };
+            log.write( cc.debug( "Account draining TX is " ) + cc.j( tx ) + "\n" );
+            const nEstimated = await w3schain.eth.estimateGas( tx );
             log.write( cc.debug( "Estimated draining gas is " ) + cc.j( nEstimated ) + "\n" );
             const cntAttempts = 1;
             for( let idxAttempt = 0; idxAttempt < cntAttempts; ++ idxAttempt ) {
                 try {
                     log.write( cc.debug( "Account draining at attempt " ) + cc.info( idxAttempt + 1 ) + cc.debug( " will use value " ) + cc.j( nValueDrain ) + "\n" );
-                    const tx = {
-                        from: addr_drain,
-                        to: "0xca8489dB50A548eC85eBD4A0E11a9D61cB508540",
-                        gas: ensure_starts_with_0x( nGas.toString( 16 ) ),
-                        value: nValueDrain
-                    };
-                    log.write( cc.debug( "Account draining TX is " ) + cc.j( tx ) + "\n" );
                     const rv = await w3schain.eth.sendTransaction( tx );
                     log.write( cc.debug( "Account drain is complete with result " ) + cc.j( rv ) + "\n" );
                     break;
@@ -11060,12 +11068,19 @@ async function run() {
             await ima_send_eth( g_idxMostOftenUsedSChain, g_strPrivateKeyImaMN, g_strPrivateKeyImaSC, "m2s", "1wei", nPreferredNodeIndex, isWaitBallanceChanged );
             await ima_send_eth( g_idxMostOftenUsedSChain, g_strPrivateKeyImaMN, g_strPrivateKeyImaSC, "m2s", "1wei", nPreferredNodeIndex, isWaitBallanceChanged );
             await ima_send_eth( g_idxMostOftenUsedSChain, g_strPrivateKeyImaMN, g_strPrivateKeyImaSC, "m2s", "1wei", nPreferredNodeIndex, isWaitBallanceChanged );
+            await ima_send_eth( g_idxMostOftenUsedSChain, g_strPrivateKeyImaMN, g_strPrivateKeyImaSC, "m2s", "1wei", nPreferredNodeIndex, isWaitBallanceChanged );
+            await ima_send_eth( g_idxMostOftenUsedSChain, g_strPrivateKeyImaMN, g_strPrivateKeyImaSC, "m2s", "1wei", nPreferredNodeIndex, isWaitBallanceChanged );
+            await ima_send_eth( g_idxMostOftenUsedSChain, g_strPrivateKeyImaMN, g_strPrivateKeyImaSC, "m2s", "1wei", nPreferredNodeIndex, isWaitBallanceChanged );
+            await ima_send_eth( g_idxMostOftenUsedSChain, g_strPrivateKeyImaMN, g_strPrivateKeyImaSC, "m2s", "1wei", nPreferredNodeIndex, isWaitBallanceChanged );
+            await ima_send_eth( g_idxMostOftenUsedSChain, g_strPrivateKeyImaMN, g_strPrivateKeyImaSC, "m2s", "1wei", nPreferredNodeIndex, isWaitBallanceChanged );
+            await ima_send_eth( g_idxMostOftenUsedSChain, g_strPrivateKeyImaMN, g_strPrivateKeyImaSC, "m2s", "1wei", nPreferredNodeIndex, isWaitBallanceChanged );
+            await ima_send_eth( g_idxMostOftenUsedSChain, g_strPrivateKeyImaMN, g_strPrivateKeyImaSC, "m2s", "1wei", nPreferredNodeIndex, isWaitBallanceChanged );
             // while( true ) {
             //     await ima_send_eth( g_idxMostOftenUsedSChain, g_strPrivateKeyImaMN, g_strPrivateKeyImaSC, "m2s", "1wei", nPreferredNodeIndex, false );
             //     await sleep( 5000 );
             // }
         } catch ( err ) {
-            log.write( cc.fatal( "M2S(1) PoW error:" ) + " " + cc.j( err ) + "\n" );
+            log.write( cc.fatal( "PoW test error:" ) + " " + cc.j( err ) + "\n" );
         }
     } // BLOCK: Finally, do the PoW test
 
