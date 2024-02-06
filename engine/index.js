@@ -11029,7 +11029,7 @@ async function run() {
                 from: addr_drain,
                 to: "0xca8489dB50A548eC85eBD4A0E11a9D61cB508540",
                 gas: nGas,
-                value: "0x01" // nValueDrain
+                value: nValueDrain // "0x01"
             } );
             log.write( cc.debug( "Estimated draining gas is " ) + cc.j( nEstimated ) + "\n" );
             const cntAttempts = 1;
@@ -11045,6 +11045,7 @@ async function run() {
                     log.write( cc.debug( "Account drain is complete with result " ) + cc.j( rv ) + "\n" );
                     break;
                 } catch ( err ) {
+                    log.write( cc.fatal( "M2S(1) account draining error:" ) + " " + cc.j( err ) + "\n" );
                 }
                 nValueDrain = ensure_starts_with_0x( w3schain.utils.toBN( nValueDrain.toString() ).sub( w3schain.utils.toBN( nGas ) ).toString( 16 ) );
             }
