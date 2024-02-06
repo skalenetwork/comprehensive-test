@@ -6703,7 +6703,7 @@ async function impl_get_ballance_erc20( w3, strAddress, strNetworkName, joABI, s
 async function ima_send_eth( idxChain, strPrivateKeyFrom, strPrivateKeyTo, strDirection, moneySpec, nPreferredNodeIndex, isWaitBallanceChanged ) {
     if( ! g_arrChains[idxChain].isStartEnabled )
         return;
-    isWaitBallanceChanged = ( isWaitBallanceChanged === undefined || isWaitBallanceChanged === null ) ? true : ( !isWaitBallanceChanged );
+    isWaitBallanceChanged = ( isWaitBallanceChanged === undefined || isWaitBallanceChanged === null ) ? true : ( !!isWaitBallanceChanged );
     try {
         if( g_bVerbose ) {
             log.write( "\n\n" +
