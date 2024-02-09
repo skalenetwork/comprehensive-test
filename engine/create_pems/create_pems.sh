@@ -2,7 +2,7 @@
 
 JQ_COLOR_OPT="--color-output"
 if [ "${NO_ANSI_COLORS}" = "1" ]; then
-	JQ_COLOR_OPT=""
+	JQ_COLOR_OPT="-M"
 fi
 
 echo " --------------------------- cleaning up redundant files ---------------------------------------------------------------------------------------------- "
