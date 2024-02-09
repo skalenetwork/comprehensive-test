@@ -3,7 +3,7 @@
 yarn install
 
 # colors/basic
-if [ "${NO_ANSI_COLORS}" == "1" ]; then
+if [ "${NO_ANSI_COLORS}" = "1" ]; then
 	COLOR_RESET="" # No Color
 	COLOR_BLACK=""
 	COLOR_DARK_GRAY=""
