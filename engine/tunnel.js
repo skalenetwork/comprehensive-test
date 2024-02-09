@@ -1,7 +1,34 @@
 const net = require( "net" );
 
 const cc = require( "../s_chain_gen/cc.js" );
-cc.enable( true );
+const g_bPlainColorMode = s2b( process.env.NO_ANSI_COLORS );
+cc.enable( g_bPlainColorMode ? false : true );
+
+function s2b( s ) {
+    if( ! s )
+        return false;
+    s = s.toString().toLowerCase().trim();
+    if( ! s )
+        return false;
+    if( s[0] == "f" || s[0] == "n" ) // false, no
+        return false;
+    if( s[0] == "t" || s[0] == "y" ) // true, yes
+        return true;
+    if( s == "on" )
+        return true;
+    if( s == "off" )
+        return false;
+    if( isNumericString( s ) )
+        return parseIntOrHex( s ) ? true : false;
+    return Boolean( s );
+}
+
+function isNumericString( s ) {
+    if( typeof s != "string" )
+        return false; // s is not string
+    return ( !isNaN( s ) ) && // use type coercion to parse the _entirety_ of the string (`parseFloat` alone does not do this)...
+           ( !isNaN( parseFloat( s ) ) ); // ...and ensure strings of whitespace fail
+}
 
 function parseIntOrHex( s ) {
     if( typeof s != "string" )

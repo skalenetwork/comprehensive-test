@@ -1,5 +1,10 @@
 #!/bin/bash
 
+JQ_COLOR_OPT="--color-output"
+if [ "${NO_ANSI_COLORS}" == "1" ]; then
+	JQ_COLOR_OPT=""
+fi
+
 echo " --------------------------- cleaning up redundant files ---------------------------------------------------------------------------------------------- "
 rm -f a.csr             || true &> /dev/null
 rm -f a.csr.signgleline || true &> /dev/null
@@ -129,7 +134,7 @@ curl --connect-timeout 30 --max-time 60 -X POST --data \
 printf "\nRaw sign_result.json is: ------------------------------------------------------------------- \n"
 cat ./sign_result.json
 printf "\nColorized sign_result.json is: ------------------------------------------------------------- \n"
-cat ./sign_result.json | jq . --color-output
+cat ./sign_result.json | jq . $JQ_COLOR_OPT
 printf "\n"
 sign_hash=$(cat ./sign_result.json | jq -r ".result.hash")
 echo "sign_hash =" $sign_hash
@@ -148,7 +153,7 @@ curl --connect-timeout 30 --max-time 60 -X POST --data \
 printf "\Raw get_certificate_result.json is: --------------------------------------------------------- \n"
 cat ./get_certificate_result.json
 printf "\Colorized get_certificate_result.json is: --------------------------------------------------- \n"
-cat ./get_certificate_result.json | jq . --color-output
+cat ./get_certificate_result.json | jq . $JQ_COLOR_OPT
 printf "\n"
 certificate=$(cat ./get_certificate_result.json | jq -r ".result.cert")
 #echo " --- got certificate"

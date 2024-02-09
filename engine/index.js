@@ -12,7 +12,8 @@ const fetch = require( "node-fetch-commonjs" ).default;
 
 const cc = require( "../s_chain_gen/cc.js" );
 const log = require( "../s_chain_gen/log.js" );
-cc.enable( true );
+const g_bPlainColorMode = s2b( process.env.NO_ANSI_COLORS );
+cc.enable( g_bPlainColorMode ? false : true );
 log.addStdout();
 
 global.rpcCall = require( "./rpc-call.js" );
@@ -103,7 +104,7 @@ const g_strSkaledReleaseTagCookie = "develop";
 const g_bTestImaAgentDiscoveryCommandsAndExit = false; // special mode to test discovery commands of IMA Agent only
 
 const g_strImaOutputOpts = "" +
-    " --colors" +
+    " " + ( g_bPlainColorMode ? "--no-colors" : "--colors" ) +
     " --verbose=9" +
     " --expose" +
     " --expose-security-info" +
@@ -315,7 +316,8 @@ function print_log_at_exit( strPath ) {
         const strCommand = "cat " + strPath;
         const strWorkingDirectory = __dirname;
         const joEnv = {
-            "PATH": g_strRecommendedShellPATH
+            "PATH": g_strRecommendedShellPATH,
+            "NO_ANSI_COLORS": ( g_bPlainColorMode ? "0" : "1" )
         };
         child_process.execSync(
             strCommand,
@@ -1266,7 +1268,7 @@ function initNodeDescription( strURL, idxChain, idxNode, chainId, nodeID, strNam
         nodeConfigJsonPath: "" + strFolderNodeSkaled + "/config.json",
         runCmd4skaled: "" + strFolderNodeSkaled + "/run-skaled.sh",
         logPath4skaled: normalizePath( path.join( __dirname, "skaled_" + zeroPad( idxChain, 2 ) + "_" + zeroPad( idxNode, 2 ) + ".log" ) ), // strFolderNodeSkaled + "/skaled.log"
-        proc4scaled: null,
+        proc4skaled: null,
         //
         agentFolder: "" + g_strFolderImaAgent,
         runCmd4imaAgent: "", // initialized later by the compose_node_runCmd4imaAgent() function
@@ -3108,7 +3110,8 @@ function init_sgx_ssl_for_nodes( idxChain ) {
         const strCommand = "cp -rf ./create_pems " + strFolderNodeSkaled;
         const strWorkingDirectory = __dirname;
         const joEnv = {
-            "PATH": g_strRecommendedShellPATH
+            "PATH": g_strRecommendedShellPATH,
+            "NO_ANSI_COLORS": ( g_bPlainColorMode ? "0" : "1" )
         };
         if( g_bVerbose ) {
             log.write(
@@ -3391,6 +3394,7 @@ async function all_skaled_nodes_prepare() {
         return;
     const joEnv = {
         "PATH": g_strRecommendedShellPATH,
+        "NO_ANSI_COLORS": ( g_bPlainColorMode ? "1" : "0" ),
         "GEN_CNT_CHAINS": g_arrChains.length,
         "GEN_CNT_NODES": g_arrChains[0].arrNodeDescriptions.length,
         "GEN_CNT_SYNC_NODES": g_cntSyncNodesPerChain
@@ -3464,7 +3468,8 @@ async function schain_skaled_nodes_init_BTRFS_if_needed( idxChain ) {
         if( g_bVerbose )
             log.write( cc.normal( "Initializing " ) + cc.success( "BTRFS" ) + cc.normal( " on chain " ) + cc.sunny( idxChain ) + cc.normal( " node " ) + cc.sunny( joNodeDesc.nodeID ) + "\n" );
         const joEnv = {
-            "SKALED_WITH_BTRFS": "1"
+            "SKALED_WITH_BTRFS": "1",
+            "NO_ANSI_COLORS": ( g_bPlainColorMode ? "0" : "1" )
         };
         if( g_bSkaledWithSnapshots )
             joEnv.SKALED_WITH_SNAPSHOTS = "1";
@@ -3509,17 +3514,23 @@ async function schain_skaled_nodes_start( idxChain ) {
         }
         if( g_bVerbose )
             log.write( cc.normal( "Starting " ) + cc.success( "SKALED" ) + cc.normal( " node " ) + cc.sunny( joNodeDesc.nodeID ) + "\n" );
-        if( ! joNodeDesc.proc4scaled ) {
+        if( ! joNodeDesc.proc4skaled ) {
             const u = new URL( joNodeDesc.url );
-            joNodeDesc.proc4scaled = new ProcessController(
+            const joEnv = {
+                "PATH": g_strRecommendedShellPATH,
+                "NO_ANSI_COLORS": ( g_bPlainColorMode ? "0" : "1" )
+            };
+            joNodeDesc.proc4skaled = new ProcessController(
                 joNodeDesc.runCmd4skaled,
                 [],
                 joNodeDesc.logPath4skaled, // "detached"
-                u.port
+                u.port,
+                undefined,
+                joEnv
             );
         }
-        joNodeDesc.proc4scaled.run();
-        //joNodeDesc.proc4scaled.continueDetached();
+        joNodeDesc.proc4skaled.run();
+        //joNodeDesc.proc4skaled.continueDetached();
     }
     if( g_bAskToContinueAfterSkaledStarted ) {
         log.write( "\n\n" +
@@ -3563,9 +3574,9 @@ async function schain_skaled_nodes_stop( idxChain ) {
         }
         if( g_bVerbose )
             log.write( cc.normal( "Stopping " ) + cc.success( "SKALED" ) + cc.normal( " node " ) + cc.sunny( joNodeDesc.nodeID ) + "\n" );
-        if( joNodeDesc.proc4scaled ) {
-            await joNodeDesc.proc4scaled.stop();
-            joNodeDesc.proc4scaled = null;
+        if( joNodeDesc.proc4skaled ) {
+            await joNodeDesc.proc4skaled.stop();
+            joNodeDesc.proc4skaled = null;
         }
     }
     //
@@ -3574,7 +3585,8 @@ async function schain_skaled_nodes_stop( idxChain ) {
         const strCommand = "killall -9 skaled";
         const strWorkingDirectory = __dirname;
         const joEnv = {
-            "PATH": g_strRecommendedShellPATH
+            "PATH": g_strRecommendedShellPATH,
+            "NO_ANSI_COLORS": ( g_bPlainColorMode ? "0" : "1" )
         };
         if( g_bVerbose ) {
             log.write(
@@ -3595,7 +3607,8 @@ async function schain_skaled_nodes_stop( idxChain ) {
         const strCommand = "pkill -9 -f skaled";
         const strWorkingDirectory = __dirname;
         const joEnv = {
-            "PATH": g_strRecommendedShellPATH
+            "PATH": g_strRecommendedShellPATH,
+            "NO_ANSI_COLORS": ( g_bPlainColorMode ? "0" : "1" )
         };
         if( g_bVerbose ) {
             log.write(
@@ -3885,12 +3898,18 @@ async function schain_ima_agents_start( idxChain ) {
             log.write( cc.normal( "Starting " ) + cc.success( "IMA Agent" ) + cc.normal( " for node " ) + cc.sunny( joNodeDesc.nodeID ) + "\n" );
         if( ! joNodeDesc.proc4imaAgent ) {
             // const u = new URL( joNodeDesc.url );
+            const joEnv = {
+                "PATH": g_strRecommendedShellPATH,
+                "NO_ANSI_COLORS": ( g_bPlainColorMode ? "0" : "1" )
+            };
             joNodeDesc.proc4imaAgent = new ProcessController(
                 compose_node_runCmd4imaAgent( joNodeDesc ), // composes and returns value of joNodeDesc.runCmd4imaAgent
                 [],
                 joNodeDesc.logPath4imaAgent, // "detached"
                 undefined, // port
-                joNodeDesc.agentFolder
+                joNodeDesc.agentFolder,
+                undefined,
+                joEnv
             );
             if( g_bVerbose ) {
                 log.write( cc.normal( "Notice, " ) + cc.bright( "IMA Agent" ) + cc.normal( " for node " ) + cc.sunny( joNodeDesc.nodeID ) +
@@ -4018,6 +4037,7 @@ async function schain_tunnels_start( idxChain ) {
         }
         const env = {
             "PATH": g_strRecommendedShellPATH + ":" + normalizePath( "~/.bun/bin" ),
+            "NO_ANSI_COLORS": ( g_bPlainColorMode ? "1" : "0" ),
             "PORT_LISTEN": "" + joNodeDesc.port4tunnel,
             "IP_REMOTE": "127.0.0.1",
             "PORT_REMOTE": "8545",
@@ -4136,6 +4156,7 @@ async function all_ima_network_browsers_start() {
         joChain.logPath4imaNetworkBrowser = normalizePath( path.join( __dirname, "imaNetworkBrowser_" + zeroPad( idxChain, 2 ) + ".log" ) );
         const env = {
             "PATH": g_strRecommendedShellPATH + ":" + normalizePath( "~/.bun/bin" ),
+            "NO_ANSI_COLORS": ( g_bPlainColorMode ? "1" : "0" ),
             "MAINNET_RPC_URL": "" + g_strMainNetURL,
             "SCHAIN_RPC_URL": "" + joNode.url,
             "SCHAIN_NAME": "" + joChain.name,
@@ -4460,7 +4481,8 @@ async function schain_ima_gas_reimbursement_configure_zero_timeout( idxChain, fn
         ;
     const strWorkingDirectory = "" + g_strFolderImaAgent;
     const joEnv = {
-        "PATH": g_strRecommendedShellPATH
+        "PATH": g_strRecommendedShellPATH,
+        "NO_ANSI_COLORS": ( g_bPlainColorMode ? "0" : "1" )
     };
     if( g_bVerbose ) {
         log.write(
@@ -4523,7 +4545,8 @@ async function schain_ima_gas_reimbursement_show( idxChain, fnContinue ) {
         ;
     const strWorkingDirectory = "" + g_strFolderImaAgent;
     const joEnv = {
-        "PATH": g_strRecommendedShellPATH
+        "PATH": g_strRecommendedShellPATH,
+        "NO_ANSI_COLORS": ( g_bPlainColorMode ? "0" : "1" )
     };
     if( g_bVerbose ) {
         log.write(
@@ -4585,7 +4608,8 @@ async function schain_ima_gas_reimbursement_recharge( idxChain, fnContinue ) {
         ;
     const strWorkingDirectory = "" + g_strFolderImaAgent;
     const joEnv = {
-        "PATH": g_strRecommendedShellPATH
+        "PATH": g_strRecommendedShellPATH,
+        "NO_ANSI_COLORS": ( g_bPlainColorMode ? "0" : "1" )
     };
     if( g_bVerbose ) {
         log.write(
@@ -4685,7 +4709,8 @@ async function ima_test_browse_skale_network( idxChain, idxNode ) {
     ;
     const strWorkingDirectory = "" + g_strFolderRepoImaAgent;
     const joEnv = {
-        "PATH": g_strRecommendedShellPATH
+        "PATH": g_strRecommendedShellPATH,
+        "NO_ANSI_COLORS": ( g_bPlainColorMode ? "0" : "1" )
     };
     if( g_bVerbose ) {
         log.write(
@@ -4764,7 +4789,8 @@ async function ima_test_browse_connected_chain( idxChain, idxNode ) {
     ;
     const strWorkingDirectory = "" + g_strFolderRepoImaAgent;
     const joEnv = {
-        "PATH": g_strRecommendedShellPATH
+        "PATH": g_strRecommendedShellPATH,
+        "NO_ANSI_COLORS": ( g_bPlainColorMode ? "0" : "1" )
     };
     if( g_bVerbose ) {
         log.write(
@@ -4843,7 +4869,8 @@ async function ima_test_browse_s_chain( idxChain, idxNode ) {
     ;
     const strWorkingDirectory = "" + g_strFolderRepoImaAgent;
     const joEnv = {
-        "PATH": g_strRecommendedShellPATH
+        "PATH": g_strRecommendedShellPATH,
+        "NO_ANSI_COLORS": ( g_bPlainColorMode ? "0" : "1" )
     };
     if( g_bVerbose ) {
         log.write(
@@ -4922,7 +4949,8 @@ async function ima_test_show_balance( idxChain, idxNode ) {
     ;
     const strWorkingDirectory = "" + g_strFolderRepoImaAgent;
     const joEnv = {
-        "PATH": g_strRecommendedShellPATH
+        "PATH": g_strRecommendedShellPATH,
+        "NO_ANSI_COLORS": ( g_bPlainColorMode ? "0" : "1" )
     };
     if( g_bVerbose ) {
         log.write(
@@ -5054,6 +5082,7 @@ async function redeploy_skale_manager( w3, fnContinue ) {
     const strWorkingDirectoryCleanup = "" + g_strFolderRepoSkaleManager + "/.openzeppelin";
     const joEnv = {
         "PATH": g_strRecommendedShellPATH,
+        "NO_ANSI_COLORS": ( g_bPlainColorMode ? "1" : "0" ),
         "ENDPOINT": g_strMainNetURL,
         "ETH_PRIVATE_KEY": g_strPrivateKeySkaleManagerMN,
         "PRIVATE_KEY": g_strPrivateKeySkaleManagerMN,
@@ -5806,6 +5835,7 @@ function init_sgx_ssl_in_folder( strWorkingDirectory ) {
     const strCommand = "./create_pems.sh";
     const joEnv = {
         "PATH": g_strRecommendedShellPATH,
+        "NO_ANSI_COLORS": ( g_bPlainColorMode ? "1" : "0" ),
         "URL_SGX_WALLET_HTTPS": g_strUrlSgxWalletHTTPS,
         "URL_SGX_WALLET_HTTP": g_strUrlSgxWalletHTTP
     };
@@ -6210,6 +6240,7 @@ async function redeploy_ima_to_main_net( fnContinue ) {
     const schain_name = g_arrChains[0].name;
     const arrNodeDescriptions = g_arrChains[0].arrNodeDescriptions;
     const joEnv = {
+        "NO_ANSI_COLORS": ( g_bPlainColorMode ? "1" : "0" ),
         "NETWORK_FOR_ETHEREUM": "" + g_strNetworkNameMN,
         "NETWORK_FOR_SCHAIN": "" + g_strNetworkNameSC,
         "CHAIN_NAME_SCHAIN": "" + schain_name,
@@ -6265,6 +6296,7 @@ async function redeploy_ima_to_schain_one( idxChain, fnContinue ) {
     const schain_name = g_arrChains[idxChain].name;
     const arrNodeDescriptions = g_arrChains[idxChain].arrNodeDescriptions;
     const joEnv = {
+        "NO_ANSI_COLORS": ( g_bPlainColorMode ? "1" : "0" ),
         "NETWORK_FOR_ETHEREUM": "" + g_strNetworkNameMN,
         "NETWORK_FOR_SCHAIN": "" + g_strNetworkNameSC,
         "CHAIN_NAME_SCHAIN": "" + schain_name,
@@ -6391,6 +6423,7 @@ async function generate_predeployed_artifacts_schain( idxChain, fnContinue ) {
     log.write( cc.bright( "Generating " ) + cc.attention( "predeployed artifacts" ) + "\n" );
     const joEnv = {
         "PATH": g_strRecommendedShellPATH,
+        "NO_ANSI_COLORS": ( g_bPlainColorMode ? "1" : "0" ),
         "PATH_IMA_ABI": "" + get_ima_abi_schain_path( idxChain ),
         "PATH_S_CHAIN_GEN": "" + g_strFolderMultiNodeDeployment + "/chain_" + zeroPad( idxChain, 2 ),
         "PATH_ADDITIONAL": "" + strAdditionalPath
@@ -6520,7 +6553,8 @@ function ima_register_schain( idxChain, fnContinue ) {
         ;
     const strWorkingDirectory = "" + g_strFolderImaAgent;
     const joEnv = {
-        "PATH": g_strRecommendedShellPATH
+        "PATH": g_strRecommendedShellPATH,
+        "NO_ANSI_COLORS": ( g_bPlainColorMode ? "0" : "1" )
     };
     if( g_bVerbose ) {
         log.write(
@@ -6581,7 +6615,8 @@ function ima_check_registration_schain( idxChain, fnContinue ) {
         ;
     const strWorkingDirectory = "" + g_strFolderImaAgent;
     const joEnv = {
-        "PATH": g_strRecommendedShellPATH
+        "PATH": g_strRecommendedShellPATH,
+        "NO_ANSI_COLORS": ( g_bPlainColorMode ? "0" : "1" )
     };
     if( g_bVerbose ) {
         log.write(
@@ -6933,6 +6968,7 @@ async function deploy_test_tokens_to( idxChain, strDeploymentNetworkName, strMin
         const strAddress = ( strMintToAddress || private_key_2_account_address( g_w3_main_net, g_strPrivateKeyImaMN ) );
         const joImaAbiSC = g_arrChains[idxChain].joImaAbiSC;
         const joEnv = {
+            "NO_ANSI_COLORS": ( g_bPlainColorMode ? "1" : "0" ),
             "ADDRESSES_MINT_TO": "" + strAddress,
             "TOKEN_MINTERS": "" + strAddress,
             "IS_SKIP_MINT": "" + ( isMint ? "" : "true" ),

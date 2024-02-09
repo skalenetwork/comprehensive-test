@@ -5,7 +5,8 @@ global.g_w3mod = require( "web3" );
 
 const cc = require( "./cc.js" );
 const log = require( "./log.js" );
-cc.enable( true );
+const g_bPlainColorMode = s2b( process.env.NO_ANSI_COLORS );
+cc.enable( g_bPlainColorMode ? false : true );
 log.addStdout();
 //log.add( strFilePath, nMaxSizeBeforeRotation, nMaxFilesCount );
 
@@ -58,36 +59,21 @@ function zeroPad( num, places ) {
 function s2b( s ) {
     if( ! s )
         return false;
-    switch ( s.toString().toLowerCase().trim() ) {
-    case "true":
-    case "t":
-    case "yes":
-    case "y":
-    case "on":
-    case "1":
-    case "2":
-    case "3":
-    case "4":
-    case "5":
-    case "6":
-    case "7":
-    case "8":
-    case "9":
-        return true;
-    case "false":
-    case "f":
-    case "not":
-    case "no":
-    case "n":
-    case "off":
-    case "0":
-    case null:
+    s = s.toString().toLowerCase().trim();
+    if( ! s )
         return false;
-    default:
-        return Boolean( s );
-    }
+    if( s[0] == "f" || s[0] == "n" ) // false, no
+        return false;
+    if( s[0] == "t" || s[0] == "y" ) // true, yes
+        return true;
+    if( s == "on" )
+        return true;
+    if( s == "off" )
+        return false;
+    if( isNumericString( s ) )
+        return parseIntOrHex( s ) ? true : false;
+    return Boolean( s );
 }
-
 
 //////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 
@@ -128,6 +114,13 @@ function remove_starting_0x( s ) {
 }
 
 //////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
+
+function isNumericString( s ) {
+    if( typeof s != "string" )
+        return false; // s is not string
+    return ( !isNaN( s ) ) && // use type coercion to parse the _entirety_ of the string (`parseFloat` alone does not do this)...
+           ( !isNaN( parseFloat( s ) ) ); // ...and ensure strings of whitespace fail
+}
 
 function parseIntOrHex( s ) {
     if( typeof s != "string" )

@@ -147,7 +147,20 @@ if [ -z "$URL_W3_ETHEREUM" ]; then
 fi
 echo "URL_W3_ETHEREUM is set to $URL_W3_ETHEREUM"
 
-ALL_COMMAND_LINE_ARGUMENTS=" --colors \
+COLOR_OPT="--no-colors"
+if [ -z "$NO_ANSI_COLORS" ]
+then
+	echo "Colorized logs in skaled - turned off"
+else
+	if [ "${NO_ANSI_COLORS}" = "1" ]; then
+		echo "Colorized logs in skaled - turned off"
+	else
+		echo "Colorized logs in skaled - turned on"
+		COLOR_OPT="--colors"
+	fi
+fi
+
+ALL_COMMAND_LINE_ARGUMENTS=" $COLOR_OPT \
 --config ./config.json \
 -v 9 \
 --log-value-size-limit 1024000 \
