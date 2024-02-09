@@ -1,7 +1,7 @@
 #!/bin/bash
 
 JQ_COLOR_OPT="--color-output"
-if [ "${NO_ANSI_COLORS}" == "1" ]; then
+if [ "${NO_ANSI_COLORS}" = "1" ]; then
 	JQ_COLOR_OPT=""
 fi
 
@@ -133,7 +133,7 @@ curl --connect-timeout 30 --max-time 60 -X POST --data \
     $URL_SGX_WALLET_HTTP > ./sign_result.json
 printf "\nRaw sign_result.json is: ------------------------------------------------------------------- \n"
 cat ./sign_result.json
-printf "\nColorized sign_result.json is: ------------------------------------------------------------- \n"
+printf "\nResulting sign_result.json is: ------------------------------------------------------------- \n"
 cat ./sign_result.json | jq . $JQ_COLOR_OPT
 printf "\n"
 sign_hash=$(cat ./sign_result.json | jq -r ".result.hash")
@@ -152,7 +152,7 @@ curl --connect-timeout 30 --max-time 60 -X POST --data \
     $URL_SGX_WALLET_HTTP > ./get_certificate_result.json
 printf "\Raw get_certificate_result.json is: --------------------------------------------------------- \n"
 cat ./get_certificate_result.json
-printf "\Colorized get_certificate_result.json is: --------------------------------------------------- \n"
+printf "\Resulting get_certificate_result.json is: --------------------------------------------------- \n"
 cat ./get_certificate_result.json | jq . $JQ_COLOR_OPT
 printf "\n"
 certificate=$(cat ./get_certificate_result.json | jq -r ".result.cert")
