@@ -1488,9 +1488,9 @@ function compose_node_runCmd4imaAgent( joNodeDesc ) {
         " --nodes-count=" + g_arrChains[joNodeDesc.idxChain].arrNodeDescriptions.length + // ....................S-Chain nodes count
         " --time-framing=" + g_nTimeFrameSecondsIMA + // ..................Specifies period(in seconds) for time framing. Zero means disable time framing
         " --time-gap=" + g_nTimeGapSecondsIMA + // ......................Specifies gap(in seconds) before next time frame
-        " --pwa --no-expose-pwa --pwa-timeout=" + g_nPendingWorkAnalysisTimeoutSecondsIMA +
-        // " --pwa --expose-pwa --pwa-timeout=" + g_nPendingWorkAnalysisTimeoutSecondsIMA +
-        // " --no-pwa --no-expose-pwa" +
+        " --pwa --pwa-timeout=" + g_nPendingWorkAnalysisTimeoutSecondsIMA +
+        " --expose-pwa " + // " --no-expose-pwa " +
+        // " --no-pwa " +
         // " --enable-oracle" +
         " --disable-oracle" +
         ""
