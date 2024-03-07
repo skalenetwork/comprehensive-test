@@ -201,7 +201,7 @@ log.write( cc.warning( "PLEASE NOTICE:" ) + cc.debug( " will skip starting of " 
 const g_bEnabledImaMainNetTunnelling = s2b( process.env.ENABLED_IMA_MAIN_NET_TUNNELLING ) ? true : false;
 log.write( cc.warning( "PLEASE NOTICE:" ) + " " + cc.info( "IMA to Main Net tunnelling" ) + cc.debug( " is " ) + ( g_bEnabledImaMainNetTunnelling ? cc.success( "enabled" ) : cc.error( "disabled" ) ) + "\n" );
 
-const g_nTimeFrameSecondsIMA = 120;
+const g_nTimeFrameSecondsIMA = 300;
 const g_nTimeGapSecondsIMA = 10;
 const g_nScanMessagePeriodSecondsIMA = 10;
 const g_nPendingWorkAnalysisTimeoutSecondsIMA = 90;
