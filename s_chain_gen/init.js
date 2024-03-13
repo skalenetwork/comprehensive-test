@@ -203,6 +203,7 @@ const joConfigurationTemplate = {
         "istanbulForkBlock": "0x0",
         "networkID": "12313219",
         "chainID": ensure_starts_with_0x( parseIntOrHex( g_arrChainNaming[0].cid ).toString(16) ),
+        //"skaleDisableChainIdCheck": true,
         "maximumExtraDataSize": "0x20",
         "tieBreakingGas": false,
         "minGasLimit": "0x47E7C4000000",
