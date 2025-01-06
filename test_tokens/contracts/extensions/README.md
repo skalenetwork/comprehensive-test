@@ -1,4 +1,4 @@
 # Info
 
-This directory is exact copy of `IMA/proxy/contracts/extensions` directory.
+This directory is exact copy of `IMA/contracts/extensions` directory.
 
