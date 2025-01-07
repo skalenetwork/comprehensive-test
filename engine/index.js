@@ -340,7 +340,7 @@ function print_log_at_exit( strPath ) {
             });
             return logFiles;
         };
-
+        log.write(cc.info("Log files in the directory:"));
         const logFiles = getAllLogFiles(g_strFolderRepoImaAgent);
         logFiles.forEach(file => {
             log.write(cc.bright("Log file:") + " " + cc.attention(file) + "\n");
