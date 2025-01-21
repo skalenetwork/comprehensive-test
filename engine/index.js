@@ -5246,44 +5246,68 @@ async function sm_init_paymaster_controller(w3) {
         if (g_bVerbose) {
             log.write(cc.debug("Setting IMA address...") + "\n");
         }
-        await paymaster_controller.methods.setImaAddress(g_joImaAbiMN.message_proxy_mainnet_address).send({
-            chainId: parseIntOrHex(cid_main_net),
-            from: addressFrom,
-            gas: 8000000,
-            gasLimit: 8000000,
-            gasPrice: gasPrice
-        });
+        try {
+            await paymaster_controller.methods.setImaAddress(g_joImaAbiMN.message_proxy_mainnet_address).send({
+                chainId: parseIntOrHex(cid_main_net),
+                from: addressFrom,
+                gas: 8000000,
+                gasLimit: 8000000,
+                gasPrice: gasPrice
+            });
+        } catch (err) {
+            log.write(cc.fatal("Error:") + cc.error(" Failed to set IMA address, error description: ") + cc.warning(err.toString()) + "\n");
+            await end_of_test(51);
+        }
+
         if (g_bVerbose) {
             log.write(cc.debug("Setting Marionette address...") + "\n");
         }
-        await paymaster_controller.methods.setMarionetteAddress(g_joSkaleManagerABI.paymaster_controller_address).send({
-            chainId: parseIntOrHex(cid_main_net),
-            from: addressFrom,
-            gas: 8000000,
-            gasLimit: 8000000,
-            gasPrice: gasPrice
-        });
+        try {
+            await paymaster_controller.methods.setMarionetteAddress(g_joSkaleManagerABI.paymaster_controller_address).send({
+                chainId: parseIntOrHex(cid_main_net),
+                from: addressFrom,
+                gas: 8000000,
+                gasLimit: 8000000,
+                gasPrice: gasPrice
+            });
+        } catch (err) {
+            log.write(cc.fatal("Error:") + cc.error(" Failed to set Marionette address, error description: ") + cc.warning(err.toString()) + "\n");
+            await end_of_test(51);
+        }
+
         if (g_bVerbose) {
             log.write(cc.debug("Setting Paymaster address...") + "\n");
         }
-        await paymaster_controller.methods.setPaymasterAddress(g_joSkaleManagerABI.paymaster_controller_address).send({
-            chainId: parseIntOrHex(cid_main_net),
-            from: addressFrom,
-            gas: 8000000,
-            gasLimit: 8000000,
-            gasPrice: gasPrice
-        });
+        try {
+            await paymaster_controller.methods.setPaymasterAddress(g_joSkaleManagerABI.paymaster_controller_address).send({
+                chainId: parseIntOrHex(cid_main_net),
+                from: addressFrom,
+                gas: 8000000,
+                gasLimit: 8000000,
+                gasPrice: gasPrice
+            });
+        } catch (err) {
+            log.write(cc.fatal("Error:") + cc.error(" Failed to set Paymaster address, error description: ") + cc.warning(err.toString()) + "\n");
+            await end_of_test(51);
+        }
+
         if (g_bVerbose) {
             log.write(cc.debug("Setting Paymaster chain hash...") + "\n");
         }
-        const hash = w3.utils.soliditySha3({ type: 'string', value: g_strMainnetName });
-        await paymaster_controller.methods.setPaymasterChainHash(hash).send({
-            chainId: parseIntOrHex(cid_main_net),
-            from: addressFrom,
-            gas: 8000000,
-            gasLimit: 8000000,
-            gasPrice: gasPrice
-        });
+        try {
+            const hash = w3.utils.soliditySha3({ type: 'string', value: g_strMainnetName });
+            await paymaster_controller.methods.setPaymasterChainHash(hash).send({
+                chainId: parseIntOrHex(cid_main_net),
+                from: addressFrom,
+                gas: 8000000,
+                gasLimit: 8000000,
+                gasPrice: gasPrice
+            });
+        } catch (err) {
+            log.write(cc.fatal("Error:") + cc.error(" Failed to set Paymaster chain hash, error description: ") + cc.warning(err.toString()) + "\n");
+            await end_of_test(51);
+        }
+
         if (g_bVerbose) {
             log.write(cc.success("Paymaster controller initialized successfully.") + "\n");
         }
