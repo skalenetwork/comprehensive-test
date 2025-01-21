@@ -2,7 +2,7 @@
 
 # VERY IMPORTANT:
 # VERY IMPORTANT:
-# VERY IMPORTANT: this script must run in IMA folder as current directory
+# VERY IMPORTANT: this script must run in IMA/proxy folder as current directory
 # VERY IMPORTANT:
 # VERY IMPORTANT:
 
@@ -22,7 +22,7 @@ cd ..
 cd ./predeployed/scripts
 export VERSION=2
 python3 -m pip install --upgrade build
-./build_package.sh
+./build_package.sh 
 cd ..
 # rm -rf ./venv
 # python3 -m venv venv

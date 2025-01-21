@@ -17,8 +17,8 @@ rm -f ./mainnet.log        || true &> /dev/null
 rm -f ./skaled_??_??.log   || true &> /dev/null
 rm -f ./imaAgent_??_??.log || true &> /dev/null
 rm -f ./ima.state.json     || true &> /dev/null
-rm -f ../IMA/.openzeppelin/unknown-*.json || true &> /dev/null
-rm -rf ../IMA/artifacts/* || true &> /dev/null
+rm -f ../IMA/proxy/.openzeppelin/unknown-*.json || true &> /dev/null
+rm -rf ../IMA/proxy/artifacts/* || true &> /dev/null
 
 echo " --------------------------- initializing certificates ------------------------------------------------------------------------------------------------ "
 cd ./create_pems && ./create_pems.sh && cd ..

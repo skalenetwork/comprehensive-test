@@ -593,7 +593,7 @@ if( g_bVerbose ) {
     log.write( cc.normal( "Assuming " ) + cc.sunny( "IMA Agent" ) + cc.normal( " repo is " ) + cc.info( g_strFolderRepoImaAgent ) + "\n" );
     log.write( cc.normal( "Assuming " ) + cc.sunny( "IMA Contracts" ) + cc.normal( " repo is " ) + cc.info( g_strFolderRepoImaContracts ) + "\n" );
 }
-const g_strFolderImaProxy = "" + g_strFolderRepoImaContracts;
+const g_strFolderImaProxy = "" + g_strFolderRepoImaContracts + "/proxy";
 const g_strFolderImaAgentBase = "" + g_strFolderRepoImaAgent + ( g_bSeparatedImaAgentMode ? "/src" : "/agent" );
 let g_strFolderImaAgent = "" + g_strFolderImaAgentBase;
 let g_strImaJsExt = ".mjs";
@@ -6490,7 +6490,7 @@ async function generate_predeployed_artifacts_schain( idxChain, fnContinue ) {
         "linker": "" + ensure_starts_with_0x( g_joImaAbiMN.linker_address ),
         "community_pool": "" + ensure_starts_with_0x( g_joImaAbiMN.community_pool_address )
     };
-    const strAdditionalPath = path.join( g_strFolderRepoImaContracts, "/predeployed/test/additional.json" );
+    const strAdditionalPath = path.join( g_strFolderRepoImaContracts, "/proxy/predeployed/test/additional.json" );
     log.write( cc.normal( "Saving additional information for skaled configuration update: " ) + cc.j( joAdditional ) +
         cc.normal( " to file " ) + cc.info( strAdditionalPath ) + cc.normal( "..." ) +
         "\n" );
