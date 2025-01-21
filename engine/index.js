@@ -10422,13 +10422,13 @@ async function run() {
     await redeploy_skale_manager( g_w3_main_net );
     await reload_deployed_skale_manager( g_w3_main_net );
     await sm_pre_configure( g_w3_main_net );
-    await sm_init_node_addresses_all( g_w3_main_net );
-    await init_sgx_sm_dkg_all();
     await rebuild_ima();
     await redeploy_ima_to_main_net();
     await reload_ima_abi_for_main_net();
     await sm_init_paymaster_controller(g_w3_main_net);
     await sm_init_validator( g_w3_main_net );
+    await sm_init_node_addresses_all( g_w3_main_net );
+    await init_sgx_sm_dkg_all();
     await generate_predeployed_artifacts_all();
     all_skaled_nodes_fix_config_json();
     await all_skaled_nodes_init_BTRFS_if_needed();
