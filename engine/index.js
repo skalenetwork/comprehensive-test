@@ -327,24 +327,6 @@ function print_log_at_exit( strPath ) {
                 env: joEnv
             } );
     } catch ( err ) {
-        const getAllLogFiles = (dir) => {
-            let logFiles = [];
-            const files = fs.readdirSync(dir);
-            files.forEach(file => {
-            const filePath = path.join(dir, file);
-            if (fs.statSync(filePath).isDirectory()) {
-                logFiles = logFiles.concat(getAllLogFiles(filePath));
-            } else if (file.endsWith('.log')) {
-                logFiles.push(filePath);
-            }
-            });
-            return logFiles;
-        };
-        log.write(cc.info("Log files in the directory:"));
-        const logFiles = getAllLogFiles(g_strFolderRepoImaAgent);
-        logFiles.forEach(file => {
-            log.write(cc.bright("Log file:") + " " + cc.attention(file) + "\n");
-        });
         log.write( cc.fatal( "CRITICAL ERROR:" ) +
             " " + cc.error( "Failed print content of" ) + " " +
             cc.attention( strPath ) + cc.error( ":" ) + " " +
