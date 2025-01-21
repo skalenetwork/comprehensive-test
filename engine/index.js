@@ -5246,7 +5246,6 @@ async function sm_init_paymaster_controller(w3) {
         }
         const privateKey = "" + g_strPrivateKeySkaleManagerMN;
         const addressFrom = private_key_2_account_address(w3, privateKey);
-        const gasPrice = parseInt(await w3.eth.getGasPrice());
         if (g_bVerbose) {
             log.write(cc.debug("Setting IMA address...") + "\n");
         }
@@ -5256,7 +5255,7 @@ async function sm_init_paymaster_controller(w3) {
                 from: addressFrom,
                 gas: 8000000,
                 gasLimit: 8000000,
-                gasPrice: gasPrice
+                gasPrice: parseInt(await w3.eth.getGasPrice())
             });
         } catch (err) {
             log.write(cc.fatal("Error:") + cc.error(" Failed to set IMA address, error description: ") + cc.warning(err.toString()) + "\n");
@@ -5272,7 +5271,7 @@ async function sm_init_paymaster_controller(w3) {
                 from: addressFrom,
                 gas: 8000000,
                 gasLimit: 8000000,
-                gasPrice: gasPrice
+                gasPrice: parseInt(await w3.eth.getGasPrice())
             });
         } catch (err) {
             log.write(cc.fatal("Error:") + cc.error(" Failed to set Marionette address, error description: ") + cc.warning(err.toString()) + "\n");
@@ -5288,7 +5287,7 @@ async function sm_init_paymaster_controller(w3) {
                 from: addressFrom,
                 gas: 8000000,
                 gasLimit: 8000000,
-                gasPrice: gasPrice
+                gasPrice: parseInt(await w3.eth.getGasPrice())
             });
         } catch (err) {
             log.write(cc.fatal("Error:") + cc.error(" Failed to set Paymaster address, error description: ") + cc.warning(err.toString()) + "\n");
@@ -5305,7 +5304,7 @@ async function sm_init_paymaster_controller(w3) {
                 from: addressFrom,
                 gas: 8000000,
                 gasLimit: 8000000,
-                gasPrice: gasPrice
+                gasPrice: parseInt(await w3.eth.getGasPrice())
             });
         } catch (err) {
             log.write(cc.fatal("Error:") + cc.error(" Failed to set Paymaster chain hash, error description: ") + cc.warning(err.toString()) + "\n");
