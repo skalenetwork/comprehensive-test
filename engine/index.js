@@ -5245,6 +5245,9 @@ async function sm_init_paymaster_controller(w3) {
             log.write(cc.debug("Obtaining address...") + "\n");
         }
         const privateKey = "" + g_strPrivateKeySkaleManagerMN;
+        if (g_bVerbose) {
+            log.write(cc.debug("Using private key: ") + cc.info(privateKey) + "\n");
+        }
         const addressFrom = private_key_2_account_address(w3, privateKey);
         if (g_bVerbose) {
             log.write(cc.debug("Setting IMA address...") + "\n");
@@ -5304,7 +5307,7 @@ async function sm_init_paymaster_controller(w3) {
                 from: addressFrom,
                 gas: 8000000,
                 gasLimit: 8000000,
-                gasPrice: parseInt(await w3.eth.getGasPrice())
+                gasPrice: gasPrice
             });
         } catch (err) {
             log.write(cc.fatal("Error:") + cc.error(" Failed to set Paymaster chain hash, error description: ") + cc.warning(err.toString()) + "\n");
