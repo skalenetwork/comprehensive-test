@@ -5241,6 +5241,9 @@ async function sm_pre_configure( w3, fnContinue ) {
 
 async function sm_init_paymaster_controller(w3) {
     try {
+        if (g_bVerbose) {
+            log.write(cc.debug("Obtaining address...") + "\n");
+        }
         const addressFrom = private_key_2_account_address(w3, g_strPrivateKeySkaleManagerMN);
         const gasPrice = parseInt(await w3.eth.getGasPrice());
         if (g_bVerbose) {
@@ -10431,7 +10434,7 @@ async function run() {
     await rebuild_ima();
     await redeploy_ima_to_main_net();
     await reload_ima_abi_for_main_net();
-    await sm_init_paymaster_controller(g_w3_main_net);
+    await sm_init_paymaster_controller( g_w3_main_net );
     await sm_init_validator( g_w3_main_net );
     await sm_init_node_addresses_all( g_w3_main_net );
     await init_sgx_sm_dkg_all();
