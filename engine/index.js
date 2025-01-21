@@ -5086,7 +5086,6 @@ let jo_skale_token = null;
 // let jo_token_state = null;
 let jo_validator_service = null;
 let jo_wallets = null;
-let paymaster_controller = null;
 
 async function redeploy_skale_manager( w3, fnContinue ) {
     fnContinue = fnContinue || function() { };
@@ -5199,7 +5198,6 @@ async function reload_deployed_skale_manager( w3, fnContinue ) {
     // jo_token_state = initContract( w3, g_joSkaleManagerABI, "token_state" );
     jo_validator_service = initContract( w3, g_joSkaleManagerABI, "validator_service" );
     jo_wallets = initContract( w3, g_joSkaleManagerABI, "wallets" );
-    paymaster_controller = initContract( w3, g_joSkaleManagerABI, "paymaster_controller" );
 
     fnContinue();
 }
@@ -5256,61 +5254,6 @@ async function sm_pre_configure( w3, fnContinue ) {
 
 //////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 //////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
-
-async function sm_init_paymaster_controller(w3) {
-    try {
-        const addressFrom = private_key_2_account_address(w3, g_strPrivateKeySkaleManagerMN);
-        const gasPrice = parseInt(await w3.eth.getGasPrice());
-        if (g_bVerbose) {
-            log.write(cc.debug("Setting IMA address...") + "\n");
-        }
-        await paymaster_controller.methods.setImaAddress(g_joImaAbiMN.message_proxy_mainnet_address).send({
-            chainId: parseIntOrHex(cid_main_net),
-            from: addressFrom,
-            gas: 8000000,
-            gasLimit: 8000000,
-            gasPrice: gasPrice
-        });
-        if (g_bVerbose) {
-            log.write(cc.debug("Setting Marionette address...") + "\n");
-        }
-        await paymaster_controller.methods.setMarionetteAddress(g_joSkaleManagerABI.paymaster_controller_address).send({
-            chainId: parseIntOrHex(cid_main_net),
-            from: addressFrom,
-            gas: 8000000,
-            gasLimit: 8000000,
-            gasPrice: gasPrice
-        });
-        if (g_bVerbose) {
-            log.write(cc.debug("Setting Paymaster address...") + "\n");
-        }
-        await paymaster_controller.methods.setPaymasterAddress(g_joSkaleManagerABI.paymaster_controller_address).send({
-            chainId: parseIntOrHex(cid_main_net),
-            from: addressFrom,
-            gas: 8000000,
-            gasLimit: 8000000,
-            gasPrice: gasPrice
-        });
-        if (g_bVerbose) {
-            log.write(cc.debug("Setting Paymaster chain hash...") + "\n");
-        }
-        const hash = w3.utils.soliditySha3({ type: 'string', value: g_strMainnetName });
-        await paymaster_controller.methods.setPaymasterChainHash(hash).send({
-            chainId: parseIntOrHex(cid_main_net),
-            from: addressFrom,
-            gas: 8000000,
-            gasLimit: 8000000,
-            gasPrice: gasPrice
-        });
-        if (g_bVerbose) {
-            log.write(cc.success("Paymaster controller initialized successfully.") + "\n");
-        }
-    } catch (err) {
-        log.write(cc.fatal("Error:") + cc.error(" Failed to initialize paymaster controller, error description: ") + cc.warning(err.toString()) + "\n");
-        await end_of_test(51);
-    }
-}
-
 
 let g_validatorID = null;
 
@@ -10422,13 +10365,12 @@ async function run() {
     await redeploy_skale_manager( g_w3_main_net );
     await reload_deployed_skale_manager( g_w3_main_net );
     await sm_pre_configure( g_w3_main_net );
+    await sm_init_validator( g_w3_main_net );
     await sm_init_node_addresses_all( g_w3_main_net );
     await init_sgx_sm_dkg_all();
     await rebuild_ima();
     await redeploy_ima_to_main_net();
     await reload_ima_abi_for_main_net();
-    await sm_init_paymaster_controller(g_w3_main_net);
-    await sm_init_validator( g_w3_main_net );
     await generate_predeployed_artifacts_all();
     all_skaled_nodes_fix_config_json();
     await all_skaled_nodes_init_BTRFS_if_needed();
