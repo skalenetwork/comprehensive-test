@@ -5244,7 +5244,8 @@ async function sm_init_paymaster_controller(w3) {
         if (g_bVerbose) {
             log.write(cc.debug("Obtaining address...") + "\n");
         }
-        const addressFrom = private_key_2_account_address(w3, g_strPrivateKeySkaleManagerMN);
+        const privateKey = "" + g_strPrivateKeySkaleManagerMN;
+        const addressFrom = private_key_2_account_address(w3, privateKey);
         const gasPrice = parseInt(await w3.eth.getGasPrice());
         if (g_bVerbose) {
             log.write(cc.debug("Setting IMA address...") + "\n");
