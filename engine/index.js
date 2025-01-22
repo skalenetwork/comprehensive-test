@@ -1788,6 +1788,7 @@ function private_key_2_account_address( w3, keyPrivate ) {
     return strAddress;
 }
 
+module.exports = { private_key_2_account_address };
 //////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 //////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 
@@ -5241,14 +5242,7 @@ async function sm_pre_configure( w3, fnContinue ) {
 
 async function sm_init_paymaster_controller(w3) {
     try {
-        if (g_bVerbose) {
-            log.write(cc.debug("Obtaining address...") + "\n");
-        }
-        const privateKey = "" + g_strPrivateKeySkaleManagerMN;
-        if (g_bVerbose) {
-            log.write(cc.debug("Using private key: ") + cc.info(privateKey) + "\n");
-        }
-        const addressFrom = private_key_2_account_address(w3, privateKey);
+        const addressFrom = "0x7aa5e36aa15e93d10f4f26357c30f052dacdde5f"
         if (g_bVerbose) {
             log.write(cc.debug("Setting IMA address...") + "\n");
         }
