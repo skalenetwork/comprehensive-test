@@ -5240,7 +5240,8 @@ async function sm_pre_configure( w3, fnContinue ) {
 //////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 //////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 
-async function sm_init_paymaster_controller(w3) {
+async function sm_init_paymaster_controller(w3, fnContinue) {
+    fnContinue = fnContinue || function() { };
     try {
         // ----------------------------------------------------------
         // Common setup: address, gasPrice, transaction count
@@ -5434,6 +5435,7 @@ async function sm_init_paymaster_controller(w3) {
         if (g_bVerbose) {
             log.write(cc.success("Paymaster controller initialized successfully.") + "\n");
         }
+        fnContinue();
     } catch (err) {
         log.write(
             cc.fatal("Error:") +
