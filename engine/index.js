@@ -5135,7 +5135,7 @@ async function redeploy_skale_manager( w3, fnContinue ) {
 async function reload_deployed_skale_manager( w3, fnContinue ) {
     fnContinue = fnContinue || function() { };
     if( ! fileExists( g_strSkaleManagerAbiJsonPath ) ) {
-        g_strSkaleManagerAbiJsonPath = normalizePath( searchDirSyncForFirstItem( "skale-manager-*develop*-custom-abi.json", g_strFolderRepoSkaleManager + "/data" ) );
+        g_strSkaleManagerAbiJsonPath = normalizePath( searchDirSyncForFirstItem( "skale-manager-*-custom-abi.json", g_strFolderRepoSkaleManager + "/data" ) );
         if( g_bVerbose )
             log.write( cc.normal( "Re-assuming " ) + cc.sunny( "Skale Manager ABI file" ) + cc.normal( " is " ) + cc.info( g_strSkaleManagerAbiJsonPath ) + "\n" );
     }
