@@ -5242,77 +5242,204 @@ async function sm_pre_configure( w3, fnContinue ) {
 
 async function sm_init_paymaster_controller(w3) {
     try {
-        const addressFrom = "0x7aa5e36aa15e93d10f4f26357c30f052dacdde5f"
+        // ----------------------------------------------------------
+        // Common setup: address, gasPrice, transaction count
+        // ----------------------------------------------------------
+        const addressFrom = "0x7aa5e36aa15e93d10f4f26357c30f052dacdde5f";
+        const gasPrice = parseInt(await w3.eth.getGasPrice());
+
+        if (g_bVerbose) {
+            log.write(
+                cc.debug("Current ") +
+                cc.info("gas price") +
+                cc.debug(" = ") +
+                cc.sunny(gasPrice) + "\n"
+            );
+        }
+
+        let tcnt = parseInt(await w3.eth.getTransactionCount(addressFrom, null));
+        if (g_bVerbose) {
+            log.write(
+                cc.debug("Current ") +
+                cc.info("tcnt") +
+                cc.debug(" = ") +
+                cc.sunny(tcnt) + "\n"
+            );
+        }
+
+        // ----------------------------------------------------------
+        // Helper function to attempt a transaction up to 3 times
+        // ----------------------------------------------------------
+        async function attemptSend(txLabel, callMethod) {
+            let result = null;
+            for (let idxAttempt = 0; idxAttempt < 3; ++idxAttempt) {
+                try {
+                    // refresh the nonce and increment once
+                    tcnt = parseInt(await w3.eth.getTransactionCount(addressFrom, null));
+                    ++tcnt; // small increment workaround
+
+                    if (g_bVerbose) {
+                        log.write(
+                            cc.debug("Performing attempt ") +
+                            cc.info(idxAttempt) +
+                            cc.debug(" to ") +
+                            cc.sunny(txLabel) +
+                            cc.debug(" with ") +
+                            cc.info("tcnt") +
+                            cc.debug(" = ") +
+                            cc.sunny(tcnt) +
+                            cc.debug("...") + "\n"
+                        );
+                    }
+
+                    result = await callMethod.send({
+                        chainId: parseIntOrHex(cid_main_net),
+                        from: addressFrom,
+                        gas: 8000000,
+                        gasLimit: 8000000,
+                        gasPrice: gasPrice,
+                        nonce: tcnt
+                    });
+
+                    if (result) {
+                        if (g_bVerbose) {
+                            log.write(
+                                cc.success("Successful attempt ") +
+                                cc.info(idxAttempt) +
+                                cc.success(" to ") +
+                                cc.sunny(txLabel) +
+                                cc.success(" with ") +
+                                cc.info("tcnt") +
+                                cc.success(" = ") +
+                                cc.sunny(tcnt) +
+                                cc.success(".") + "\n"
+                            );
+                        }
+                        break;
+                    }
+                } catch (err) {
+                    if (g_bVerbose) {
+                        log.write(
+                            cc.fatal("FAILED") +
+                            cc.error(" attempt ") +
+                            cc.info(idxAttempt) +
+                            cc.error(" to ") +
+                            cc.sunny(txLabel) +
+                            cc.error(" with ") +
+                            cc.warning("tcnt") +
+                            cc.error(" = ") +
+                            cc.warning(tcnt) +
+                            cc.error(", error is: ") +
+                            cc.warning(err.toString()) + "\n"
+                        );
+                    }
+                    result = null;
+                }
+                ++tcnt; // workaround
+            }
+            return result;
+        }
+
+        // ----------------------------------------------------------
+        // 1) Set IMA Address
+        // ----------------------------------------------------------
         if (g_bVerbose) {
             log.write(cc.debug("Setting IMA address...") + "\n");
         }
-        try {
-            await paymaster_controller.methods.setImaAddress(g_joImaAbiMN.message_proxy_mainnet_address).send({
-                chainId: parseIntOrHex(cid_main_net),
-                from: addressFrom,
-                gas: 8000000,
-                gasLimit: 8000000,
-                gasPrice: parseInt(await w3.eth.getGasPrice())
-            });
-        } catch (err) {
-            log.write(cc.fatal("Error:") + cc.error(" Failed to set IMA address, error description: ") + cc.warning(err.toString()) + "\n");
+        let result_of_setImaAddress = await attemptSend(
+            "setImaAddress",
+            paymaster_controller.methods.setImaAddress(g_joImaAbiMN.message_proxy_mainnet_address)
+        );
+
+        if (!result_of_setImaAddress) {
+            log.write(
+                cc.fatal("Error:") +
+                cc.error(" Failed to set IMA address after 3 attempts.") + "\n"
+            );
             await end_of_test(51);
         }
 
+        // ----------------------------------------------------------
+        // 2) Set Marionette Address
+        // ----------------------------------------------------------
         if (g_bVerbose) {
             log.write(cc.debug("Setting Marionette address...") + "\n");
         }
-        try {
-            await paymaster_controller.methods.setMarionetteAddress(g_joSkaleManagerABI.paymaster_controller_address).send({
-                chainId: parseIntOrHex(cid_main_net),
-                from: addressFrom,
-                gas: 8000000,
-                gasLimit: 8000000,
-                gasPrice: parseInt(await w3.eth.getGasPrice())
-            });
-        } catch (err) {
-            log.write(cc.fatal("Error:") + cc.error(" Failed to set Marionette address, error description: ") + cc.warning(err.toString()) + "\n");
+        let result_of_setMarionetteAddress = await attemptSend(
+            "setMarionetteAddress",
+            paymaster_controller.methods.setMarionetteAddress(
+                g_joSkaleManagerABI.paymaster_controller_address
+            )
+        );
+
+        if (!result_of_setMarionetteAddress) {
+            log.write(
+                cc.fatal("Error:") +
+                cc.error(" Failed to set Marionette address after 3 attempts.") + "\n"
+            );
             await end_of_test(51);
         }
 
+        // ----------------------------------------------------------
+        // 3) Set Paymaster Address
+        // ----------------------------------------------------------
         if (g_bVerbose) {
             log.write(cc.debug("Setting Paymaster address...") + "\n");
         }
-        try {
-            await paymaster_controller.methods.setPaymasterAddress(g_joSkaleManagerABI.paymaster_controller_address).send({
-                chainId: parseIntOrHex(cid_main_net),
-                from: addressFrom,
-                gas: 8000000,
-                gasLimit: 8000000,
-                gasPrice: parseInt(await w3.eth.getGasPrice())
-            });
-        } catch (err) {
-            log.write(cc.fatal("Error:") + cc.error(" Failed to set Paymaster address, error description: ") + cc.warning(err.toString()) + "\n");
+        let result_of_setPaymasterAddress = await attemptSend(
+            "setPaymasterAddress",
+            paymaster_controller.methods.setPaymasterAddress(
+                g_joSkaleManagerABI.paymaster_controller_address
+            )
+        );
+
+        if (!result_of_setPaymasterAddress) {
+            log.write(
+                cc.fatal("Error:") +
+                cc.error(" Failed to set Paymaster address after 3 attempts.") + "\n"
+            );
             await end_of_test(51);
         }
 
+        // ----------------------------------------------------------
+        // 4) Set Paymaster Chain Hash
+        // ----------------------------------------------------------
         if (g_bVerbose) {
             log.write(cc.debug("Setting Paymaster chain hash...") + "\n");
         }
-        try {
-            const hash = w3.utils.soliditySha3({ type: 'string', value: g_strMainnetName });
-            await paymaster_controller.methods.setPaymasterChainHash(hash).send({
-                chainId: parseIntOrHex(cid_main_net),
-                from: addressFrom,
-                gas: 8000000,
-                gasLimit: 8000000,
-                gasPrice: gasPrice
+        let result_of_setChainHash = null;
+        {
+            const hash = w3.utils.soliditySha3({
+                type: 'string',
+                value: g_strMainnetName
             });
-        } catch (err) {
-            log.write(cc.fatal("Error:") + cc.error(" Failed to set Paymaster chain hash, error description: ") + cc.warning(err.toString()) + "\n");
-            await end_of_test(51);
+
+            result_of_setChainHash = await attemptSend(
+                "setPaymasterChainHash",
+                paymaster_controller.methods.setPaymasterChainHash(hash)
+            );
+
+            if (!result_of_setChainHash) {
+                log.write(
+                    cc.fatal("Error:") +
+                    cc.error(" Failed to set Paymaster chain hash after 3 attempts.") + "\n"
+                );
+                await end_of_test(51);
+            }
         }
 
+        // ----------------------------------------------------------
+        // Success
+        // ----------------------------------------------------------
         if (g_bVerbose) {
             log.write(cc.success("Paymaster controller initialized successfully.") + "\n");
         }
     } catch (err) {
-        log.write(cc.fatal("Error:") + cc.error(" Failed to initialize paymaster controller, error description: ") + cc.warning(err.toString()) + "\n");
+        log.write(
+            cc.fatal("Error:") +
+            cc.error(" Failed to initialize paymaster controller, error description: ") +
+            cc.warning(err.toString()) + "\n"
+        );
         await end_of_test(51);
     }
 }
