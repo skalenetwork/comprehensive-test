@@ -33,7 +33,7 @@ export INSECURE_PRIVATE_KEY_3="0x2"
 export INSECURE_PRIVATE_KEY_4="0x3"
 export INSECURE_PRIVATE_KEY_5="0x4"
 export INSECURE_PRIVATE_KEY_6="0x5"
-cd skale-manager && yarn install && cd ..
+cd skale-manager && git checkout 1.12.0-stable.0 && yarn install && cd ..
 truffle migrate --network test
 cd engine && ./init.sh && cd ..
 
