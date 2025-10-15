@@ -1,4 +1,4 @@
-require( "@nomiclabs/hardhat-waffle" );
+require("@nomiclabs/hardhat-waffle");
 
 function getAccounts() {
     // var accounts = [];
@@ -75,12 +75,12 @@ function getAccounts() {
     ];
 }
 
-task( "accounts", "Prints the list of accounts", async( taskArgs, hre ) => {
+task("accounts", "Prints the list of accounts", async (taskArgs, hre) => {
     const accounts = await hre.ethers.getSigners();
-    for( const account of accounts )
-        console.log( account.address );
+    for (const account of accounts)
+        console.log(account.address);
 
-} );
+});
 
 // Go to https://hardhat.org/config/ for more info
 
@@ -92,7 +92,7 @@ module.exports = {
     networks: {
         hardhat: {
             accounts: getAccounts(),
-            chainId: 456,
+            chainId: 31337,
             blockGasLimit: 0xfffffffffff, // 12000000
             gasPrice: 1000000000,
             mining: {
