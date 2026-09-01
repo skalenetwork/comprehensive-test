@@ -575,7 +575,10 @@ if (g_bVerbose) {
     log.write(cc.normal("Assuming ") + cc.sunny("IMA Agent") + cc.normal(" repo is ") + cc.info(g_strFolderRepoImaAgent) + "\n");
     log.write(cc.normal("Assuming ") + cc.sunny("IMA Contracts") + cc.normal(" repo is ") + cc.info(g_strFolderRepoImaContracts) + "\n");
 }
-const g_strFolderImaProxy = "" + g_strFolderRepoImaContracts + "/proxy";
+const g_strFolderImaContracts = fileExists(
+    path.join(g_strFolderRepoImaContracts, "proxy", "migrations", "deployMainnet.ts"))
+    ? path.join(g_strFolderRepoImaContracts, "proxy")
+    : g_strFolderRepoImaContracts;
 const g_strFolderImaAgentBase = "" + g_strFolderRepoImaAgent + (g_bSeparatedImaAgentMode ? "/src" : "/agent");
 let g_strFolderImaAgent = "" + g_strFolderImaAgentBase;
 let g_strImaJsExt = ".mjs";
@@ -589,7 +592,7 @@ if (g_bVerbose)
     log.write(cc.normal("Assuming ") + cc.sunny("IMA Agent") + cc.normal(" is based on ") + cc.info(g_isImaAgentTypeScriptBased ? "TypeScript" : "JavaScript") + "\n");
 
 // IMA ABI files
-const g_strPathImaAbiMN = g_strFolderImaProxy + "/data/proxyMainnet.json";
+const g_strPathImaAbiMN = g_strFolderImaContracts + "/data/proxyMainnet.json";
 
 const g_strFolderTestTokens = path.join(__dirname, "../test_tokens");
 if (g_bVerbose)
@@ -5147,7 +5150,7 @@ async function reload_deployed_skale_manager(w3, fnContinue) {
     // traverse_json( g_joSkaleManagerABI, fix_ethers_js_abi_errors );
     g_joSkaleManagerABI = jsonFileLoad(g_strSkaleManagerAbiJsonPath, null, g_bVerbose);
     traverse_json(g_joSkaleManagerABI, fix_ethers_js_abi_errors);
-    jsonFileSave(g_strFolderImaProxy + "/data/skaleManagerComponents.json", {
+    jsonFileSave(g_strFolderImaContracts + "/data/skaleManagerComponents.json", {
         "contract_manager_address": g_joSkaleManagerABI.contract_manager_address,
         "contract_manager_abi": g_joSkaleManagerABI.contract_manager_abi
     }, g_bVerbose);
@@ -6230,10 +6233,10 @@ async function redeploy_ima_to_main_net(fnContinue) {
             cc.bright("IMA deployment - Main NET") +
             cc.bright("...") + "\n\n");
     }
-    // jsonFileSave( g_strFolderImaProxy + "/data/skaleManagerComponents.json", {
+    // jsonFileSave( g_strFolderImaContracts + "/data/skaleManagerComponents.json", {
     //     "contract_manager_address": "" + g_joSkaleManagerABI.contract_manager_address
     // }, g_bVerbose );
-    jsonFileSave(g_strFolderImaProxy + "/data/skaleManagerComponents.json", {
+    jsonFileSave(g_strFolderImaContracts + "/data/skaleManagerComponents.json", {
         "contract_manager_address": g_joSkaleManagerABI.contract_manager_address,
         "contract_manager_abi": g_joSkaleManagerABI.contract_manager_abi
     }, g_bVerbose);
@@ -6248,6 +6251,7 @@ async function redeploy_ima_to_main_net(fnContinue) {
         "URL_W3_S_CHAIN": "" + arrNodeDescriptions[0].url, // first skaled node URL
         "PRIVATE_KEY_FOR_ETHEREUM": "" + g_strPrivateKeyImaMN,
         "PRIVATE_KEY_FOR_SCHAIN": "" + g_strPrivateKeyImaSC,
+        "SKALE_MANAGER_ADDRESS": "" + g_joSkaleManagerABI.skale_manager_address,
         "ACCOUNT_FOR_ETHEREUM": "" + private_key_2_account_address(g_w3_main_net, g_strPrivateKeyImaMN),
         "ACCOUNT_FOR_SCHAIN": "" + private_key_2_account_address(g_w3_main_net, g_strPrivateKeyImaSC)
     };
@@ -6262,13 +6266,13 @@ async function redeploy_ima_to_main_net(fnContinue) {
         "rm -rf ./node_modules",
         "yarn install"
     ];
-    await exec_array_of_commands_safe(arrCommands_prepare, g_strFolderImaProxy, joEnv);
+    await exec_array_of_commands_safe(arrCommands_prepare, g_strFolderImaContracts, joEnv);
     //
     const arrCommands_main_net = [
         "yarn deploy-to-mainnet",
         "ls -1 ./data/"
     ];
-    await exec_array_of_commands_safe(arrCommands_main_net, g_strFolderImaProxy, joEnv, 3);
+    await exec_array_of_commands_safe(arrCommands_main_net, g_strFolderImaContracts, joEnv, 3);
     fnContinue();
 }
 async function redeploy_ima_to_schain_all() {
@@ -6304,6 +6308,7 @@ async function redeploy_ima_to_schain_one(idxChain, fnContinue) {
         "URL_W3_S_CHAIN": "" + arrNodeDescriptions[0].url, // first skaled node URL
         "PRIVATE_KEY_FOR_ETHEREUM": "" + g_strPrivateKeyImaMN,
         "PRIVATE_KEY_FOR_SCHAIN": "" + g_strPrivateKeyImaSC,
+        "SKALE_MANAGER_ADDRESS": "" + g_joSkaleManagerABI.skale_manager_address,
         "ACCOUNT_FOR_ETHEREUM": "" + private_key_2_account_address(g_w3_main_net, g_strPrivateKeyImaMN),
         "ACCOUNT_FOR_SCHAIN": "" + private_key_2_account_address(g_w3_main_net, g_strPrivateKeyImaSC)
     };
@@ -6325,11 +6330,11 @@ async function redeploy_ima_to_schain_one(idxChain, fnContinue) {
         "yarn deploy-to-schain",
         "ls -1 ./data/"
     ];
-    await exec_array_of_commands_safe(arrCommands_s_chain, g_strFolderImaProxy, joEnv, 3);
+    await exec_array_of_commands_safe(arrCommands_s_chain, g_strFolderImaContracts, joEnv, 3);
     //
     // copy IMA ABIs to destination location
     //
-    const strPathImaAbiSC_just_deployed = "" + g_strFolderImaProxy + "/data/proxySchain_" + schain_name + ".json";
+    const strPathImaAbiSC_just_deployed = "" + g_strFolderImaContracts + "/data/proxySchain_" + schain_name + ".json";
     const strPathImaAbiSC = get_ima_abi_schain_path(idxChain);
     const strPathImaAbiSC_saved_copy = get_ima_abi_schain_path_saved_copy(idxChain);
     if (g_bVerbose) {
@@ -6415,7 +6420,7 @@ async function generate_predeployed_artifacts_schain(idxChain, fnContinue) {
         "linker": "" + ensure_starts_with_0x(g_joImaAbiMN.linker_address),
         "community_pool": "" + ensure_starts_with_0x(g_joImaAbiMN.community_pool_address)
     };
-    const strAdditionalPath = path.join(g_strFolderRepoImaContracts, "/proxy/predeployed/test/additional.json");
+    const strAdditionalPath = path.join(g_strFolderImaContracts, "predeployed/test/additional.json");
     log.write(cc.normal("Saving additional information for skaled configuration update: ") + cc.j(joAdditional) +
         cc.normal(" to file ") + cc.info(strAdditionalPath) + cc.normal("...") +
         "\n");
@@ -6430,7 +6435,7 @@ async function generate_predeployed_artifacts_schain(idxChain, fnContinue) {
     };
     if (g_bPredeployedIMA)
         joEnv.GENERATE_ABI = "true";
-    await exec_array_of_commands_safe([path.join(__dirname, "update_predeployed.sh")], g_strFolderImaProxy, joEnv, 3);
+    await exec_array_of_commands_safe([path.join(__dirname, "update_predeployed.sh")], g_strFolderImaContracts, joEnv, 3);
     fnContinue();
 }
 

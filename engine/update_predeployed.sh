@@ -2,7 +2,7 @@
 
 # VERY IMPORTANT:
 # VERY IMPORTANT:
-# VERY IMPORTANT: this script must run in IMA/proxy folder as current directory
+# VERY IMPORTANT: this script must run in the IMA contracts folder as current directory
 # VERY IMPORTANT:
 # VERY IMPORTANT:
 
