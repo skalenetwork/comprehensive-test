@@ -17,8 +17,13 @@ rm -f ./mainnet.log        || true &> /dev/null
 rm -f ./skaled_??_??.log   || true &> /dev/null
 rm -f ./imaAgent_??_??.log || true &> /dev/null
 rm -f ./ima.state.json     || true &> /dev/null
-rm -f ../IMA/proxy/.openzeppelin/unknown-*.json || true &> /dev/null
-rm -rf ../IMA/proxy/artifacts/* || true &> /dev/null
+IMA_CONTRACTS_DIR="${IMA_AGENT_ROOT_DIR:+$IMA_AGENT_ROOT_DIR/IMA}"
+IMA_CONTRACTS_DIR="${IMA_CONTRACTS_DIR:-../IMA}"
+if [[ -d "$IMA_CONTRACTS_DIR/proxy/migrations" ]]; then
+	IMA_CONTRACTS_DIR="$IMA_CONTRACTS_DIR/proxy"
+fi
+rm -f "$IMA_CONTRACTS_DIR"/.openzeppelin/unknown-*.json || true &> /dev/null
+rm -rf "$IMA_CONTRACTS_DIR"/artifacts/* || true &> /dev/null
 
 echo " --------------------------- initializing certificates ------------------------------------------------------------------------------------------------ "
 cd ./create_pems && ./create_pems.sh && cd ..
