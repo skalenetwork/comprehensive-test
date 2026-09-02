@@ -5,6 +5,42 @@ if [ "${NO_ANSI_COLORS}" = "1" ]; then
 	JQ_COLOR_OPT="-M"
 fi
 
+SGX_WALLET_READY_TIMEOUT_SECONDS="${SGX_WALLET_READY_TIMEOUT_SECONDS:-300}"
+SGX_WALLET_READY_RETRY_SECONDS="${SGX_WALLET_READY_RETRY_SECONDS:-5}"
+
+wait_for_sgx_result() {
+    local request_json="$1"
+    local url="$2"
+    local output_file="$3"
+    local jq_filter="$4"
+    local description="$5"
+    local deadline=$((SECONDS + SGX_WALLET_READY_TIMEOUT_SECONDS))
+    local temporary_file="${output_file}.tmp"
+
+    while (( SECONDS < deadline )); do
+        if curl --silent --show-error --connect-timeout 10 --max-time 30 \
+            -X POST --data "$request_json" \
+            -H 'content-type:application/json;' \
+            "$url" > "$temporary_file" && \
+            jq -e "$jq_filter | strings | select(length > 0 and . != \"null\")" \
+                "$temporary_file" > /dev/null 2>&1; then
+            mv "$temporary_file" "$output_file"
+            return 0
+        fi
+
+        echo "Waiting for SGX Wallet $description at $url..."
+        sleep "$SGX_WALLET_READY_RETRY_SECONDS"
+    done
+
+    echo "CRITICAL ERROR: SGX Wallet did not return $description within ${SGX_WALLET_READY_TIMEOUT_SECONDS} seconds" >&2
+    if [[ -s "$temporary_file" ]]; then
+        echo "Last SGX Wallet response:" >&2
+        cat "$temporary_file" >&2
+    fi
+    rm -f "$temporary_file"
+    return 1
+}
+
 echo " --------------------------- cleaning up redundant files ---------------------------------------------------------------------------------------------- "
 rm -f a.csr             || true &> /dev/null
 rm -f a.csr.signgleline || true &> /dev/null
@@ -126,11 +162,14 @@ echo " ---"
 rm -f ./sign_result.json || true &> /dev/null
 sign_request_json='{ "jsonrpc": "2.0", "id": 2, "method": "signCertificate", "params": { "certificate": "'$a_csr_value'" } }'
 echo "WILL send: $sign_request_json"
-curl --connect-timeout 30 --max-time 60 -X POST --data \
+if ! wait_for_sgx_result \
     "$sign_request_json" \
-    -v \
-    -H 'content-type:application/json;' \
-    $URL_SGX_WALLET_HTTP > ./sign_result.json
+    "$URL_SGX_WALLET_HTTP" \
+    ./sign_result.json \
+    '.result.hash' \
+    'certificate-signing result'; then
+    exit 1
+fi
 printf "\nRaw sign_result.json is: ------------------------------------------------------------------- \n"
 cat ./sign_result.json
 printf "\nResulting sign_result.json is: ------------------------------------------------------------- \n"
@@ -145,11 +184,14 @@ echo " --- get certificate"
 echo " ---"
 rm -f ./get_certificate_result.json || true &> /dev/null
 get_certificate_json='{ "jsonrpc": "2.0", "id": 2, "method": "getCertificate", "params": { "hash": "'$sign_hash'" } }'
-curl --connect-timeout 30 --max-time 60 -X POST --data \
+if ! wait_for_sgx_result \
     "$get_certificate_json" \
-    -v \
-    -H 'content-type:application/json;' \
-    $URL_SGX_WALLET_HTTP > ./get_certificate_result.json
+    "$URL_SGX_WALLET_HTTP" \
+    ./get_certificate_result.json \
+    '.result.cert' \
+    'signed certificate'; then
+    exit 1
+fi
 printf "\Raw get_certificate_result.json is: --------------------------------------------------------- \n"
 cat ./get_certificate_result.json
 printf "\Resulting get_certificate_result.json is: --------------------------------------------------- \n"
@@ -188,6 +230,10 @@ echo " ---"
 echo " --- client.pem"
 echo " ---"
 openssl x509 -inform PEM -in client.crt > client.pem
+if ! openssl x509 -in client.pem -noout -checkend 0; then
+    echo "CRITICAL ERROR: SGX Wallet returned an invalid client certificate" >&2
+    exit 1
+fi
 cat client.pem
 
 
@@ -249,5 +295,4 @@ echo " "
 echo " "
 
 echo " --------------------------- done --------------------------------------------------------------------------------------------------------------------- "
-
 
