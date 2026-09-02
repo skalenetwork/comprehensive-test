@@ -5859,7 +5859,9 @@ function init_sgx_ssl_in_folder(strWorkingDirectory) {
 }
 
 function init_sgx_ssl() {
-    return init_sgx_ssl_in_folder(g_strPathForSgxSslData);
+    init_sgx_ssl_in_folder(g_strPathForSgxSslData);
+    g_joSgxRpcOptions.cert = fs.readFileSync(g_joSgxRpcOptions.cert_path, "utf8");
+    g_joSgxRpcOptions.key = fs.readFileSync(g_joSgxRpcOptions.key_path, "utf8");
 }
 
 //////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
