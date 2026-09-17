@@ -86,8 +86,7 @@ then
     #     echo "CRITICAL ERROR: cannot access /dev/urandom"
     # fi
     echo "CERT_NAME_UNIQUE is empty, generating..."
-    # export CERT_NAME_UNIQUE=$(cat /dev/urandom | tr -dc 'a-zA-Z0-9' | fold -w ${1:-32} | head -n 1)
-    export CERT_NAME_UNIQUE=$(date +%s | sha256sum | base64 | head -c 32 ; echo)
+    export CERT_NAME_UNIQUE="$(openssl rand -hex 16)"
     echo "CERT_NAME_UNIQUE was empty, so using generated random value $CERT_NAME_UNIQUE"
 else
     echo "CERT_NAME_UNIQUE=$CERT_NAME_UNIQUE (value came from env)"
