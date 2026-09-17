@@ -5079,7 +5079,7 @@ async function redeploy_skale_manager(w3, fnContinue) {
             cc.bright("Performing ") + cc.sunny("Skale Manager Deployment") +
             cc.bright("...") + "\n\n");
     }
-    const strCommand = "npx hardhat run migrations/deploy.ts --network custom";
+    const strCommand = "yarn hardhat run migrations/deploy.ts --network custom";
     const strCommandClean = "rm -rf *unknown*.json";
     const strWorkingDirectory = "" + g_strFolderRepoSkaleManager;
     const strWorkingDirectoryCleanup = "" + g_strFolderRepoSkaleManager + "/.openzeppelin";
@@ -7010,8 +7010,8 @@ async function deploy_test_tokens_to(idxChain, strDeploymentNetworkName, strMint
                 "rm -rf ./build || true",
                 "rm -f ./data/TestToken*.abi." + strDeploymentNetworkName + ".json || true",
                 //
-                "npx hardhat compile",
-                "npx hardhat deploy --network " + strDeploymentNetworkName,
+                "yarn hardhat compile",
+                "yarn hardhat deploy --network " + strDeploymentNetworkName,
                 //
                 "ls -1 ./data"
             ], g_strFolderTestTokens, joEnv, 1);
